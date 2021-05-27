@@ -13,7 +13,7 @@ final class GGVizTests: XCTestCase {
             ["C": 3],
         ])
 
-        let spec = TopLevelUnitSpec(data: .init(.init(.init(InlineData(values: dataSet)))), mark: AnyMark(Mark.bar))
+        let spec = SimpleVizSpec(data: .init(.init(.init(InlineData(values: dataSet)))), mark: AnyMark(Mark.bar))
         let ctx = try GGContext()
         let value = try ctx.compileGrammar(spec: spec)
         dbg("compiled", value.toJSON(indent: 2))
