@@ -21,7 +21,8 @@ open class GGContext {
     let vgg_compile: JXValue
     let vg_parse: JXValue
     let vg_View: JXValue
-    let vg_render: JXValue
+
+    let glance_render: JXValue
 
     public init(ctx: JXContext = JXContext()) throws {
         self.ctx = ctx
@@ -44,6 +45,7 @@ open class GGContext {
             return value
         }
 
+
         self.gv = try check(ctx["glimpseviz"])
 
         let version = gv["version"]
@@ -60,21 +62,23 @@ open class GGContext {
 
         self.vg_View = try check(vg["View"])
 
-        self.vg_render = try check(ctx.eval(script: """
-            (function(vg, spec) {
-                var svg = "";
-                var view = new vg.View(vg.parse(spec), {renderer: 'none'});
-                view.run();
-                view.toSVG() // 
-                  .then(function(svgString) {
-                    // console.log("SVG", svgString);
-                    svg = svgString;
-                  })
-                  .catch(function(err) { console.error(err); });
+        self.glance_render = try check(glance["render"])
 
-                return svg;
-            })
-            """))
+//        self.vg_render = try check(ctx.eval(script: """
+//            (function(vg, spec) {
+//                var svg = "";
+//                var view = new vg.View(vg.parse(spec), {renderer: 'none'});
+//                view.run();
+//                view.toSVG() //
+//                  .then(function(svgString) {
+//                    // console.log("SVG", svgString);
+//                    svg = svgString;
+//                  })
+//                  .catch(function(err) { console.error(err); });
+//
+//                return svg;
+//            })
+//            """))
     }
 
     deinit {
@@ -94,13 +98,62 @@ open class GGContext {
         }
     }
 
-    open func renderViz(_ spec: JXValue) throws -> JXValue {
-        try ctx.trying {
-            vg_render.call(withArguments: [vg, spec])
+    /// Renders the spec with the given options
+    open func renderViz(_ options: [GlanceRequestKeys: JXValue]) throws -> JXValue {
+        let opts = JXValue(newObjectIn: ctx)
+        for (key, value) in options {
+            opts[key.rawValue] = value
+        }
+
+        return try ctx.trying {
+            glance_render.call(withArguments: [opts])
         }
     }
+}
 
+/// The keys that can be used to specify data requests.
+/// - Note: These keys must be kept in sync with the equivalent keys in `glance.js`
+public enum GlanceRequestKeys : String {
+    case spec = "spec"
+    case vegaSpec = "vegaSpec"
+    case data = "data"
+    case returnData = "returnData"
+    case returnSVG = "returnSVG"
+    case returnScenegraph = "returnScenegraph"
+    case returnCanvas = "returnCanvas"
+    case headless = "headless"
+    case elementID = "elementID"
+}
 
+/// The keys that the `Glance.render()` JS function will contain in the returned JSON `Bric`
+public enum GlanceReturnKeys : String {
+    /// The key that contains the JSON data from the rendered spec
+    /// - See also: `VegaHeadlessRenderOptions.data`
+    case data = "data"
+
+    /// The key that contains the SVG output from the rendered spec
+    /// - See also: `VegaHeadlessRenderOptions.svg`
+    case svg = "svg"
+
+    /// The key that contains the scenegraph output from the rendered spec
+    case scenegraph = "scenegraph"
+
+    /// The key that contains the native canvas – not used because canvas cannot be serialized
+    /// - See also: `VegaHeadlessRenderOptions.canvas`
+    case canvas = "canvas"
+
+    /// The internal variable that holds the native canvas instance
+    case canvasNative = "__NativeCanvas"
+
+    /// The key that indicates that we will be requesting this return value
+    public var requestKey: GlanceRequestKeys {
+        switch self {
+        case .data: return .returnData
+        case .svg: return .returnSVG
+        case .scenegraph: return .returnScenegraph
+        case .canvas, .canvasNative: return .returnCanvas
+        }
+    }
 }
 
 

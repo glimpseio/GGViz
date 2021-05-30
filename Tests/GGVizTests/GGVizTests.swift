@@ -15,14 +15,14 @@ final class GGVizTests: XCTestCase {
 
         let spec = SimpleVizSpec(data: .init(.init(.init(InlineData(values: dataSet)))), mark: AnyMark(Mark.bar))
         let ctx = try GGContext()
-        let value = try ctx.compileGrammar(spec: spec)
-        dbg("compiled", value.toJSON(indent: 2))
-        let compiled = try value.toDecodable(ofType: Bric.self)
+        let compiledValue = try ctx.compileGrammar(spec: spec)
+        //dbg("compiled", try? compiledValue.toJSON(indent: 2))
+        let compiled = try compiledValue.toDecodable(ofType: Bric.self)
 
-        let parsed = try ctx.parseViz(value)
-        dbg("parsed", parsed.toJSON(indent: 2))
+        let parsed = try ctx.parseViz(compiledValue)
+        //dbg("parsed", try? parsed.toJSON(indent: 2))
 
-        let rendered = try ctx.renderViz(value)
+        let rendered = try ctx.renderViz([.vegaSpec: compiledValue, .returnSVG: ctx.ctx.boolean(true)])
 
         XCTAssertEqual(rendered.stringValue, """
             """)
