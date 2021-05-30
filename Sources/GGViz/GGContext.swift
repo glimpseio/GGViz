@@ -23,20 +23,22 @@ open class GGContext {
     let vg_View: JXValue
 
     let glance_render: JXValue
+    let glance_compile: JXValue
 
     public init(ctx: JXContext = JXContext()) throws {
         self.ctx = ctx
 
-        ctx.installConsole()
+        try ctx.installConsole()
+        ctx.installExports(require: false, global: true)
+
         try ctx.installGlimpseViz()
 
         // cache commonly-used functions
 
-        try ctx.eval(script: """
-        console.log("XXX");
-        console.log("glimpseviz", glimpseviz);
-        console.log("glimpseviz.vl", Object.keys(glimpseviz));
-        """)
+//        try ctx.eval(script: """
+//        console.log("glimpseviz", glimpseviz);
+//        console.log("glimpseviz.vl", Object.keys(glimpseviz));
+//        """)
 
         func check(_ value: JXValue) throws -> JXValue {
             if !value.isObject {
@@ -64,6 +66,32 @@ open class GGContext {
 
         self.glance_render = try check(glance["render"])
 
+        // use a custom compile step that captures the logged output and returns it as a `RenderResult`
+        self.glance_compile = try check(ctx.eval("""
+            (function(spec, normalize) {
+                var warn = [];
+                var info = [];
+                var debug = [];
+                var logger = {
+                    warn: function() { for (let arg of arguments) { warn.push(arg) } },
+                    info: function() { for (let arg of arguments) { info.push(arg) } },
+                    debug: function() { for (let arg of arguments) { debug.push(arg) } }
+                };
+
+                const compiled = glimpseviz.vgg.compile(spec, { logger: logger });
+
+                const ret = {
+                    vega: compiled.spec,
+                    normalized: normalize ? compiled.normalized : null,
+                    warn: warn,
+                    info: info,
+                    debug: debug
+                };
+
+                return ret;
+            })
+            """))
+
 //        self.vg_render = try check(ctx.eval(script: """
 //            (function(vg, spec) {
 //                var svg = "";
@@ -84,22 +112,27 @@ open class GGContext {
     deinit {
 
     }
+}
+
+public extension GGContext {
 
     /// Compiles a spec
-    open func compileGrammar<T: VizSpecMeta>(spec: VizSpec<T>) throws -> JXValue {
+    func compileGrammar<T: VizSpecMeta>(spec: VizSpec<T>, normalize: Bool) throws -> RenderResult<T> {
         try ctx.trying {
-            try vgg_compile.call(withArguments: [ctx.encode(spec)])
-        }
+            try glance_compile.call(withArguments: [ctx.encode(spec), ctx.boolean(normalize)])
+        }.toDecodable(ofType: RenderResult.self)
     }
 
-    open func parseViz(_ spec: JXValue) throws -> JXValue {
+    func parseViz(_ spec: JXValue) throws -> JXValue {
         try ctx.trying {
             vg_parse.call(withArguments: [spec])
         }
     }
 
     /// Renders the spec with the given options
-    open func renderViz(_ options: [GlanceRequestKeys: JXValue]) throws -> JXValue {
+    /// - Parameter options: the rendering options
+    /// - Returns: an object value with keys defined in `RenderResponseKey`
+    func renderViz(_ options: [RenderRequestKey: JXValue]) throws -> JXValue {
         let opts = JXValue(newObjectIn: ctx)
         for (key, value) in options {
             opts[key.rawValue] = value
@@ -109,52 +142,71 @@ open class GGContext {
             glance_render.call(withArguments: [opts])
         }
     }
-}
+    /// The keys that can be used to specify data requests.
+    /// - Note: These keys must be kept in sync with the equivalent keys in `glimpseviz.js`
+    enum RenderRequestKey : String {
+        case spec = "spec"
+        case data = "data"
+        case vegaSpec = "vegaSpec"
 
-/// The keys that can be used to specify data requests.
-/// - Note: These keys must be kept in sync with the equivalent keys in `glance.js`
-public enum GlanceRequestKeys : String {
-    case spec = "spec"
-    case vegaSpec = "vegaSpec"
-    case data = "data"
-    case returnData = "returnData"
-    case returnSVG = "returnSVG"
-    case returnScenegraph = "returnScenegraph"
-    case returnCanvas = "returnCanvas"
-    case headless = "headless"
-    case elementID = "elementID"
-}
+        case headless = "headless"
+        case elementID = "elementID"
 
-/// The keys that the `Glance.render()` JS function will contain in the returned JSON `Bric`
-public enum GlanceReturnKeys : String {
-    /// The key that contains the JSON data from the rendered spec
-    /// - See also: `VegaHeadlessRenderOptions.data`
-    case data = "data"
+        case returnData = "returnData"
+        case returnSVG = "returnSVG"
+        case returnScenegraph = "returnScenegraph"
+        case returnCanvas = "returnCanvas"
+    }
 
-    /// The key that contains the SVG output from the rendered spec
-    /// - See also: `VegaHeadlessRenderOptions.svg`
-    case svg = "svg"
+    /// The keys that the `Glance.render()` JS function will contain in the returned JSON `Bric`
+    enum RenderResponseKey : String {
+        /// The key that contains the JSON data from the rendered spec
+        /// - See also: `VegaHeadlessRenderOptions.data`
+        case data = "data"
 
-    /// The key that contains the scenegraph output from the rendered spec
-    case scenegraph = "scenegraph"
+        /// The key that contains the SVG output from the rendered spec
+        /// - See also: `VegaHeadlessRenderOptions.svg`
+        case svg = "svg"
 
-    /// The key that contains the native canvas – not used because canvas cannot be serialized
-    /// - See also: `VegaHeadlessRenderOptions.canvas`
-    case canvas = "canvas"
+        /// The key that contains the scenegraph output from the rendered spec
+        case scenegraph = "scenegraph"
 
-    /// The internal variable that holds the native canvas instance
-    case canvasNative = "__NativeCanvas"
+        /// The key that contains the native canvas – not used because canvas cannot be serialized
+        /// - See also: `VegaHeadlessRenderOptions.canvas`
+        case canvas = "canvas"
 
-    /// The key that indicates that we will be requesting this return value
-    public var requestKey: GlanceRequestKeys {
-        switch self {
-        case .data: return .returnData
-        case .svg: return .returnSVG
-        case .scenegraph: return .returnScenegraph
-        case .canvas, .canvasNative: return .returnCanvas
+        /// The internal variable that holds the native canvas instance
+        case canvasNative = "__NativeCanvas"
+
+        /// The key that indicates that we will be requesting this return value
+        public var requestKey: RenderRequestKey {
+            switch self {
+            case .data: return .returnData
+            case .svg: return .returnSVG
+            case .scenegraph: return .returnScenegraph
+            case .canvas, .canvasNative: return .returnCanvas
+            }
+        }
+    }
+
+    /// The result of compiling a GGSpec
+    struct RenderResult<Meta: VizSpecMeta> : Decodable {
+        public var vega: Bric
+        public var normalized: VizSpec<Meta>?
+        public var warn: [String]?
+        public var info: [String]?
+        public var debug: [String]?
+
+        public init(vega: Bric, normalized: VizSpec<Meta>? = nil, warn: [String]? = nil, info: [String]? = nil, debug: [String]? = nil) {
+            self.vega = vega
+            self.normalized = normalized
+            self.warn = warn
+            self.info = info
+            self.debug = debug
         }
     }
 }
+
 
 
 public extension JXContext {

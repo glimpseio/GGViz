@@ -4,113 +4,102 @@ import GGViz
 import MiscKit
 import BricBrac
 
+/// A running count of all the contexts that have been created and not destroyed
+private final class GGDebugContext : GGContext {
+    static var debugContextCount = 0
+
+    override init(ctx: JXContext = JXContext()) throws {
+        try super.init(ctx: ctx)
+        Self.debugContextCount += 1
+    }
+
+    deinit {
+        Self.debugContextCount -= 1
+    }
+}
+
 final class GGVizTests: XCTestCase {
+    override class func tearDown() {
+        XCTAssertEqual(0, GGDebugContext.debugContextCount)
+    }
 
     func testCompileGrammar() throws {
         let dataSet = InlineDataset([
-            ["A": 1],
-            ["B": 2],
-            ["C": 3],
+            ["A": "x", "B": 1.0],
+            ["A": "y", "B": 2.0],
+            ["A": "z", "B": 3.0],
         ])
 
-        let spec = SimpleVizSpec(data: .init(.init(.init(InlineData(values: dataSet)))), mark: AnyMark(Mark.bar))
-        let ctx = try GGContext()
-        let compiledValue = try ctx.compileGrammar(spec: spec)
-        //dbg("compiled", try? compiledValue.toJSON(indent: 2))
-        let compiled = try compiledValue.toDecodable(ofType: Bric.self)
+        var spec = SimpleVizSpec(data: .init(.init(.init(InlineData(values: dataSet)))))
+        spec.mark = .init(Mark.bar)
 
-        let parsed = try ctx.parseViz(compiledValue)
-        //dbg("parsed", try? parsed.toJSON(indent: 2))
+        spec.title = .init(.init("Hello GGViz!"))
 
-        let rendered = try ctx.renderViz([.vegaSpec: compiledValue, .returnSVG: ctx.ctx.boolean(true)])
+        spec.encoding = .init(
+            x: .init(FacetedEncoding.X(PositionFieldDef(field: .init(FieldName("A")), title: .init(.init("Alpha"))))),
+            y: .init(FacetedEncoding.Y(PositionFieldDef(field: .init(FieldName("B")), title: .init(.init("Bravo")), type: .quantitative))))
 
-        XCTAssertEqual(rendered.stringValue, """
-            """)
-        
-//        measure { // measured [Time, seconds] average: 0.005, relative standard deviation: 24.014%, values: [0.007017, 0.005723, 0.005122, 0.007813, 0.004534, 0.004649, 0.004680, 0.004304, 0.004095, 0.003790]
-//            let value = try? ctx.compileGrammar(spec: spec)
-//            let _ = try? value?.toDecodable(ofType: Bric.self)
-//        }
+        let ctx = try GGDebugContext()
+        let compiled = try ctx.compileGrammar(spec: spec, normalize: true)
 
-        XCTAssertEqual(compiled, [
-            "spec": [
-              "$schema": "https://vega.github.io/schema/vega/v5.json",
-              "background": "white",
-              "padding": 5,
-              "width": 20,
-              "height": 20,
-              "style": "cell",
-              "data": [
-                [
-                  "name": "source_0",
-                  "values": [
-                    [
-                      "A": 1
-                    ],
-                    [
-                      "B": 2
-                    ],
-                    [
-                      "C": 3
-                    ]
-                  ]
-                ]
-              ],
-              "marks": [
-                [
-                  "name": "marks",
-                  "type": "rect",
-                  "style": [
-                    "bar"
-                  ],
-                  "from": [
-                    "data": "source_0"
-                  ],
-                  "encode": [
-                    "update": [
-                      "fill": [
-                        "value": "#4c78a8"
-                      ],
-                      "ariaRoleDescription": [
-                        "value": "bar"
-                      ],
-                      "x": [
-                        "field": [
-                          "group": "width"
-                        ]
-                      ],
-                      "x2": [
-                        "value": 0
-                      ],
-                      "y": [
-                        "value": 0
-                      ],
-                      "y2": [
-                        "field": [
-                          "group": "height"
-                        ]
-                      ]
-                    ]
-                  ]
-                ]
-              ]
-            ],
-            "normalized": [
-              "data": [
-                "values": [
-                  [
-                    "A": 1
-                  ],
-                  [
-                    "B": 2
-                  ],
-                  [
-                    "C": 3
-                  ]
-                ]
-              ],
-              "mark": "bar"
-            ]
+        // nothing to normalize in this spec (i.e., no row/column/facet encodings or repeats)
+        XCTAssertEqual(compiled.normalized, spec, "normalized spec should be identical")
+
+        XCTAssertEqual([], compiled.warn.defaulted)
+        XCTAssertEqual([], compiled.debug.defaulted)
+        XCTAssertEqual([], compiled.info.defaulted)
+
+//        XCTAssertEqual(compiled.vega, [:])
+
+        let rendered = try ctx.renderViz([
+            .spec: ctx.ctx.encode(spec),
+            .returnData: ctx.ctx.boolean(true),
+            .returnSVG: ctx.ctx.boolean(true),
+            .returnScenegraph: ctx.ctx.boolean(true),
         ])
+
+        let svg = rendered[GGContext.RenderResponseKey.svg.rawValue]
+
+        dbg(svg.stringValue)
+
+        // parse the SVG as XML and check for expected values
+        let xml = try XMLTree.parse(data: svg.stringValue?.data(using: .utf8) ?? Data())
+        let allNodes = treenumerate(root: xml, children: \.elementChildren)
+        let allElements = allNodes.map(\.element)
+
+        // index by the role
+        let roleValues = Dictionary(grouping: allElements, by: \.[attribute: "role"])
+        XCTAssertEqual(2, roleValues["graphics-object"]?.count)
+        XCTAssertEqual(6, roleValues["graphics-symbol"]?.count)
+
+        let allContent = allElements.map(\.childContent).joined()
+        XCTAssertTrue(allContent.contains("Hello GGViz!"))
+
+        // extract all the accessibility labels and verify their values
+        let allLabels = allElements.compactMap(\.[attribute: "aria-label"])
+        XCTAssertEqual(allLabels, [
+            "X-axis titled \'Alpha\' for a discrete scale with 3 values: x, y, z",
+            "Y-axis titled \'Bravo\' for a linear scale with values from 0.0 to 3.0",
+            "Alpha: x; Bravo: 1",
+            "Alpha: y; Bravo: 2",
+            "Alpha: z; Bravo: 3",
+            "Title text \'Hello GGViz!\'",
+        ])
+
+        // XCTAssertEqual(svg.stringValue, """
+        //     """)
+
+        let sg = rendered[GGContext.RenderResponseKey.scenegraph.rawValue]
+//        dbg("sg", (try? sg.toJSON(indent: 2)) ?? "")
+
+//        let sceneGraph = try sg.toDecodable(ofType: GGSceneGraph.self) // not yet working…
+
+//        let sceneGraph = try sg.toDecodable(ofType: [String: Bric].self)
+//        dbg("sceneGraph", sceneGraph)
+//
+//        XCTAssertEqual("group", sceneGraph["marktype"])
+//        XCTAssertEqual("frame", sceneGraph["role"])
+//        // XCTAssertEqual(1, sceneGraph["items"]?.arr?.count)
+
     }
 }

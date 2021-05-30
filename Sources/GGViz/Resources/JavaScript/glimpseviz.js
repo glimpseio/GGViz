@@ -79444,9 +79444,9 @@
       return addEvents(updateDatasets(window[glanceKey].view, window[glanceKey].data));
   }
   function sceneObject(ob) {
-      // TODO: figure out how to use Scenegraph
-      // return JSON.parse(vg.sceneToJSON(ob));
-      return JSON.parse(JSON.stringify(ob));
+          // TODO: figure out how to use Scenegraph
+          // return JSON.parse(vg.sceneToJSON(ob));
+          return JSON.parse(JSON.stringify(ob));
   }
   function handleEvent(e, d) {
       var msg = {
