@@ -23,6 +23,7 @@ final class GGVizTests: XCTestCase {
         XCTAssertEqual(0, GGDebugContext.debugContextCount)
     }
 
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
     func testCompileGrammar() throws {
         let dataSet = InlineDataset([
             ["A": "x", "B": 1.0],
