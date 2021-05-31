@@ -8,6 +8,8 @@
 import MiscKit
 
 /// Uses `JXKit` and `GGSpec`
+///
+/// See also: `\JXContext.installGGViz`
 open class GGContext {
     open var ctx: JXContext
 
@@ -219,6 +221,5 @@ extension JXContext {
             return exports[name]
         }
     }
-
 }
 
