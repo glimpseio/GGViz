@@ -29,9 +29,8 @@ open class GGContext {
         self.ctx = ctx
 
         try ctx.installConsole()
-        ctx.installExports(require: false, global: true)
 
-        try ctx.installGlimpseViz()
+        try ctx.installGGViz()
 
         // cache commonly-used functions
 
@@ -207,17 +206,19 @@ public extension GGContext {
     }
 }
 
-
-
-public extension JXContext {
-    static let glimpseviz = Bundle.module.url(forResource: "glimpseviz", withExtension: "js", subdirectory: "Resources/JavaScript")
-
-    /// Runs `glimpseviz.js`
-    func installGlimpseViz() throws {
-        guard let glimpsevizURL = Self.glimpseviz else {
-            throw err("Could not load glimpseviz.js")
+extension JXContext {
+    /// Installs the GGViz module into `ggviz`.
+    @discardableResult public func installGGViz(into name: String = "ggviz") throws -> JXValType {
+        let _ = self.globalObject(property: "global") // glimpseviz needs "global" (probably for console)
+        let exports = self.globalObject(property: "exports")
+        let ggviz = exports[name]
+        if ggviz.isObject {
+            return ggviz
+        } else {
+            exports[name] = try installModule(named: "glimpseviz", in: .module)
+            return exports[name]
         }
-        try self.eval(url: glimpsevizURL)
     }
+
 }
 
