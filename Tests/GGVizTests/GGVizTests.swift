@@ -5,7 +5,7 @@ import MiscKit
 import BricBrac
 
 /// A running count of all the contexts that have been created and not destroyed
-private final class GGDebugContext : GGContext {
+private final class GGDebugContext : GGVizContext {
     static var debugContextCount = 0
 
     override init(ctx: JXContext = JXContext()) throws {
@@ -59,7 +59,7 @@ final class GGVizTests: XCTestCase {
             .returnScenegraph: ctx.ctx.boolean(true),
         ])
 
-        let svg = rendered[GGContext.RenderResponseKey.svg.rawValue]
+        let svg = rendered[GGVizContext.RenderResponseKey.svg.rawValue]
 
         dbg(svg.stringValue)
 
@@ -90,7 +90,7 @@ final class GGVizTests: XCTestCase {
         // XCTAssertEqual(svg.stringValue, """
         //     """)
 
-        let sg = rendered[GGContext.RenderResponseKey.scenegraph.rawValue]
+        let sg = rendered[GGVizContext.RenderResponseKey.scenegraph.rawValue]
 //        dbg("sg", (try? sg.toJSON(indent: 2)) ?? "")
 
 //        let sceneGraph = try sg.toDecodable(ofType: GGSceneGraph.self) // not yet working…

@@ -9,8 +9,8 @@ import MiscKit
 
 /// Uses `JXKit` and `GGSpec`
 ///
-/// See also: `\JXContext.installGGViz`
-open class GGContext {
+/// See also: `JXContext.installGGViz`
+open class GGVizContext {
     open var ctx: JXContext
 
     let gv: JXValue
@@ -31,10 +31,8 @@ open class GGContext {
         self.ctx = ctx
 
         try ctx.installConsole()
-
         try ctx.installGGViz()
 
-        // cache commonly-used functions
 
 //        try ctx.eval(script: """
 //        console.log("glimpseviz", glimpseviz);
@@ -50,6 +48,8 @@ open class GGContext {
 
 
         self.gv = try check(ctx["glimpseviz"])
+
+        // cache commonly-used functions
 
         let version = gv["version"]
         dbg("initializing glimpseviz version", version.stringValue)
@@ -67,7 +67,7 @@ open class GGContext {
 
         self.glance_render = try check(glance["render"])
 
-        // use a custom compile step that captures the logged output and returns it as a `RenderResult`
+        // use a custom compile step that captures the logged output and returns it as a `CompileOutput`
         self.glance_compile = try check(ctx.eval("""
             (function(spec, normalize) {
                 var warn = [];
@@ -92,22 +92,6 @@ open class GGContext {
                 return ret;
             })
             """))
-
-//        self.vg_render = try check(ctx.eval(script: """
-//            (function(vg, spec) {
-//                var svg = "";
-//                var view = new vg.View(vg.parse(spec), {renderer: 'none'});
-//                view.run();
-//                view.toSVG() //
-//                  .then(function(svgString) {
-//                    // console.log("SVG", svgString);
-//                    svg = svgString;
-//                  })
-//                  .catch(function(err) { console.error(err); });
-//
-//                return svg;
-//            })
-//            """))
     }
 
     deinit {
@@ -115,13 +99,13 @@ open class GGContext {
     }
 }
 
-public extension GGContext {
+public extension GGVizContext {
 
     /// Compiles a spec
-    func compileGrammar<T: VizSpecMeta>(spec: VizSpec<T>, normalize: Bool) throws -> RenderResult<T> {
+    func compileGrammar<T: VizSpecMeta>(spec: VizSpec<T>, normalize: Bool) throws -> CompileOutput<T> {
         try ctx.trying {
             try glance_compile.call(withArguments: [ctx.encode(spec), ctx.boolean(normalize)])
-        }.toDecodable(ofType: RenderResult.self)
+        }.toDecodable(ofType: CompileOutput.self)
     }
 
     func parseViz(_ spec: JXValue) throws -> JXValue {
@@ -191,7 +175,7 @@ public extension GGContext {
     }
 
     /// The result of compiling a GGSpec
-    struct RenderResult<Meta: VizSpecMeta> : Decodable {
+    struct CompileOutput<Meta: VizSpecMeta> : Decodable {
         public var vega: Bric
         public var normalized: VizSpec<Meta>?
         public var warn: [String]?
