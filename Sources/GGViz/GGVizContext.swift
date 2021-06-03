@@ -6,10 +6,11 @@
 //
 
 import MiscKit
+import Judo
 
 /// Uses `JXKit` and `GGSpec`
 ///
-/// See also: `JXContext.installGGViz`
+/// Uses: `JXContext.installGGViz`
 open class GGVizContext {
     open var ctx: JXContext
 
@@ -35,8 +36,8 @@ open class GGVizContext {
 
 
 //        try ctx.eval(script: """
-//        console.log("glimpseviz", glimpseviz);
-//        console.log("glimpseviz.vl", Object.keys(glimpseviz));
+//        console.log("ggviz", glimpseviz);
+//        console.log("ggviz.vl", Object.keys(glimpseviz));
 //        """)
 
         func check(_ value: JXValue) throws -> JXValue {
@@ -46,13 +47,12 @@ open class GGVizContext {
             return value
         }
 
-
-        self.gv = try check(ctx["glimpseviz"])
+        self.gv = try check(ctx["ggviz"])
 
         // cache commonly-used functions
 
         let version = gv["version"]
-        dbg("initializing glimpseviz version", version.stringValue)
+        dbg("initializing ggviz version", version.stringValue)
 
         self.glance = try check(gv["glance"])
         self.vg = try check(gv["vg"])
@@ -79,7 +79,7 @@ open class GGVizContext {
                     debug: function() { for (let arg of arguments) { debug.push(arg) } }
                 };
 
-                const compiled = glimpseviz.vgg.compile(spec, { logger: logger });
+                const compiled = ggviz.vgg.compile(spec, { logger: logger });
 
                 const ret = {
                     vega: compiled.spec,
@@ -128,7 +128,7 @@ public extension GGVizContext {
         }
     }
     /// The keys that can be used to specify data requests.
-    /// - Note: These keys must be kept in sync with the equivalent keys in `glimpseviz.js`
+    /// - Note: These keys must be kept in sync with the equivalent keys in `ggviz.js`
     enum RenderRequestKey : String {
         case spec = "spec"
         case data = "data"
@@ -194,15 +194,16 @@ public extension GGVizContext {
 
 extension JXContext {
     /// Installs the GGViz module into `ggviz`.
-    @discardableResult public func installGGViz(into name: String = "ggviz") throws -> JXValType {
-        let _ = self.globalObject(property: "global") // glimpseviz needs "global" (probably for console)
+    @discardableResult public func installGGViz() throws -> JXValType {
+        let propertyName = "ggviz"
+        let _ = self.globalObject(property: "global") // ggviz needs "global" (probably for console)
         let exports = self.globalObject(property: "exports")
-        let ggviz = exports[name]
+        let ggviz = exports[propertyName]
         if ggviz.isObject {
             return ggviz
         } else {
-            exports[name] = try installModule(named: "glimpseviz", in: .module)
-            return exports[name]
+            exports[propertyName] = try installModule(named: "ggviz", in: .module)
+            return exports[propertyName]
         }
     }
 }

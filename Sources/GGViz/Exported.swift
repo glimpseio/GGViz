@@ -1,2 +1,2 @@
-@_exported import Judo
+@_exported import JXKit
 @_exported import GGSpec
