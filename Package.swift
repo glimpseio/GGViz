@@ -20,6 +20,6 @@ let package = Package(
         .testTarget(
             name: "GGVizTests",
             dependencies: ["GGViz"],
-            resources: [.process("TestResources")]),
+            resources: [.copy("TestResources")]),
     ]
 )
