@@ -94,6 +94,20 @@ open class GGVizContext {
 
 public extension GGVizContext {
 
+    /// Returns the resource for the script.
+    ///
+    /// - Parameter min: whether to return the minified (`true`), non-minified (`false`) or module (`nil`) form of the script
+    static func ggvizResource(min: Bool?) -> URL? {
+        switch min {
+        case .none:
+            return Bundle.module.url(forResource: "ggviz.module", withExtension: "js")
+        case .some(true):
+            return Bundle.module.url(forResource: "ggviz.min", withExtension: "js")
+        case .some(false):
+            return Bundle.module.url(forResource: "ggviz", withExtension: "js")
+        }
+    }
+
     /// Compiles a spec
     func compileGrammar<T: VizSpecMeta>(spec: VizSpec<T>, normalize: Bool) throws -> CompileOutput<T> {
         try ctx.trying {
@@ -107,10 +121,28 @@ public extension GGVizContext {
         }
     }
 
+    func renderViz<M: VizSpecMeta>(spec: VizSpec<M>, returnData: Bool? = nil, returnSVG: Bool? = nil, returnScenegraph: Bool? = nil, returnCanvas: Bool? = nil) throws -> JXValue {
+        var opts: [RenderRequestKey: JXValue] = [:]
+        opts[.spec] = try ctx.encode(spec)
+        if let returnData = returnData {
+            opts[.returnData] = try ctx.encode(returnData)
+        }
+        if let returnSVG = returnSVG {
+            opts[.returnSVG] = try ctx.encode(returnSVG)
+        }
+        if let returnScenegraph = returnScenegraph {
+            opts[.returnScenegraph] = try ctx.encode(returnScenegraph)
+        }
+        if let returnCanvas = returnCanvas {
+            opts[.returnCanvas] = try ctx.encode(returnCanvas)
+        }
+        return try performRender(opts)
+    }
+
     /// Renders the spec with the given options
     /// - Parameter options: the rendering options
     /// - Returns: an object value with keys defined in `RenderResponseKey`
-    func renderViz(_ options: [RenderRequestKey: JXValue]) throws -> JXValue {
+    internal func performRender(_ options: [RenderRequestKey: JXValue]) throws -> JXValue {
         let opts = JXValue(newObjectIn: ctx)
         for (key, value) in options {
             opts[key.rawValue] = value
@@ -122,7 +154,7 @@ public extension GGVizContext {
     }
     /// The keys that can be used to specify data requests.
     /// - Note: These keys must be kept in sync with the equivalent keys in `ggviz.js`
-    enum RenderRequestKey : String {
+    internal enum RenderRequestKey : String {
         case spec = "spec"
         case data = "data"
         case vegaSpec = "vegaSpec"
@@ -157,14 +189,14 @@ public extension GGVizContext {
         case canvasNative = "__NativeCanvas"
 
         /// The key that indicates that we will be requesting this return value
-        public var requestKey: RenderRequestKey {
-            switch self {
-            case .data: return .returnData
-            case .svg: return .returnSVG
-            case .scenegraph: return .returnScenegraph
-            case .canvas, .canvasNative: return .returnCanvas
-            }
-        }
+//        public var requestKey: RenderRequestKey {
+//            switch self {
+//            case .data: return .returnData
+//            case .svg: return .returnSVG
+//            case .scenegraph: return .returnScenegraph
+//            case .canvas, .canvasNative: return .returnCanvas
+//            }
+//        }
     }
 
     /// The result of compiling a GGSpec
@@ -187,7 +219,7 @@ public extension GGVizContext {
 
 extension JXContext {
     /// Installs the GGViz module into `ggviz`.
-    @discardableResult public func installGGViz() throws -> JXValType {
+    @discardableResult public func installGGViz(min: Bool? = true) throws -> JXValType {
         let propertyName = "ggviz"
         let _ = self.globalObject(property: "global") // ggviz needs "global" (probably for console)
         let exports = self.globalObject(property: "exports")
@@ -195,7 +227,9 @@ extension JXContext {
         if ggviz.isObject {
             return ggviz
         } else {
-            exports[propertyName] = try installModule(named: "ggviz", in: .module)
+            // this will be "ggviz" or "ggviz.min" based on the flag
+            let moduleName = GGVizContext.ggvizResource(min: min)?.deletingPathExtension().lastPathComponent ?? "ggviz"
+            exports[propertyName] = try installModule(named: moduleName, in: .module)
             return exports[propertyName]
         }
     }

@@ -85,46 +85,27 @@ public extension GGSceneGraph.SceneMark {
 public extension GGSceneGraph.SceneItem {
     /// The X coordinate of the item
     var x: Double? {
-        get {
-            self[routing: \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.[routing: \.x, \.x]]
-        }
-
-        set {
-            self[routing: \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.[routing: \.x, \.x]] = newValue
-        }
+        get { self[routing: \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.[routing: \.x, \.x]] }
+        set { self[routing: \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.[routing: \.x, \.x]] = newValue }
     }
 
     /// The Y coordinate of the item
     var y: Double? {
-        get {
-            self[routing: \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.[routing: \.y, \.y]]
-        }
-
-        set {
-            self[routing: \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.[routing: \.y, \.y]] = newValue
-        }
+        get { self[routing: \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.[routing: \.y, \.y]] }
+        set { self[routing: \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.y, \.[routing: \.y, \.y]] = newValue }
     }
 
     /// The width of the item
     var width: Double? {
-        get {
-            self[routing: \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.[routing: \.width, \.width]]
-        }
-
-        set {
-            self[routing: \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.[routing: \.width, \.width]] = newValue
-        }
+        get { self[routing: \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.[routing: \.width, \.width]] }
+        set { self[routing: \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.width, \.[routing: \.width, \.width]] = newValue }
     }
 
     /// The height of the item
     var height: Double? {
-        get {
-            self[routing: \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.[routing: \.height, \.height]]
-        }
+        get { self[routing: \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.[routing: \.height, \.height]] }
 
-        set {
-            self[routing: \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.[routing: \.height, \.height]] = newValue
-        }
+        set { self[routing: \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.height, \.[routing: \.height, \.height]] = newValue }
     }
 
 }

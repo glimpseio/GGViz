@@ -16,10 +16,11 @@ let package = Package(
         .target(
             name: "GGViz",
             dependencies: ["Judo", "GGSpec"],
-            resources: [.process("Resources")]),
+            resources: [.process("Resources/")]),
+
         .testTarget(
             name: "GGVizTests",
             dependencies: ["GGViz"],
-            resources: [.copy("TestResources")]),
+            resources: [.copy("TestResources/")]),
     ]
 )
