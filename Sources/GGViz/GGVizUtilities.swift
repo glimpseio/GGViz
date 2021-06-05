@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Marc Prud'hommeaux on 6/3/21.
-//
-
 import Foundation
 
 extension GGSceneGraph {
