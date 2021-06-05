@@ -18,8 +18,8 @@ open class GGVizContext {
     let vg_parse: JXValue
     let vg_View: JXValue
 
-    let glance_render: JXValue
-    let glance_compile: JXValue
+    let ggviz_render: JXValue
+    let ggviz_compile: JXValue
 
     public init(ctx: JXContext = JXContext()) throws {
         self.ctx = ctx
@@ -58,10 +58,10 @@ open class GGVizContext {
 
         self.vg_View = try check(vg["View"])
 
-        self.glance_render = try check(glance["render"])
+        self.ggviz_render = try check(glance["render"])
 
         // use a custom compile step that captures the logged output and returns it as a `CompileOutput`
-        self.glance_compile = try check(ctx.eval("""
+        self.ggviz_compile = try check(ctx.eval("""
             (function(spec, normalize) {
                 var warn = [];
                 var info = [];
@@ -111,7 +111,7 @@ public extension GGVizContext {
     /// Compiles a spec
     func compileGrammar<T: VizSpecMeta>(spec: VizSpec<T>, normalize: Bool) throws -> CompileOutput<T> {
         try ctx.trying {
-            try glance_compile.call(withArguments: [ctx.encode(spec), ctx.boolean(normalize)])
+            try ggviz_compile.call(withArguments: [ctx.encode(spec), ctx.boolean(normalize)])
         }.toDecodable(ofType: CompileOutput.self)
     }
 
@@ -121,9 +121,12 @@ public extension GGVizContext {
         }
     }
 
-    func renderViz<M: VizSpecMeta>(spec: VizSpec<M>, returnData: Bool? = nil, returnSVG: Bool? = nil, returnScenegraph: Bool? = nil, returnCanvas: Bool? = nil) throws -> JXValue {
+    func renderViz<M: VizSpecMeta>(spec: VizSpec<M>, returnData: Bool? = nil, returnSVG: Bool? = nil, returnCanvas: Bool? = nil, returnScenegraph: Bool? = nil, canvas externalCanvas: Judo.Canvas? = nil) throws -> JXValue {
         var opts: [RenderRequestKey: JXValue] = [:]
         opts[.spec] = try ctx.encode(spec)
+        if let externalCanvas = externalCanvas {
+            opts[.externalCanvas] = externalCanvas // no need to encode: Judo.Canvas is a JXValue reference
+        }
         if let returnData = returnData {
             opts[.returnData] = try ctx.encode(returnData)
         }
@@ -149,22 +152,33 @@ public extension GGVizContext {
         }
 
         return try ctx.trying {
-            glance_render.call(withArguments: [opts])
+            ggviz_render.call(withArguments: [opts])
         }
     }
     /// The keys that can be used to specify data requests.
     /// - Note: These keys must be kept in sync with the equivalent keys in `ggviz.js`
     internal enum RenderRequestKey : String {
+        /// The specification grammar to render (exclusive with `vegaSpec`)
         case spec = "spec"
-        case data = "data"
+        /// The compiler vega spec to render (exclusive with `spec`)
         case vegaSpec = "vegaSpec"
+        /// A `Canvas` implementation into which the spec should be rendered
+        case externalCanvas = "externalCanvas"
+        /// The data to render
+        case data = "data"
 
+        /// Whether to force headless mode
         case headless = "headless"
+        /// The DOM's element ID to place the rendered output
         case elementID = "elementID"
 
+        /// Whether `RenderResponseKey.data` should be set
         case returnData = "returnData"
+        /// Whether `RenderResponseKey.svg` should be set
         case returnSVG = "returnSVG"
+        /// Whether `RenderResponseKey.scenegraph` should be set
         case returnScenegraph = "returnScenegraph"
+        /// Whether `RenderResponseKey.canvas` should be set
         case returnCanvas = "returnCanvas"
     }
 

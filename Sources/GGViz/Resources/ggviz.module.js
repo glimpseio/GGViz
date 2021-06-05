@@ -69727,14 +69727,14 @@ var vegaEmbed_module = /*#__PURE__*/Object.freeze({
 // import * as vsc from 'vega-scenegraph';
 var version$1 = "1.0";
 /// For integration testing with Glance, use:
-/// time yarn build && yarn copy:build:ggviz
+/// time yarn build && yarn test && yarn copy:build:ggviz
 function render(opts) {
     // JSC sends this as an array; unwrap to the first element
     while (Object.prototype.toString.call(opts) == '[object Array]') {
         opts = opts[0];
     }
     if (typeof opts !== 'object') {
-        throw Error("Options passed to glance.render is not an object");
+        throw Error("Options passed to ggviz.render is not an object");
     }
     var result = {}; // the result map, containing SVG, vega spec, etc.
     // console.log("rendering: " + JSON.stringify(opts));
@@ -69746,6 +69746,7 @@ function render(opts) {
     var returnSVG = opts['returnSVG'];
     var returnScenegraph = opts['returnScenegraph'];
     var returnCanvas = opts['returnCanvas'];
+    var externalCanvas = opts['externalCanvas']; // the external canvas to render into
     var returnData = opts['returnData'];
     // compile a vega-lite spec into vega
     if (typeof vegaLiteSpec !== "undefined") {
@@ -69808,7 +69809,19 @@ function render(opts) {
             });
         }
         else if (returnCanvas === true) {
-            view.toCanvas().then(function (canvas) {
+            var scale = 1.0;
+            var canvasOptions = {};
+            // type: Type string passed to the node-canvas Canvas constructor (for example, to specify 'pdf' output). This property will be ignored if used in the browser.
+            canvasOptions["type"] = null;
+            // context: An object of key-value pairs to assign to the Canvas 2D context object. Useful for setting context parameters, particularly for node-canvas.
+            canvasOptions["context"] = null;
+            // externalContext: An external Context2D instance to render into. If an external canvas is provided, the Promise returned by toCanvas will resolve to null. As Vega makes changes to the rendering context state, callers should invoke context.save() prior to toCanvas(), and invoke context.restore() to restore the state after the returned Promise resolves. ≥ 5.12
+            console.log("#### CANVAS", externalCanvas);
+            if (typeof externalCanvas === "object") {
+                canvasOptions["externalContext"] = externalCanvas;
+                console.log("#### canvasOptions", canvasOptions);
+            }
+            view.toCanvas(scale, canvasOptions).then(function (canvas) {
                 result["canvas"] = canvas;
                 postRender(); // eval after running
             }).catch(function (error) {

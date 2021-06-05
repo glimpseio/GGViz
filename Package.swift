@@ -17,7 +17,6 @@ let package = Package(
             name: "GGViz",
             dependencies: ["Judo", "GGSpec"],
             resources: [.process("Resources/")]),
-
         .testTarget(
             name: "GGVizTests",
             dependencies: ["GGViz"],

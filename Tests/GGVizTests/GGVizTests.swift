@@ -1,6 +1,7 @@
 import XCTest
 
 import GGViz
+import Judo
 import MiscKit
 import BricBrac
 
@@ -54,30 +55,92 @@ final class GGVizTests: XCTestCase {
     func testCompileGrammar() throws {
         let spec = simpleSampleSpec()
         let startCount = GGDebugContext.liveContexts
-        XCTAssertEqual(startCount, GGDebugContext.liveContexts)
+        let ctx = try GGDebugContext()
+        try prf("compile") {
+            try checkRenderResults(ctx, spec: spec, compile: true)
+        }
+    }
 
-        //defer { XCTAssertEqual(startCount, GGDebugContext.liveContexts) }
-
-        do {
-            let ctx = try GGDebugContext()
-            XCTAssertEqual(startCount + 1, GGDebugContext.liveContexts)
-
-            measure {
-                do {
-                    try prf("compile") { try checkRenderResults(ctx, spec: spec, compile: true) }
-                    try prf("data") { try checkRenderResults(ctx, spec: spec, data: true) }
-                    try prf("scenegraph") { try checkRenderResults(ctx, spec: spec, sg: true) }
-                    try prf("svg") { try checkRenderResults(ctx, spec: spec, svg: true) }
-                    try prf("all") { try checkRenderResults(ctx, spec: spec, data: true, sg: true, svg: true) }
-                } catch {
-                    XCTFail("error: \(error)")
-                }
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    func testMeasureCompile() throws {
+        let spec = simpleSampleSpec()
+        let ctx = try GGDebugContext()
+        measure {
+            do {
+                try checkRenderResults(ctx, spec: spec, compile: true)
+            } catch {
+                XCTFail("error: \(error)")
             }
         }
     }
 
     @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
-    func checkRenderResults<M: VizSpecMeta>(_ ctx: GGVizContext, spec: VizSpec<M>, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, svg checkSVG: Bool = false) throws {
+    func testMeasureData() throws {
+        let spec = simpleSampleSpec()
+        let ctx = try GGDebugContext()
+        measure {
+            do {
+                try checkRenderResults(ctx, spec: spec, data: true)
+            } catch {
+                XCTFail("error: \(error)")
+            }
+        }
+    }
+
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    func testMeasureSceneGraph() throws {
+        let spec = simpleSampleSpec()
+        let ctx = try GGDebugContext()
+        measure {
+            do {
+                try checkRenderResults(ctx, spec: spec, sg: true)
+            } catch {
+                XCTFail("error: \(error)")
+            }
+        }
+    }
+
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    func testMeasureSVG() throws {
+        let spec = simpleSampleSpec()
+        let ctx = try GGDebugContext()
+        measure {
+            do {
+                try checkRenderResults(ctx, spec: spec, svg: true)
+            } catch {
+                XCTFail("error: \(error)")
+            }
+        }
+    }
+
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    func testMeasureCanvas() throws {
+        let spec = simpleSampleSpec()
+        let ctx = try GGDebugContext()
+        measure {
+            do {
+                try checkRenderResults(ctx, spec: spec, canvas: true)
+            } catch {
+                XCTFail("error: \(error)")
+            }
+        }
+    }
+
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    func testMeasureAllOperations() throws {
+        let spec = simpleSampleSpec()
+        let ctx = try GGDebugContext()
+        measure {
+            do {
+                try checkRenderResults(ctx, spec: spec, data: true, sg: true, svg: true)
+            } catch {
+                XCTFail("error: \(error)")
+            }
+        }
+    }
+
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    func checkRenderResults<M: VizSpecMeta>(_ ctx: GGVizContext, spec: VizSpec<M>, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, canvas checkCanvas: Bool = false, svg checkSVG: Bool = false) throws {
         if compile {
             let compiled = try ctx.compileGrammar(spec: spec, normalize: true)
 
@@ -89,7 +152,9 @@ final class GGVizTests: XCTestCase {
             XCTAssertEqual([], compiled.info.defaulted)
         }
 
-        let rendered = try ctx.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnScenegraph: checkSceneGraph)
+        let canvasAPI = AbstractCanvasAPI()
+        let canvas = checkCanvas ? Canvas(env: ctx.ctx, delegate: canvasAPI) : nil
+        let rendered = try ctx.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnCanvas: checkCanvas, returnScenegraph: checkSceneGraph, canvas: canvas)
 
         let data = rendered[GGVizContext.RenderResponseKey.data.rawValue]
         if !checkData {
@@ -102,7 +167,15 @@ final class GGVizTests: XCTestCase {
             //dbg("DATA", rows)
         }
 
+        let canvasValue = rendered[GGVizContext.RenderResponseKey.canvas.rawValue]
+        if !checkCanvas {
+//            XCTAssert(data.isUndefined, "canvas should not have been set")
+        } else {
+            // check the canvas state
+            let canvas = try XCTUnwrap(canvas)  // our canvas var should be legit
+            //XCTAssertEqual("XXX", canvas.font.stringValue)
 
+        }
 
         let sg = rendered[GGVizContext.RenderResponseKey.scenegraph.rawValue]
         if !checkSceneGraph {
