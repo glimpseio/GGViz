@@ -51,7 +51,7 @@ final class GGVizTests: XCTestCase {
         return spec
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func testCompileGrammar() throws {
         let spec = simpleSampleSpec()
         let startCount = GGDebugContext.liveContexts
@@ -61,7 +61,7 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func testMeasureCompile() throws {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
@@ -74,7 +74,7 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func testMeasureData() throws {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
@@ -87,7 +87,7 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func testMeasureSceneGraph() throws {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
@@ -100,7 +100,7 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func testMeasureSVG() throws {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
@@ -113,7 +113,7 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func testMeasureCanvas() throws {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
@@ -126,7 +126,7 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func testMeasureAllOperations() throws {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
@@ -139,7 +139,7 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 11.0, *)
+    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func checkRenderResults<M: VizSpecMeta>(_ ctx: GGVizContext, spec: VizSpec<M>, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, canvas checkCanvas: Bool = false, svg checkSVG: Bool = false) throws {
         if compile {
             let compiled = try ctx.compileGrammar(spec: spec, normalize: true)
