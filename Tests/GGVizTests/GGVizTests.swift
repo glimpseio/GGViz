@@ -64,7 +64,7 @@ final class GGVizTests: XCTestCase {
 
         // parse the SVG as XML, get the flattened elements, and check for expected values
         let xml = try XMLTree.parse(data: svg.stringValue?.data(using: .utf8) ?? Data())
-        let elements = treemap(root: xml, children: \.elementChildren) { $0 }
+        let elements = xml.flattenedElements
 
         // index by the role
         let roleValues = Dictionary(grouping: elements, by: \.[attribute: "role"])
