@@ -1,5 +1,6 @@
 import Foundation
 
+
 extension GGSceneGraph {
     /// Returns the root `Mark` of the scenegraph
     public var root: SceneMark {

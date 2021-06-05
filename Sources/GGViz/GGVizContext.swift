@@ -201,3 +201,10 @@ extension JXContext {
     }
 }
 
+
+//public func getModule(for bundle: Bundle) throws -> Bundle {
+//    return bundle
+//}
+//
+///// The bundle for GGViz
+//public typealias GGVizBundle = getModule(for: .module)
