@@ -124,21 +124,28 @@ public extension GGVizContext {
     func renderViz<M: VizSpecMeta>(spec: VizSpec<M>, returnData: Bool? = nil, returnSVG: Bool? = nil, returnCanvas: Bool? = nil, returnScenegraph: Bool? = nil, canvas externalCanvas: Judo.Canvas? = nil) throws -> JXValue {
         var opts: [RenderRequestKey: JXValue] = [:]
         opts[.spec] = try ctx.encode(spec)
+
         if let externalCanvas = externalCanvas {
-            opts[.externalCanvas] = externalCanvas // no need to encode: Judo.Canvas is a JXValue reference
+            // no need to encode: Judo.Canvas is a JXValue reference
+            opts[.externalCanvas] = externalCanvas
         }
+
         if let returnData = returnData {
             opts[.returnData] = try ctx.encode(returnData)
         }
+
         if let returnSVG = returnSVG {
             opts[.returnSVG] = try ctx.encode(returnSVG)
         }
+
         if let returnScenegraph = returnScenegraph {
             opts[.returnScenegraph] = try ctx.encode(returnScenegraph)
         }
+
         if let returnCanvas = returnCanvas {
             opts[.returnCanvas] = try ctx.encode(returnCanvas)
         }
+
         return try performRender(opts)
     }
 
@@ -233,7 +240,7 @@ public extension GGVizContext {
 
 extension JXContext {
     /// Installs the GGViz module into `ggviz`.
-    @discardableResult public func installGGViz(min: Bool? = true) throws -> JXValType {
+    @discardableResult public func installGGViz(min: Bool? = false) throws -> JXValType {
         let propertyName = "ggviz"
         let _ = self.globalObject(property: "global") // ggviz needs "global" (probably for console)
         let exports = self.globalObject(property: "exports")

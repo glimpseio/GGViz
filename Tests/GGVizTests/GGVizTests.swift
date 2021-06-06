@@ -54,7 +54,6 @@ final class GGVizTests: XCTestCase {
     @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func testCompileGrammar() throws {
         let spec = simpleSampleSpec()
-        let startCount = GGDebugContext.liveContexts
         let ctx = try GGDebugContext()
         try prf("compile") {
             try checkRenderResults(ctx, spec: spec, compile: true)
@@ -66,11 +65,7 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
         measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, compile: true)
-            } catch {
-                XCTFail("error: \(error)")
-            }
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, compile: true))
         }
     }
 
@@ -79,11 +74,7 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
         measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, data: true)
-            } catch {
-                XCTFail("error: \(error)")
-            }
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, data: true))
         }
     }
 
@@ -92,11 +83,7 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
         measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, sg: true)
-            } catch {
-                XCTFail("error: \(error)")
-            }
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, sg: true))
         }
     }
 
@@ -105,11 +92,7 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
         measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, svg: true)
-            } catch {
-                XCTFail("error: \(error)")
-            }
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, svg: true))
         }
     }
 
@@ -118,11 +101,7 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
         measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, canvas: true)
-            } catch {
-                XCTFail("error: \(error)")
-            }
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, canvas: true))
         }
     }
 
@@ -131,11 +110,7 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec()
         let ctx = try GGDebugContext()
         measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, data: true, sg: true, svg: true)
-            } catch {
-                XCTFail("error: \(error)")
-            }
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, data: true, sg: true, svg: true))
         }
     }
 
@@ -152,29 +127,28 @@ final class GGVizTests: XCTestCase {
             XCTAssertEqual([], compiled.info.defaulted)
         }
 
-        let canvasAPI = AbstractCanvasAPI()
-        let canvas = checkCanvas ? Canvas(env: ctx.ctx, delegate: canvasAPI) : nil
+        let canvas = checkCanvas ? Canvas(env: ctx.ctx, delegate: AbstractCanvasAPI()) : nil
         let rendered = try ctx.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnCanvas: checkCanvas, returnScenegraph: checkSceneGraph, canvas: canvas)
 
         let data = rendered[GGVizContext.RenderResponseKey.data.rawValue]
         if !checkData {
             XCTAssert(data.isUndefined, "data should not have been set")
         } else {
-            let rows = try data.toDecodable(ofType: [String: [[String: Bric]]].self)
+            let rows = try data.toDecodable(ofType: [String: [Bric.ObjType]].self)
             guard let data_0 = rows["data_0"] else { return XCTFail("could not find data_0") }
             XCTAssertEqual(["x", "y", "z"], data_0.map(\.["A"]))
             XCTAssertEqual([0.1, 0.2, 0.3], data_0.map(\.["B"]))
-            //dbg("DATA", rows)
         }
 
-        let canvasValue = rendered[GGVizContext.RenderResponseKey.canvas.rawValue]
         if !checkCanvas {
-//            XCTAssert(data.isUndefined, "canvas should not have been set")
+            //XCTAssert(data.isUndefined, "canvas should not have been set")
         } else {
-            // check the canvas state
-            let canvas = try XCTUnwrap(canvas)  // our canvas var should be legit
-            //XCTAssertEqual("XXX", canvas.font.stringValue)
+            let canvas = try XCTUnwrap(canvas) // our canvas var should be legit
 
+            // check that the canvas was configured for use
+            XCTAssertEqual("bold 13px sans-serif", canvas.font.stringValue)
+            XCTAssertEqual(1, canvas.lineWidth.numberValue)
+            XCTAssertEqual("#000", canvas.fillStyle.stringValue)
         }
 
         let sg = rendered[GGVizContext.RenderResponseKey.scenegraph.rawValue]

@@ -69812,17 +69812,15 @@ function render(opts) {
             var scale = 1.0;
             var canvasOptions = {};
             // type: Type string passed to the node-canvas Canvas constructor (for example, to specify 'pdf' output). This property will be ignored if used in the browser.
-            canvasOptions["type"] = null;
+            // canvasOptions.type = null;
             // context: An object of key-value pairs to assign to the Canvas 2D context object. Useful for setting context parameters, particularly for node-canvas.
-            canvasOptions["context"] = null;
+            // canvasOptions.context = null;
             // externalContext: An external Context2D instance to render into. If an external canvas is provided, the Promise returned by toCanvas will resolve to null. As Vega makes changes to the rendering context state, callers should invoke context.save() prior to toCanvas(), and invoke context.restore() to restore the state after the returned Promise resolves. ≥ 5.12
-            console.log("#### CANVAS", externalCanvas);
             if (typeof externalCanvas === "object") {
-                canvasOptions["externalContext"] = externalCanvas;
-                console.log("#### canvasOptions", canvasOptions);
+                canvasOptions.externalContext = externalCanvas;
             }
             view.toCanvas(scale, canvasOptions).then(function (canvas) {
-                result["canvas"] = canvas;
+                result["canvas"] = canvas || externalCanvas;
                 postRender(); // eval after running
             }).catch(function (error) {
                 result["error"] = error;
