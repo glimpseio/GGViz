@@ -114,6 +114,17 @@ final class GGVizTests: XCTestCase {
         }
     }
 
+    /// A simple AbstractCanvasAPI subclass that tracks all the text measuring requests it gets
+    final class MeasuringCanvasAPI : AbstractCanvasAPI {
+        var measures: [String] = []
+        override func measureText(value: String?) -> TextMetrics {
+            dbg("measure:", value)
+            guard let value = value else { return .init(width: 0) }
+            measures.append(value)
+            return .init(width: wip(0))
+        }
+    }
+
     @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func checkRenderResults<M: VizSpecMeta>(_ ctx: GGVizContext, spec: VizSpec<M>, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, canvas checkCanvas: Bool = false, svg checkSVG: Bool = false) throws {
         if compile {
@@ -127,7 +138,9 @@ final class GGVizTests: XCTestCase {
             XCTAssertEqual([], compiled.info.defaulted)
         }
 
-        let canvas = checkCanvas ? Canvas(env: ctx.ctx, delegate: AbstractCanvasAPI()) : nil
+
+        let canvasAPI = MeasuringCanvasAPI()
+        let canvas = try checkCanvas ? Canvas(env: ctx.ctx, delegate: canvasAPI) : nil
         let rendered = try ctx.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnCanvas: checkCanvas, returnScenegraph: checkSceneGraph, canvas: canvas)
 
         let data = rendered[GGVizContext.RenderResponseKey.data.rawValue]
@@ -146,9 +159,10 @@ final class GGVizTests: XCTestCase {
             let canvas = try XCTUnwrap(canvas) // our canvas var should be legit
 
             // check that the canvas was configured for use
-            XCTAssertEqual("bold 13px sans-serif", canvas.font.stringValue)
-            XCTAssertEqual(1, canvas.lineWidth.numberValue)
-            XCTAssertEqual("#000", canvas.fillStyle.stringValue)
+            XCTAssertEqual("bold 13px sans-serif", canvasAPI.font)
+            XCTAssertEqual(1, canvasAPI.lineWidth)
+            XCTAssertEqual("#888", canvasAPI.strokeStyle)
+            XCTAssertEqual("#000", canvasAPI.fillStyle)
         }
 
         let sg = rendered[GGVizContext.RenderResponseKey.scenegraph.rawValue]
