@@ -92,6 +92,7 @@ open class GGVizContext {
     }
 }
 
+
 public extension GGVizContext {
 
     /// Returns the resource for the script.
@@ -100,11 +101,11 @@ public extension GGVizContext {
     static func ggvizResource(min: Bool?) -> URL? {
         switch min {
         case .none:
-            return Bundle.module.url(forResource: "ggviz.module", withExtension: "js")
+            return Bundle.moduleResource(named: "ggviz.module", withExtension: "js", in: .module)
         case .some(true):
-            return Bundle.module.url(forResource: "ggviz.min", withExtension: "js")
+            return Bundle.moduleResource(named: "ggviz.min", withExtension: "js", in: .module)
         case .some(false):
-            return Bundle.module.url(forResource: "ggviz", withExtension: "js")
+            return Bundle.moduleResource(named: "ggviz", withExtension: "js", in: .module)
         }
     }
 
@@ -121,9 +122,25 @@ public extension GGVizContext {
         }
     }
 
-    func renderViz<M: VizSpecMeta>(spec: VizSpec<M>, returnData: Bool? = nil, returnSVG: Bool? = nil, returnCanvas: Bool? = nil, returnScenegraph: Bool? = nil, canvas externalCanvas: Judo.Canvas? = nil) throws -> JXValue {
+    /// Renders the visualization synchronously.
+    ///
+    /// - Parameters:
+    ///   - spec: the GGViz spec to render
+    ///   - data: external data to inject
+    ///   - returnData: whether `RenderRequestKey.returnData` should be set, resulting in the `RenderResponseKey.data` key
+    ///   - returnSVG: whether `RenderRequestKey.returnSVG` should be set, resulting in the `RenderResponseKey.svg` key
+    ///   - returnCanvas: whether `RenderRequestKey.returnCanvas` should be set, resulting in the `RenderResponseKey.canvas` key
+    ///   - returnScenegraph: whether `RenderRequestKey.returnScenegraph` should be set, resulting in the `RenderResponseKey.scenegraph` key
+    ///   - externalCanvas: the canvas implementation to draw into
+    ///
+    /// - Returns: the response dictionary, which will contain keys based on the parameters.
+    func renderViz<M: VizSpecMeta>(spec: VizSpec<M>, data: [String: [Bric]]? = nil, returnData: Bool? = nil, returnSVG: Bool? = nil, returnCanvas: Bool? = nil, returnScenegraph: Bool? = nil, canvas externalCanvas: Judo.Canvas? = nil) throws -> JXValue {
         var opts: [RenderRequestKey: JXValue] = [:]
         opts[.spec] = try ctx.encode(spec)
+
+        if let data = data {
+            opts[.data] = try ctx.encode(data)
+        }
 
         if let externalCanvas = externalCanvas {
             // no need to encode: Judo.Canvas is a JXValue reference

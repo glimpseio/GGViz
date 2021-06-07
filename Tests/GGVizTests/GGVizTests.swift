@@ -117,11 +117,10 @@ final class GGVizTests: XCTestCase {
     /// A simple AbstractCanvasAPI subclass that tracks all the text measuring requests it gets
     final class MeasuringCanvasAPI : AbstractCanvasAPI {
         var measures: [String] = []
-        override func measureText(value: String?) -> TextMetrics {
+        override func measureText(value: String) -> TextMetrics? {
             dbg("measure:", value)
-            guard let value = value else { return .init(width: 0) }
             measures.append(value)
-            return .init(width: wip(0))
+            return super.measureText(value: value)
         }
     }
 
@@ -173,7 +172,7 @@ final class GGVizTests: XCTestCase {
 
             //dbg("sceneGraph", sceneGraph, sceneGraph.jsonDebugDescription)
 
-            let sceneMarks = treemap(root: sceneGraph.root, children: \.children.faulted) { $0 }
+            let sceneMarks = sceneGraph.flattened().map(\.element)
             XCTAssertEqual(16, sceneMarks.count)
 
             let sceneItems = sceneMarks.compactMap(\.sceneItems).joined()
