@@ -1,3 +1,4 @@
+import Foundation
 import MiscKit
 import Judo
 
@@ -134,7 +135,7 @@ public extension GGVizContext {
     ///   - externalCanvas: the canvas implementation to draw into
     ///
     /// - Returns: the response dictionary, which will contain keys based on the parameters.
-    func renderViz<M: VizSpecMeta>(spec: VizSpec<M>, data: [String: [Bric]]? = nil, returnData: Bool? = nil, returnSVG: Bool? = nil, returnCanvas: Bool? = nil, returnScenegraph: Bool? = nil, canvas externalCanvas: Judo.Canvas? = nil) throws -> JXValue {
+    func renderViz<M: VizSpecMeta>(spec: VizSpec<M>, data: [String: [Bric]]? = nil, returnData: Bool? = nil, returnSVG: Bool? = nil, returnCanvas: Bool? = nil, returnScenegraph: Bool? = nil, canvas externalCanvas: Canvas? = nil) throws -> JXValue {
         var opts: [RenderRequestKey: JXValue] = [:]
         opts[.spec] = try ctx.encode(spec)
 
