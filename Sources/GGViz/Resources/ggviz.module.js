@@ -69768,16 +69768,15 @@ function render(opts) {
     try {
         var view = new View$1(chart);
         var postRender = function () {
+            // whether to convert the scenegraph to JSON to externaliztion
+            const serializeScenegraph = false;
             if (returnScenegraph === true) {
                 let sg = view.scenegraph();
-                // console.log(" -- scenegraph type:", typeof sg);
-                // console.log(" -- scenegraph raw:", sg);
-                let sobj = sceneObject(sg);
-                // console.log(" -- scenegraph sceneObject: " + sobj);
-                // console.log(" -- scenegraph sceneObject type: ", typeof sceneObject(sg));
-                result["scenegraph"] = JSON.parse(sobj);
-                // console.log(" -- assigned scenegraph1 :", result["scenegraph"]);
-                // console.log(" -- assigned scenegraph:", JSON.stringify(result["scenegraph"], null, 2));
+                if (serializeScenegraph) ;
+                else {
+                    // using the "live" scenegraph means that it cannot be serialized to JSON, so accessing the structures must be performed on the active values
+                    result["scenegraph"] = sg["root"]; // not documented, but the scene is actually hidden in a "root" property
+                }
             }
             if (returnData === true) {
                 var state = view.getState({ data: truthy, signals: falsy, recurse: true });

@@ -69,7 +69,11 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, compile: true))
+            do {
+                try checkRenderResults(ctx, spec: spec, count: count, compile: true)
+            } catch {
+                XCTFail("\(error)")
+            }
         }
     }
 
@@ -77,7 +81,11 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, data: true))
+            do {
+                try checkRenderResults(ctx, spec: spec, count: count, data: true)
+            } catch {
+                XCTFail("\(error)")
+            }
         }
     }
 
@@ -101,7 +109,11 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, sg: true))
+            do {
+                try checkRenderResults(ctx, spec: spec, count: count, sg: true)
+            } catch {
+                XCTFail("\(error)")
+            }
         }
     }
 
@@ -129,7 +141,11 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, svg: true))
+            do {
+                try checkRenderResults(ctx, spec: spec, count: count, svg: true)
+            } catch {
+                XCTFail("\(error)")
+            }
         }
     }
 
@@ -157,7 +173,11 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, canvas: true))
+            do {
+                try checkRenderResults(ctx, spec: spec, count: count, canvas: true)
+            } catch {
+                XCTFail("\(error)")
+            }
         }
     }
 
@@ -187,7 +207,11 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, data: true, sg: true, svg: true))
+            do {
+                try checkRenderResults(ctx, spec: spec, count: count, data: true, sg: true, svg: true)
+            } catch {
+                XCTFail("\(error)")
+            }
         }
     }
 
@@ -243,6 +267,10 @@ final class GGVizTests: XCTestCase {
         if !checkSceneGraph {
             XCTAssert(sg.isUndefined, "sg should not have been set")
         } else {
+//            dbg("sg:", sg)
+//            dbg("sg root:", sg["root"].stringValue)
+//            dbg("sg marktype:", sg["marktype"].stringValue)
+//            dbg("root marktype:", root["marktype"].stringValue)
             let sceneGraph = try sg.toDecodable(ofType: GGSceneGraph.self) // not yet working…
 
             //dbg("sceneGraph", sceneGraph, sceneGraph.jsonDebugDescription)
