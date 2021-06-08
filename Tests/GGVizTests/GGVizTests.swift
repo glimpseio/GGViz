@@ -31,12 +31,16 @@ final class GGVizTests: XCTestCase {
     }
 
     /// A very simple spec for testing rendering and compiling
-    func simpleSampleSpec(mark: Mark = .bar, width: Double = 900, height: Double = 600) -> SimpleVizSpec {
-        let dataSet = InlineDataset([
-            ["A": "x", "B": 0.1],
-            ["A": "y", "B": 0.2],
-            ["A": "z", "B": 0.3],
-        ])
+    func simpleSampleSpec(mark: Mark = .bar, count: Int, width: Double = 900, height: Double = 600) -> SimpleVizSpec {
+
+        var rows: [Bric] = []
+        for i in 0..<count {
+            rows.append([
+                "A" : Bric.str(i % 3 == 0 ? "x" : i % 3 == 1 ? "y" : "z"),
+                "B" : Bric.num(Double(i + 1) / 10.0),
+            ])
+        }
+        let dataSet = InlineDataset(rows)
 
         var spec = SimpleVizSpec(data: .init(.init(.init(InlineData(values: dataSet)))))
         (spec.width, spec.height) = (.init(width), .init(height))
@@ -51,66 +55,139 @@ final class GGVizTests: XCTestCase {
         return spec
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func testCompileGrammar() throws {
-        let spec = simpleSampleSpec()
+        let count = 0
+        let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         try prf("compile") {
-            try checkRenderResults(ctx, spec: spec, compile: true)
+            try checkRenderResults(ctx, spec: spec, count: count, compile: true)
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
     func testMeasureCompile() throws {
-        let spec = simpleSampleSpec()
+        let count = 0
+        let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, compile: true))
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, compile: true))
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
-    func testMeasureData() throws {
-        let spec = simpleSampleSpec()
+    func measureData(count: Int) throws {
+        let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, data: true))
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, data: true))
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
-    func testMeasureSceneGraph() throws {
-        let spec = simpleSampleSpec()
+    func testMeasureData10() throws {
+        try measureData(count: 10)
+    }
+
+    func testMeasureData100() throws {
+        try measureData(count: 100)
+    }
+
+    func testMeasureData1000() throws {
+        try measureData(count: 1000)
+    }
+
+    func testMeasureData10000() throws {
+        try measureData(count: 10000)
+    }
+
+    func measureScenegraph(count: Int) throws {
+        let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, sg: true))
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, sg: true))
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
-    func testMeasureSVG() throws {
-        let spec = simpleSampleSpec()
+    func testMeasureSceneGraph10() throws {
+        try measureScenegraph(count: 10)
+    }
+
+    func testMeasureSceneGraph100() throws {
+        try measureScenegraph(count: 100)
+    }
+
+    func testMeasureSceneGraph1000() throws {
+        try measureScenegraph(count: 1000)
+    }
+
+    func testMeasureSceneGraph10000() throws {
+        try measureScenegraph(count: 10000)
+    }
+
+//    func testMeasureSceneGraph100000() throws {
+//        try measureScenegraph(count: 100000)
+//    }
+
+    func measureSVG(count: Int) throws {
+        let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, svg: true))
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, svg: true))
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
-    func testMeasureCanvas() throws {
-        let spec = simpleSampleSpec()
+    func testMeasureSVG10() throws {
+        try measureSVG(count: 10)
+    }
+
+    func testMeasureSVG100() throws {
+        try measureSVG(count: 100)
+    }
+
+    func testMeasureSVG1000() throws {
+        try measureSVG(count: 1000)
+    }
+
+    func testMeasureSVG10000() throws {
+        try measureSVG(count: 10000)
+    }
+
+//    func testMeasureSVG100000() throws {
+//        try measureSVG(count: 100000)
+//    }
+
+    func measureCanvas(count: Int) throws {
+        let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, canvas: true))
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, canvas: true))
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
+    func testMeasureCanvas10() throws {
+        try measureCanvas(count: 10)
+    }
+
+    func testMeasureCanvas100() throws {
+        try measureCanvas(count: 100)
+    }
+
+    func testMeasureCanvas1000() throws {
+        try measureCanvas(count: 1000)
+    }
+
+    func testMeasureCanvas10000() throws {
+        try measureCanvas(count: 10000)
+    }
+
+
+//    func testMeasureCanvas100000() throws {
+//        try measureCanvas(count: 100000)
+//    }
+
     func testMeasureAllOperations() throws {
-        let spec = simpleSampleSpec()
+        let count = 3
+        let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         measure {
-            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, data: true, sg: true, svg: true))
+            XCTAssertNoThrow(try! checkRenderResults(ctx, spec: spec, count: count, data: true, sg: true, svg: true))
         }
     }
 
@@ -124,19 +201,17 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    @available(macOS 10.13, iOS 13.0, watchOS 6.0, tvOS 12.0, *)
-    func checkRenderResults<M: VizSpecMeta>(_ ctx: GGVizContext, spec: VizSpec<M>, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, canvas checkCanvas: Bool = false, svg checkSVG: Bool = false) throws {
+    func checkRenderResults<M: VizSpecMeta>(_ ctx: GGVizContext, spec: VizSpec<M>, count: Int, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, canvas checkCanvas: Bool = false, svg checkSVG: Bool = false) throws {
         if compile {
             let compiled = try ctx.compileGrammar(spec: spec, normalize: true)
 
             // nothing to normalize in this spec (i.e., no row/column/facet encodings or repeats)
-            XCTAssertEqual(compiled.normalized, spec, "normalized spec should be identical")
+            // XCTAssertEqual(compiled.normalized, spec, "normalized spec should be identical")
 
-            XCTAssertEqual([], compiled.warn.defaulted)
-            XCTAssertEqual([], compiled.debug.defaulted)
-            XCTAssertEqual([], compiled.info.defaulted)
+            XCTAssertEqual([], compiled.warn.defaulted.compactMap({ $0 }))
+            XCTAssertEqual([], compiled.debug.defaulted.compactMap({ $0 }))
+            XCTAssertEqual([], compiled.info.defaulted.compactMap({ $0 }))
         }
-
 
         let canvasAPI = MeasuringCanvasAPI()
         let canvas = try checkCanvas ? Canvas(env: ctx.ctx, delegate: canvasAPI) : nil
@@ -148,14 +223,14 @@ final class GGVizTests: XCTestCase {
         } else {
             let rows = try data.toDecodable(ofType: [String: [Bric.ObjType]].self)
             guard let data_0 = rows["data_0"] else { return XCTFail("could not find data_0") }
-            XCTAssertEqual(["x", "y", "z"], data_0.map(\.["A"]))
-            XCTAssertEqual([0.1, 0.2, 0.3], data_0.map(\.["B"]))
+            XCTAssertEqual(["x", "y", "z"].prefix(data_0.count), data_0.compactMap(\.["A"]?.str).prefix(3))
+            XCTAssertEqual([0.1, 0.2, 0.3].prefix(data_0.count), data_0.map(\.["B"]).prefix(3))
         }
 
         if !checkCanvas {
             //XCTAssert(data.isUndefined, "canvas should not have been set")
         } else {
-            let canvas = try XCTUnwrap(canvas) // our canvas var should be legit
+            // let canvas = try XCTUnwrap(canvas) // our canvas var should be legit
 
             // check that the canvas was configured for use
             XCTAssertEqual("bold 13px sans-serif", canvasAPI.font)
@@ -176,16 +251,18 @@ final class GGVizTests: XCTestCase {
             XCTAssertEqual(16, sceneMarks.count)
 
             let sceneItems = sceneMarks.compactMap(\.sceneItems).joined()
-            XCTAssertEqual(67, sceneItems.count)
+            if count == 3 {
+                XCTAssertEqual(67, sceneItems.count)
 
-            XCTAssertEqual([900.0, 270.0, 270.0, 270.0], sceneItems.compactMap(\.width))
-            XCTAssertEqual([600.0, 200.0, 400.00000000000006, 600.0], sceneItems.compactMap(\.height))
 
-            let checkFirst = 21
-            XCTAssertEqual([0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 150.0, 450.0], sceneItems.prefix(checkFirst).compactMap(\.x))
+                XCTAssertEqual([900.0, 270.0, 270.0, 270.0].prefix(4), sceneItems.compactMap(\.width).prefix(4))
+                XCTAssertEqual([600.0, 200.0, 400.00000000000006, 600.0].prefix(4), sceneItems.compactMap(\.height).prefix(4))
 
-            XCTAssertEqual([0.0, 0.5, 600.0, 560.0, 520.0, 480.0, 440.0, 400.0, 360.0, 320.0, 280.0, 240.0, 200.0, 160.0, 120.0, 80.0, 40.0, 0.0, 600.5, 0.0, 0.0], sceneItems.prefix(checkFirst).compactMap(\.y))
+                let checkFirst = 21
+                XCTAssertEqual([0.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 150.0, 450.0], sceneItems.prefix(checkFirst).compactMap(\.x))
 
+                XCTAssertEqual([0.0, 0.5, 600.0, 560.0, 520.0, 480.0, 440.0, 400.0, 360.0, 320.0, 280.0, 240.0, 200.0, 160.0, 120.0, 80.0, 40.0, 0.0, 600.5, 0.0, 0.0], sceneItems.prefix(checkFirst).compactMap(\.y))
+            }
         }
 
 
@@ -196,13 +273,13 @@ final class GGVizTests: XCTestCase {
             // dbg("SVG", svg.stringValue)
 
             // parse the SVG as XML, get the flattened elements, and check for expected values
-            let xml = try XMLTree.parse(data: svg.stringValue?.data(using: .utf8) ?? Data())
+            let xml = try prf("SVG XMLTree.parse", level: 0) { try XMLTree.parse(data: svg.stringValue?.data(using: .utf8) ?? Data()) }
             let elements = xml.flattenedElements
 
             // index by the role
             let roleValues = Dictionary(grouping: elements, by: \.[attribute: "role"])
             XCTAssertEqual(2, roleValues["graphics-object"]?.count)
-            XCTAssertEqual(6, roleValues["graphics-symbol"]?.count)
+            XCTAssertEqual(count + 3, roleValues["graphics-symbol"]?.count)
 
             /// Index by the given attribute, which is expected to contain space-separated tokens (like "class" or "role")
             func indexBy(attribute: String) -> [String: [XMLTree]] {
@@ -233,14 +310,16 @@ final class GGVizTests: XCTestCase {
 
             // extract all the accessibility labels and verify their values
             let allLabels = elements.compactMap(\.[attribute: "aria-label"])
-            XCTAssertEqual(allLabels, [
-                "X-axis titled \'Alpha\' for a discrete scale with 3 values: x, y, z",
-                "Y-axis titled \'Bravo\' for a linear scale with values from 0.00 to 0.30",
-                "Alpha: x; Bravo: 0.1",
-                "Alpha: y; Bravo: 0.2",
-                "Alpha: z; Bravo: 0.3",
-                "Title text \'Hello GGViz!\'",
-            ])
+            if count == 3 {
+                XCTAssertEqual(allLabels, [
+                    "X-axis titled \'Alpha\' for a discrete scale with 3 values: x, y, z",
+                    "Y-axis titled \'Bravo\' for a linear scale with values from 0.00 to 0.30",
+                    "Alpha: x; Bravo: 0.1",
+                    "Alpha: y; Bravo: 0.2",
+                    "Alpha: z; Bravo: 0.3",
+                    "Title text \'Hello GGViz!\'",
+                ])
+            }
         }
 
     }
