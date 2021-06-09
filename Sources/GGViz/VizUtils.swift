@@ -1,7 +1,7 @@
 import Foundation
 import MiscKit
 
-extension GGSceneGraph {
+extension Scenegraph {
     /// Returns the root `Mark` of the scenegraph
     public var root: SceneMark {
         get {
@@ -21,7 +21,7 @@ extension GGSceneGraph {
     }
 }
 
-extension GGSceneGraph.SceneMark {
+extension Scenegraph.SceneMark {
     /// The children of this group scene, or nil if it is not a group scene
     @inlinable public var children: [Self]? {
         get {
@@ -49,13 +49,13 @@ public protocol SceneItem {
     var height: Double? { get set }
 
     var opacity: Double? { get set }
-    var fill: GGSceneGraph.Paint? { get set }
+    var fill: Scenegraph.Paint? { get set }
     var fillOpacity: Double? { get set }
-    var stroke: GGSceneGraph.Paint? { get set }
+    var stroke: Scenegraph.Paint? { get set }
     var strokeOpacity: Double? { get set }
     var strokeWidth: Double? { get set }
-    var strokeCap: GGSceneGraph.LiteralButtOrCapOrRound? { get set }
-    var strokeJoin: GGSceneGraph.LiteralMiterOrRoundOrBevel? { get set }
+    var strokeCap: Scenegraph.LiteralButtOrCapOrRound? { get set }
+    var strokeJoin: Scenegraph.LiteralMiterOrRoundOrBevel? { get set }
     var strokeMiterLimit: Double? { get set }
     var strokeDash: [Double]? { get set }
     var strokeDashOffset: Double? { get set }
@@ -72,32 +72,32 @@ public protocol SceneItem {
     var ariaRoleDescription: String? { get set }
 }
 
-extension GGSceneGraph.MarkGroup : SceneMark { }
-extension GGSceneGraph.MarkArc : SceneMark { }
-extension GGSceneGraph.MarkArea : SceneMark { }
-extension GGSceneGraph.MarkImage : SceneMark { }
-extension GGSceneGraph.MarkLine : SceneMark { }
-extension GGSceneGraph.MarkPath : SceneMark { }
-extension GGSceneGraph.MarkRect : SceneMark { }
-extension GGSceneGraph.MarkRule : SceneMark { }
-extension GGSceneGraph.MarkSymbol : SceneMark { }
-extension GGSceneGraph.MarkText : SceneMark { }
-extension GGSceneGraph.MarkTrail : SceneMark { }
+extension Scenegraph.MarkGroup : SceneMark { }
+extension Scenegraph.MarkArc : SceneMark { }
+extension Scenegraph.MarkArea : SceneMark { }
+extension Scenegraph.MarkImage : SceneMark { }
+extension Scenegraph.MarkLine : SceneMark { }
+extension Scenegraph.MarkPath : SceneMark { }
+extension Scenegraph.MarkRect : SceneMark { }
+extension Scenegraph.MarkRule : SceneMark { }
+extension Scenegraph.MarkSymbol : SceneMark { }
+extension Scenegraph.MarkText : SceneMark { }
+extension Scenegraph.MarkTrail : SceneMark { }
 
-extension GGSceneGraph.ItemGroup : SceneItem { }
-extension GGSceneGraph.ItemArc : SceneItem { }
-extension GGSceneGraph.ItemArea : SceneItem { }
-extension GGSceneGraph.ItemImage : SceneItem { }
-extension GGSceneGraph.ItemLine : SceneItem { }
-extension GGSceneGraph.ItemPath : SceneItem { }
-extension GGSceneGraph.ItemRect : SceneItem { }
-extension GGSceneGraph.ItemRule : SceneItem { }
-extension GGSceneGraph.ItemSymbol : SceneItem { }
-extension GGSceneGraph.ItemText : SceneItem { }
-extension GGSceneGraph.ItemTrail : SceneItem { }
+extension Scenegraph.ItemGroup : SceneItem { }
+extension Scenegraph.ItemArc : SceneItem { }
+extension Scenegraph.ItemArea : SceneItem { }
+extension Scenegraph.ItemImage : SceneItem { }
+extension Scenegraph.ItemLine : SceneItem { }
+extension Scenegraph.ItemPath : SceneItem { }
+extension Scenegraph.ItemRect : SceneItem { }
+extension Scenegraph.ItemRule : SceneItem { }
+extension Scenegraph.ItemSymbol : SceneItem { }
+extension Scenegraph.ItemText : SceneItem { }
+extension Scenegraph.ItemTrail : SceneItem { }
 
 
-public extension GGSceneGraph {
+public extension Scenegraph {
     /// One of the possible items
     typealias SceneItem = OneOf<ItemGroup>
         .Or<ItemArc>
@@ -113,14 +113,14 @@ public extension GGSceneGraph {
 }
 
 
-public extension GGSceneGraph.SceneMark {
+public extension Scenegraph.SceneMark {
 //    var name: String? {
 //        get {
 //            asOneOf[routing: \.name, \.name, \.name, \.name, \.name, \.name, \.name, \.name, \.name, \.[routing: \.name, \.name]]
 //        }
 //    }
 
-    var sceneItems: [GGSceneGraph.SceneItem]? {
+    var sceneItems: [Scenegraph.SceneItem]? {
         switch self {
         case .markGroupCase(let x):
             return x.items?.map(oneOf)
@@ -148,63 +148,63 @@ public extension GGSceneGraph.SceneMark {
     }
 
     /// The mark if this is a `markGroupCase`, otherwise `nil`
-    var markGroup: GGSceneGraph.MarkGroup? {
+    var markGroup: Scenegraph.MarkGroup? {
         if case .markGroupCase(let x) = self { return x } else { return nil }
     }
 
     /// The mark if this is a `markArcCase`, otherwise `nil`
-    var markArc: GGSceneGraph.MarkArc? {
+    var markArc: Scenegraph.MarkArc? {
         if case .markArcCase(let x) = self { return x } else { return nil }
     }
 
     /// The mark if this is a `markAreaCase`, otherwise `nil`
-    var markArea: GGSceneGraph.MarkArea? {
+    var markArea: Scenegraph.MarkArea? {
         if case .markAreaCase(let x) = self { return x } else { return nil }
     }
 
     /// The mark if this is a `markImageCase`, otherwise `nil`
-    var markImage: GGSceneGraph.MarkImage? {
+    var markImage: Scenegraph.MarkImage? {
         if case .markImageCase(let x) = self { return x } else { return nil }
     }
 
     /// The mark if this is a `markLineCase`, otherwise `nil`
-    var markLine: GGSceneGraph.MarkLine? {
+    var markLine: Scenegraph.MarkLine? {
         if case .markLineCase(let x) = self { return x } else { return nil }
     }
 
     /// The mark if this is a `markPathCase`, otherwise `nil`
-    var markPath: GGSceneGraph.MarkPath? {
+    var markPath: Scenegraph.MarkPath? {
         if case .markPathCase(let x) = self { return x } else { return nil }
     }
 
     /// The mark if this is a `markRectCase`, otherwise `nil`
-    var markRect: GGSceneGraph.MarkRect? {
+    var markRect: Scenegraph.MarkRect? {
         if case .markRectCase(let x) = self { return x } else { return nil }
     }
 
     /// The mark if this is a `markRuleCase`, otherwise `nil`
-    var markRule: GGSceneGraph.MarkRule? {
+    var markRule: Scenegraph.MarkRule? {
         if case .markRuleCase(let x) = self { return x } else { return nil }
     }
 
     /// The mark if this is a `markSymbolCase`, otherwise `nil`
-    var markSymbol: GGSceneGraph.MarkSymbol? {
+    var markSymbol: Scenegraph.MarkSymbol? {
         if case .markSymbolCase(let x) = self { return x } else { return nil }
     }
 
     /// The mark if this is a `markTextCase`, otherwise `nil`
-    var markText: GGSceneGraph.MarkText? {
+    var markText: Scenegraph.MarkText? {
         if case .markTextCase(let x) = self { return x } else { return nil }
     }
 
     /// The mark if this is a `markTrailCase`, otherwise `nil`
-    var markTrail: GGSceneGraph.MarkTrail? {
+    var markTrail: Scenegraph.MarkTrail? {
         if case .markTrailCase(let x) = self { return x } else { return nil }
     }
 }
 
 
-public extension GGSceneGraph.SceneItem {
+public extension Scenegraph.SceneItem {
     /// The X coordinate of the item
     var x: Double? {
         get { self[routing: \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.x, \.[routing: \.x, \.x]] }

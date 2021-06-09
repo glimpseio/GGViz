@@ -6,7 +6,7 @@ import MiscKit
 import BricBrac
 
 /// A running count of all the contexts that have been created and not destroyed
-private final class GGDebugContext : GGVizContext {
+private final class GGDebugContext : VizEngine {
     static var liveContexts = 0
 
     override init(ctx: JXContext = JXContext()) throws {
@@ -25,9 +25,9 @@ final class GGVizTests: XCTestCase {
     }
 
     func testGGVizResource() {
-        XCTAssertNotNil(GGVizContext.ggvizResource(min: true))
-        XCTAssertNotNil(GGVizContext.ggvizResource(min: false))
-        XCTAssertNotNil(GGVizContext.ggvizResource(min: nil))
+        XCTAssertNotNil(VizEngine.ggvizResource(min: true))
+        XCTAssertNotNil(VizEngine.ggvizResource(min: false))
+        XCTAssertNotNil(VizEngine.ggvizResource(min: nil))
     }
 
     /// A very simple spec for testing rendering and compiling
@@ -225,7 +225,7 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    func checkRenderResults<M: VizSpecMeta>(_ ctx: GGVizContext, spec: VizSpec<M>, count: Int, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, canvas checkCanvas: Bool = false, svg checkSVG: Bool = false) throws {
+    func checkRenderResults<M: VizSpecMeta>(_ ctx: VizEngine, spec: VizSpec<M>, count: Int, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, canvas checkCanvas: Bool = false, svg checkSVG: Bool = false) throws {
         if compile {
             let compiled = try ctx.compileGrammar(spec: spec, normalize: true)
 
@@ -240,7 +240,7 @@ final class GGVizTests: XCTestCase {
         let canvasAPI = MeasuringCanvasAPI()
         let rendered = try ctx.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnCanvas: checkCanvas, returnScenegraph: checkSceneGraph, canvas: canvasAPI)
 
-        let data = rendered[GGVizContext.RenderResponseKey.data.rawValue]
+        let data = rendered[VizEngine.RenderResponseKey.data.rawValue]
         if !checkData {
             XCTAssert(data.isUndefined, "data should not have been set")
         } else {
@@ -262,7 +262,7 @@ final class GGVizTests: XCTestCase {
             XCTAssertEqual("#000", canvasAPI.fillStyle)
         }
 
-        let sg = rendered[GGVizContext.RenderResponseKey.scenegraph.rawValue]
+        let sg = rendered[VizEngine.RenderResponseKey.scenegraph.rawValue]
         if !checkSceneGraph {
             XCTAssert(sg.isUndefined, "sg should not have been set")
         } else {
@@ -270,7 +270,7 @@ final class GGVizTests: XCTestCase {
 //            dbg("sg root:", sg["root"].stringValue)
 //            dbg("sg marktype:", sg["marktype"].stringValue)
 //            dbg("root marktype:", root["marktype"].stringValue)
-            let sceneGraph = try sg.toDecodable(ofType: GGSceneGraph.self) // not yet working…
+            let sceneGraph = try sg.toDecodable(ofType: Scenegraph.self) // not yet working…
 
             //dbg("sceneGraph", sceneGraph, sceneGraph.jsonDebugDescription)
 
@@ -293,7 +293,7 @@ final class GGVizTests: XCTestCase {
         }
 
 
-        let svg = rendered[GGVizContext.RenderResponseKey.svg.rawValue]
+        let svg = rendered[VizEngine.RenderResponseKey.svg.rawValue]
         if !checkSVG {
             XCTAssert(svg.isUndefined, "svg should not have been set")
         } else {

@@ -5,7 +5,7 @@ import Judo
 /// Uses `JXKit` and `GGSpec`
 ///
 /// Uses: `JXContext.installGGViz`
-open class GGVizContext {
+open class VizEngine {
     open var ctx: JXContext
 
     let gv: JXValue
@@ -94,7 +94,7 @@ open class GGVizContext {
 }
 
 
-public extension GGVizContext {
+public extension VizEngine {
 
     /// Returns the resource for the script.
     ///
@@ -267,7 +267,7 @@ extension JXContext {
             return ggviz
         } else {
             // this will be "ggviz" or "ggviz.min" based on the flag
-            let moduleName = GGVizContext.ggvizResource(min: min)?.deletingPathExtension().lastPathComponent ?? "ggviz"
+            let moduleName = VizEngine.ggvizResource(min: min)?.deletingPathExtension().lastPathComponent ?? "ggviz"
             exports[propertyName] = try installModule(named: moduleName, in: .module)
             return exports[propertyName]
         }
