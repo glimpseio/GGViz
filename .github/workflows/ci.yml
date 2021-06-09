@@ -17,9 +17,9 @@ jobs:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libjavascriptcoregtk-4.0-dev
       - name: Test (Debug)
-        run: swift test -v --configuration debug
-      - name: Test (Release)
-        run: swift test -v --configuration release -Xswiftc -enable-testing
+        run: swift test
+          #- name: Test (Release)
+        #run: swift test --configuration release -Xswiftc -enable-testing
 
   iOS:
     runs-on: macos-latest
