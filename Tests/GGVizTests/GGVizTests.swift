@@ -238,8 +238,7 @@ final class GGVizTests: XCTestCase {
         }
 
         let canvasAPI = MeasuringCanvasAPI()
-        let canvas = try checkCanvas ? Canvas(env: ctx.ctx, delegate: canvasAPI) : nil
-        let rendered = try ctx.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnCanvas: checkCanvas, returnScenegraph: checkSceneGraph, canvas: canvas)
+        let rendered = try ctx.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnCanvas: checkCanvas, returnScenegraph: checkSceneGraph, canvas: canvasAPI)
 
         let data = rendered[GGVizContext.RenderResponseKey.data.rawValue]
         if !checkData {
