@@ -96,10 +96,10 @@ open class VizEngine {
 
 public extension VizEngine {
 
-    /// Returns the resource for the script.
+    /// Returns the resource for the script with the given mode.
     ///
     /// - Parameter min: whether to return the minified (`true`), non-minified (`false`) or module (`nil`) form of the script
-    static func ggvizResource(min: Bool?) -> URL? {
+    static func engineScript(min: Bool?) -> URL? {
         switch min {
         case .none:
             return Bundle.moduleResource(named: "ggviz.module", withExtension: "js", in: .module)
@@ -110,7 +110,7 @@ public extension VizEngine {
         }
     }
 
-    /// Compiles a spec
+    /// Compiles a spec and returns the compiled result
     func compileGrammar<T: VizSpecMeta>(spec: VizSpec<T>, normalize: Bool) throws -> CompileOutput<T> {
         try ctx.trying {
             try ggviz_compile.call(withArguments: [ctx.encode(spec), ctx.boolean(normalize)])
@@ -149,19 +149,19 @@ public extension VizEngine {
         }
 
         if let returnData = returnData {
-            opts[.returnData] = try ctx.encode(returnData)
+            opts[.returnData] = ctx.boolean(returnData)
         }
 
         if let returnSVG = returnSVG {
-            opts[.returnSVG] = try ctx.encode(returnSVG)
+            opts[.returnSVG] = ctx.boolean(returnSVG)
         }
 
         if let returnScenegraph = returnScenegraph {
-            opts[.returnScenegraph] = try ctx.encode(returnScenegraph)
+            opts[.returnScenegraph] = ctx.boolean(returnScenegraph)
         }
 
         if let returnCanvas = returnCanvas {
-            opts[.returnCanvas] = try ctx.encode(returnCanvas)
+            opts[.returnCanvas] = ctx.boolean(returnCanvas)
         }
 
         return try performRender(opts)
@@ -267,7 +267,7 @@ extension JXContext {
             return ggviz
         } else {
             // this will be "ggviz" or "ggviz.min" based on the flag
-            let moduleName = VizEngine.ggvizResource(min: min)?.deletingPathExtension().lastPathComponent ?? "ggviz"
+            let moduleName = VizEngine.engineScript(min: min)?.deletingPathExtension().lastPathComponent ?? "ggviz"
             exports[propertyName] = try installModule(named: moduleName, in: .module)
             return exports[propertyName]
         }

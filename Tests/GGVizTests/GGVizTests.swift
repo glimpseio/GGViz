@@ -24,10 +24,10 @@ final class GGVizTests: XCTestCase {
         XCTAssertEqual(0, GGDebugContext.liveContexts)
     }
 
-    func testGGVizResource() {
-        XCTAssertNotNil(VizEngine.ggvizResource(min: true))
-        XCTAssertNotNil(VizEngine.ggvizResource(min: false))
-        XCTAssertNotNil(VizEngine.ggvizResource(min: nil))
+    func testengineScript() {
+        XCTAssertNotNil(VizEngine.engineScript(min: true))
+        XCTAssertNotNil(VizEngine.engineScript(min: false))
+        XCTAssertNotNil(VizEngine.engineScript(min: nil))
     }
 
     /// A very simple spec for testing rendering and compiling
@@ -225,9 +225,9 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    func checkRenderResults<M: VizSpecMeta>(_ ctx: VizEngine, spec: VizSpec<M>, count: Int, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, canvas checkCanvas: Bool = false, svg checkSVG: Bool = false) throws {
+    func checkRenderResults<M: VizSpecMeta>(_ gve: VizEngine, spec: VizSpec<M>, count: Int, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, canvas checkCanvas: Bool = false, svg checkSVG: Bool = false) throws {
         if compile {
-            let compiled = try ctx.compileGrammar(spec: spec, normalize: true)
+            let compiled = try gve.compileGrammar(spec: spec, normalize: true)
 
             // nothing to normalize in this spec (i.e., no row/column/facet encodings or repeats)
             // XCTAssertEqual(compiled.normalized, spec, "normalized spec should be identical")
@@ -238,7 +238,7 @@ final class GGVizTests: XCTestCase {
         }
 
         let canvasAPI = MeasuringCanvasAPI()
-        let rendered = try ctx.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnCanvas: checkCanvas, returnScenegraph: checkSceneGraph, canvas: canvasAPI)
+        let rendered = try gve.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnCanvas: checkCanvas, returnScenegraph: checkSceneGraph, canvas: canvasAPI)
 
         let data = rendered[VizEngine.RenderResponseKey.data.rawValue]
         if !checkData {
