@@ -33,68 +33,250 @@ extension Scenegraph.SceneMark {
             }
         }
     }
+
 }
+
+extension Scenegraph {
+    /// The total number of `SceneItem` instances in this graph
+    @inlinable public var totalItemCount: Int {
+        flattened().compactMap(\.element.sceneItems).map(\.count).reduce(0, +)
+    }
+}
+
 
 /// An abstraction of a mark item
-public protocol SceneMark {
+public protocol MarkItem {
     associatedtype ItemType : SceneItem
     var items: [ItemType]? { get set }
+
+    var markType: SceneItemMark { get }
+
+    /// The name of this mark
+    var name: String? { get }
+
+    /// The accessibiliy role of this mark
+    var role: String? { get }
+
+    /// A human-readable description of this mark
+    var description: String? { get }
+
+    /// The screenreader-friendly description of this mark
+    var aria: Bool? { get }
+
+    /// Whether the mark is interactive or not
+    var interactive: Bool? { get }
+
+    /// The z-index of this mark
+    var zindex: Double? { get }
 }
 
-/// An absrtraction of a scene item
+public enum SceneItemMark : String {
+    case group
+    case arc
+    case area
+    case image
+    case line
+    case path
+    case rect
+    case rule
+    case symbol
+    case text
+    case trail
+}
+
+/// An abstraction of a scene item
 public protocol SceneItem {
-    var x: Double? { get set }
-    var y: Double? { get set }
-    var width: Double? { get set }
-    var height: Double? { get set }
 
-    var opacity: Double? { get set }
-    var fill: Scenegraph.Paint? { get set }
-    var fillOpacity: Double? { get set }
-    var stroke: Scenegraph.Paint? { get set }
-    var strokeOpacity: Double? { get set }
-    var strokeWidth: Double? { get set }
-    var strokeCap: Scenegraph.LiteralButtOrCapOrRound? { get set }
-    var strokeJoin: Scenegraph.LiteralMiterOrRoundOrBevel? { get set }
-    var strokeMiterLimit: Double? { get set }
-    var strokeDash: [Double]? { get set }
-    var strokeDashOffset: Double? { get set }
-    var zindex: Double? { get set }
+    /// The type of mark this scene item represents
+    var markType: SceneItemMark { get }
 
-    var cursor: String? { get set }
-    var href: String? { get set }
+    var x: Double? { get }
+    var y: Double? { get }
+    var width: Double? { get }
+    var height: Double? { get }
+    var zindex: Double? { get }
 
-    //var tooltip: Tooltip? { get set }
-    var description: String? { get set }
+    // var x2: Double? { get } // only on rule
+    // var y2: Double? { get } // only on rule
 
-    var aria: Bool? { get set }
-    var ariaRole: String? { get set }
-    var ariaRoleDescription: String? { get set }
+    var opacity: Double? { get }
+    var fill: Scenegraph.Paint? { get }
+    var fillOpacity: Double? { get }
+
+    var stroke: Scenegraph.Paint? { get }
+    var strokeOpacity: Double? { get }
+    var strokeWidth: Double? { get }
+    var strokeCap: Scenegraph.LiteralButtOrCapOrRound? { get }
+    var strokeJoin: Scenegraph.LiteralMiterOrRoundOrBevel? { get }
+    var strokeMiterLimit: Double? { get }
+    var strokeDash: [Double]? { get }
+    var strokeDashOffset: Double? { get }
+
+
+    var cursor: String? { get }
+    var href: String? { get }
+
+    //var tooltip: Tooltip? { get }
+    var description: String? { get }
+
+    var aria: Bool? { get }
+    var ariaRole: String? { get }
+    var ariaRoleDescription: String? { get }
 }
 
-extension Scenegraph.MarkGroup : SceneMark { }
-extension Scenegraph.MarkArc : SceneMark { }
-extension Scenegraph.MarkArea : SceneMark { }
-extension Scenegraph.MarkImage : SceneMark { }
-extension Scenegraph.MarkLine : SceneMark { }
-extension Scenegraph.MarkPath : SceneMark { }
-extension Scenegraph.MarkRect : SceneMark { }
-extension Scenegraph.MarkRule : SceneMark { }
-extension Scenegraph.MarkSymbol : SceneMark { }
-extension Scenegraph.MarkText : SceneMark { }
-extension Scenegraph.MarkTrail : SceneMark { }
+extension Scenegraph.MarkGroup : MarkItem {
+    public var markType: SceneItemMark {
+        .group
+    }
+}
 
-extension Scenegraph.ItemGroup : SceneItem { }
-extension Scenegraph.ItemArc : SceneItem { }
-extension Scenegraph.ItemArea : SceneItem { }
-extension Scenegraph.ItemImage : SceneItem { }
-extension Scenegraph.ItemLine : SceneItem { }
-extension Scenegraph.ItemPath : SceneItem { }
-extension Scenegraph.ItemRect : SceneItem { }
-extension Scenegraph.ItemRule : SceneItem { }
-extension Scenegraph.ItemSymbol : SceneItem { }
-extension Scenegraph.ItemText : SceneItem { }
-extension Scenegraph.ItemTrail : SceneItem { }
+extension Scenegraph.MarkArc : MarkItem {
+    public var markType: SceneItemMark {
+        .arc
+    }
+}
+
+
+extension Scenegraph.MarkArea : MarkItem {
+    public var markType: SceneItemMark {
+        .area
+    }
+}
+
+
+extension Scenegraph.MarkImage : MarkItem {
+    public var markType: SceneItemMark {
+        .image
+    }
+}
+
+
+extension Scenegraph.MarkLine : MarkItem {
+    public var markType: SceneItemMark {
+        .line
+    }
+}
+
+
+extension Scenegraph.MarkPath : MarkItem {
+    public var markType: SceneItemMark {
+        .path
+    }
+}
+
+
+extension Scenegraph.MarkRect : MarkItem {
+    public var markType: SceneItemMark {
+        .rect
+    }
+}
+
+
+extension Scenegraph.MarkRule : MarkItem {
+    public var markType: SceneItemMark {
+        .rule
+    }
+}
+
+
+extension Scenegraph.MarkSymbol : MarkItem {
+    public var markType: SceneItemMark {
+        .symbol
+    }
+}
+
+
+extension Scenegraph.MarkText : MarkItem {
+    public var markType: SceneItemMark {
+        .text
+    }
+}
+
+
+extension Scenegraph.MarkTrail : MarkItem {
+    public var markType: SceneItemMark {
+        .trail
+    }
+}
+
+
+
+extension Scenegraph.ItemGroup : SceneItem {
+    public var markType: SceneItemMark {
+        .group
+    }
+}
+
+extension Scenegraph.ItemArc : SceneItem {
+    public var markType: SceneItemMark {
+        .arc
+    }
+}
+
+
+extension Scenegraph.ItemArea : SceneItem {
+    public var markType: SceneItemMark {
+        .area
+    }
+}
+
+
+extension Scenegraph.ItemImage : SceneItem {
+    public var markType: SceneItemMark {
+        .image
+    }
+}
+
+
+extension Scenegraph.ItemLine : SceneItem {
+    public var markType: SceneItemMark {
+        .line
+    }
+}
+
+
+extension Scenegraph.ItemPath : SceneItem {
+    public var markType: SceneItemMark {
+        .path
+    }
+}
+
+
+extension Scenegraph.ItemRect : SceneItem {
+    public var markType: SceneItemMark {
+        .rect
+    }
+}
+
+
+extension Scenegraph.ItemRule : SceneItem {
+    public var markType: SceneItemMark {
+        .rule
+    }
+}
+
+
+extension Scenegraph.ItemSymbol : SceneItem {
+    public var markType: SceneItemMark {
+        .symbol
+    }
+}
+
+
+extension Scenegraph.ItemText : SceneItem {
+    public var markType: SceneItemMark {
+        .text
+    }
+}
+
+
+extension Scenegraph.ItemTrail : SceneItem {
+    public var markType: SceneItemMark {
+        .trail
+    }
+}
+
+
 
 
 public extension Scenegraph {
@@ -112,6 +294,86 @@ public extension Scenegraph {
         .Or<ItemTrail>
 }
 
+extension Scenegraph.SceneItem : SceneItem {
+    public var markType: SceneItemMark {
+        // self[routing: \.markType, \.markType, \.markType, \.markType, \.markType, \.markType, \.markType, \.markType, \.markType, \.[routing: \.markType, \.markType]]
+        self[routing: (\.markType, \.markType, \.markType, \.markType, \.markType, \.markType, \.markType, \.markType, \.markType, { $0[routing: (\.markType, \.markType)] } )]
+    }
+
+    public var zindex: Double? {
+        self[routing: \.zindex, \.zindex, \.zindex, \.zindex, \.zindex, \.zindex, \.zindex, \.zindex, \.zindex, \.[routing: \.zindex, \.zindex]]
+    }
+
+    public var opacity: Double? {
+        self[routing: \.opacity, \.opacity, \.opacity, \.opacity, \.opacity, \.opacity, \.opacity, \.opacity, \.opacity, \.[routing: \.opacity, \.opacity]]
+    }
+
+    public var fill: Scenegraph.Paint? {
+        self[routing: \.fill, \.fill, \.fill, \.fill, \.fill, \.fill, \.fill, \.fill, \.fill, \.[routing: \.fill, \.fill]]
+    }
+
+    public var fillOpacity: Double? {
+        self[routing: \.fillOpacity, \.fillOpacity, \.fillOpacity, \.fillOpacity, \.fillOpacity, \.fillOpacity, \.fillOpacity, \.fillOpacity, \.fillOpacity, \.[routing: \.fillOpacity, \.fillOpacity]]
+    }
+
+    public var stroke: Scenegraph.Paint? {
+        self[routing: \.stroke, \.stroke, \.stroke, \.stroke, \.stroke, \.stroke, \.stroke, \.stroke, \.stroke, \.[routing: \.stroke, \.stroke]]
+    }
+
+    public var strokeOpacity: Double? {
+        self[routing: \.strokeOpacity, \.strokeOpacity, \.strokeOpacity, \.strokeOpacity, \.strokeOpacity, \.strokeOpacity, \.strokeOpacity, \.strokeOpacity, \.strokeOpacity, \.[routing: \.strokeOpacity, \.strokeOpacity]]
+    }
+
+    public var strokeWidth: Double? {
+        self[routing: \.strokeWidth, \.strokeWidth, \.strokeWidth, \.strokeWidth, \.strokeWidth, \.strokeWidth, \.strokeWidth, \.strokeWidth, \.strokeWidth, \.[routing: \.strokeWidth, \.strokeWidth]]
+    }
+
+    public var strokeCap: Scenegraph.LiteralButtOrCapOrRound? {
+        self[routing: \.strokeCap, \.strokeCap, \.strokeCap, \.strokeCap, \.strokeCap, \.strokeCap, \.strokeCap, \.strokeCap, \.strokeCap, \.[routing: \.strokeCap, \.strokeCap]]
+    }
+
+    public var strokeJoin: Scenegraph.LiteralMiterOrRoundOrBevel? {
+        self[routing: \.strokeJoin, \.strokeJoin, \.strokeJoin, \.strokeJoin, \.strokeJoin, \.strokeJoin, \.strokeJoin, \.strokeJoin, \.strokeJoin, \.[routing: \.strokeJoin, \.strokeJoin]]
+    }
+
+    public var strokeMiterLimit: Double? {
+        self[routing: \.strokeMiterLimit, \.strokeMiterLimit, \.strokeMiterLimit, \.strokeMiterLimit, \.strokeMiterLimit, \.strokeMiterLimit, \.strokeMiterLimit, \.strokeMiterLimit, \.strokeMiterLimit, \.[routing: \.strokeMiterLimit, \.strokeMiterLimit]]
+    }
+
+    public var strokeDash: [Double]? {
+        self[routing: \.strokeDash, \.strokeDash, \.strokeDash, \.strokeDash, \.strokeDash, \.strokeDash, \.strokeDash, \.strokeDash, \.strokeDash, \.[routing: \.strokeDash, \.strokeDash]]
+    }
+
+    public var strokeDashOffset: Double? {
+        self[routing: \.strokeDashOffset, \.strokeDashOffset, \.strokeDashOffset, \.strokeDashOffset, \.strokeDashOffset, \.strokeDashOffset, \.strokeDashOffset, \.strokeDashOffset, \.strokeDashOffset, \.[routing: \.strokeDashOffset, \.strokeDashOffset]]
+    }
+
+    public var cursor: String? {
+        self[routing: \.cursor, \.cursor, \.cursor, \.cursor, \.cursor, \.cursor, \.cursor, \.cursor, \.cursor, \.[routing: \.cursor, \.cursor]]
+    }
+
+    public var href: String? {
+        self[routing: \.href, \.href, \.href, \.href, \.href, \.href, \.href, \.href, \.href, \.[routing: \.href, \.href]]
+    }
+
+    public var description: String? {
+        self[routing: \.description, \.description, \.description, \.description, \.description, \.description, \.description, \.description, \.description, \.[routing: \.description, \.description]]
+    }
+
+    public var aria: Bool? {
+        self[routing: \.aria, \.aria, \.aria, \.aria, \.aria, \.aria, \.aria, \.aria, \.aria, \.[routing: \.aria, \.aria]]
+    }
+
+    public var ariaRole: String? {
+        self[routing: \.ariaRole, \.ariaRole, \.ariaRole, \.ariaRole, \.ariaRole, \.ariaRole, \.ariaRole, \.ariaRole, \.ariaRole, \.[routing: \.ariaRole, \.ariaRole]]
+    }
+
+    public var ariaRoleDescription: String? {
+        self[routing: \.ariaRoleDescription, \.ariaRoleDescription, \.ariaRoleDescription, \.ariaRoleDescription, \.ariaRoleDescription, \.ariaRoleDescription, \.ariaRoleDescription, \.ariaRoleDescription, \.ariaRoleDescription, \.[routing: \.ariaRoleDescription, \.ariaRoleDescription]]
+    }
+
+
+}
 
 public extension Scenegraph.SceneMark {
 //    var name: String? {
