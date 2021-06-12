@@ -1,5 +1,4 @@
-import Foundation
-import MiscKit
+import GGSpec
 
 /// A VizSpec that treats its metadata as an unstructured `Bric`
 public typealias SimpleVizSpec = VizSpec<Bric.ObjType>
@@ -40,7 +39,7 @@ public typealias ParamChoice = OneOf<VariableParameter>.Or<TopLevelSelectionPara
 /// Subsumes the following built-in spec types:
 /// * `Spec = OneOf7<FacetedUnitSpec, LayerSpec, RepeatSpec, FacetSpec, ConcatSpecGenericSpec, VConcatSpecGenericSpec, HConcatSpecGenericSpec>`
 /// * `TopLevelSpec = OneOf7<TopLevelUnitSpec, TopLevelFacetSpec, TopLevelLayerSpec, TopLevelRepeatSpec, TopLevelNormalizedConcatSpecGenericSpec, TopLevelNormalizedVConcatSpecGenericSpec, TopLevelNormalizedHConcatSpecGenericSpec>`
-public struct VizSpec<Meta: VizSpecMeta> : Hashable, Codable, TopLevelSpecType, SpecType, Identifiable {
+public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpecType, SpecType, Identifiable {
     /// The type of child specs this type may contain (i.e., Self)
     public typealias SubSpec = VizSpec<Meta>
 
@@ -270,7 +269,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Hashable, Codable, TopLevelSpecType, 
 
 
     /// The `CodingKeys` for the spec. These are in the order we will see in the JSON result of `JSONEncoder.encodeOrdered` due to conformance to `OrderedCodingKey`.
-    public enum CodingKeys : String, CodingKey, Hashable, Codable, CaseIterable, OrderedCodingKey {
+    public enum CodingKeys : String, CodingKey, Pure, Hashable, Codable, CaseIterable, OrderedCodingKey {
         case id
 
         case schema = "$schema"
@@ -320,3 +319,133 @@ public struct VizSpec<Meta: VizSpecMeta> : Hashable, Codable, TopLevelSpecType, 
         case datasets // this should be last because it may contain a lot of data
     }
 }
+
+
+/// Child layers of this layer are arranged.
+public enum LayerArrangement : String, CaseIterable, Codable, Hashable {
+    case overlay
+    case hconcat
+    case vconcat
+    case concat
+    case `repeat`
+}
+
+
+public extension VizSpec {
+    /// The arrangement of sub-layers of this spec, based on which sublayer property is set; this should only ever have at most one element
+    @inlinable var arrangements: [LayerArrangement] {
+        [
+            self.layer != nil ? LayerArrangement.overlay : nil,
+            self.concat != nil ? LayerArrangement.concat : nil,
+            self.hconcat != nil ? LayerArrangement.hconcat : nil,
+            self.vconcat != nil ? LayerArrangement.vconcat : nil,
+            self.spec != nil ? LayerArrangement.repeat : nil,
+        ]
+        .compactMap({ $0 })
+    }
+
+    /// The arrangement of sub-layers of this spec; note that changing the arrangement
+    /// type will result in the transfer of existing layers to the new sublayer
+    /// holder, which may result in the loss of data (such as taking multiple `overlay`
+    /// layers and playing them into a `repeat` layer, which can hold only a single item).
+    ///
+    /// This property is derived solely from whether the properties
+    /// `layer`, `hconcat`, `vconcat`, `concat`, and `spec` are set or not.
+    @inlinable var arrangement: LayerArrangement {
+        get {
+            self.arrangements.first ?? .overlay // fallback to the overlay default
+        }
+
+        set {
+            let subs = self.sublayers
+            // make sure all other layers are cleared before assigning; both because it is invalid to have
+            // more than one sublayer field, but also because this is how we calculate the `arrangement` field.
+            (self.layer, self.concat, self.hconcat, self.vconcat, self.spec) = (nil, nil, nil, nil, nil)
+
+            switch newValue {
+            case .overlay: self.layer = subs
+            case .hconcat: self.hconcat = subs
+            case .vconcat: self.vconcat = subs
+            case .concat: self.concat = subs
+            case .repeat: self.spec = subs.first.flatMap({ .init($0) }) // we drop all but the first element here
+            }
+        }
+    }
+
+
+    /// The number of sublayers
+    @inlinable var sublayerCount: Int {
+        if let sub = self.layer { return sub.count }
+        if let sub = self.concat { return sub.count }
+        if let sub = self.hconcat { return sub.count }
+        if let sub = self.vconcat { return sub.count }
+        return self.spec != nil ? 1 : 0
+    }
+
+    /// The indices of the sublayers
+    @inlinable var sublayerIndices: ClosedRange<Int> {
+        0...sublayerCount
+    }
+
+    /// The sublayers of this layer, or nil if there are none
+    @inlinable var childLayers: [VizSpec]? {
+        layer ?? concat ?? hconcat ?? vconcat ?? spec?.flatMap({ [$0] })
+    }
+
+    /// Returns the shallow sublayers for this spec from `.layer`, `.concat`, `.hconcat`, and `.vconcat`
+    @inlinable var sublayers: [VizSpec] {
+        get {
+            childLayers.defaulted
+        }
+
+        _modify {
+            var subs = self.sublayers
+            yield &subs
+
+            let arrangement = self.arrangement
+            // make sure all other layers are cleared before assigning; both because it is invalid to have
+            // more than one sublayer field, but also because this is how we calculate the `arrangement` field.
+            (self.layer, self.concat, self.hconcat, self.vconcat, self.spec) = (nil, nil, nil, nil, nil)
+            if subs.isEmpty { return } // clear out all sublayers
+            switch arrangement {
+            case .overlay: self.layer = subs
+            case .concat: self.concat = subs
+            case .hconcat: self.hconcat = subs
+            case .vconcat: self.vconcat = subs
+            case .repeat: self.spec = subs.first.flatMap({ .init($0) }) // repeat can only be a single element
+            }
+        }
+    }
+
+    /// A layer is a group mark when it has children
+    @inlinable var isGroup: Bool { mark == nil && sublayers.isEmpty == false }
+
+    /// Whether a layer is a concat spec or not
+    @inlinable var isConcat: Bool {
+        !hconcat.faulted.isEmpty
+            || !vconcat.faulted.isEmpty
+            || !concat.faulted.isEmpty
+    }
+
+    @inlinable var isRepeat: Bool {
+        self.`repeat` != nil
+    }
+
+    /// The number of child layers this spec is permitted to contain, or nil if there is no upper limit
+    @inlinable var childCapacity: Int? {
+        if !isGroup {
+            return 0
+        } else {
+            switch arrangement {
+            case .overlay: return nil
+            case .hconcat: return nil
+            case .vconcat: return nil
+            case .concat: return nil
+            case .repeat: return 1
+            }
+        }
+    }
+
+}
+
+

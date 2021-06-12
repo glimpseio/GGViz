@@ -5,6 +5,9 @@ let package = Package(
     name: "GGViz",
     products: [
         .library(
+            name: "GGDSL",
+            targets: ["GGDSL"]),
+        .library(
             name: "GGViz",
             targets: ["GGViz"]),
     ],
@@ -14,8 +17,16 @@ let package = Package(
     ],
     targets: [
         .target(
+            name: "GGDSL",
+            dependencies: ["GGSpec"],
+            resources: [.process("Resources/")]),
+        .testTarget(
+            name: "GGDSLTests",
+            dependencies: ["GGDSL"],
+            resources: [.copy("TestResources/")]),
+        .target(
             name: "GGViz",
-            dependencies: ["Judo", "GGSpec"],
+            dependencies: ["Judo", "GGDSL"],
             resources: [.process("Resources/")]),
         .testTarget(
             name: "GGVizTests",

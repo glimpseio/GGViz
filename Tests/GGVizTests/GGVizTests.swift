@@ -20,6 +20,29 @@ private final class GGDebugContext : VizEngine {
 }
 
 final class GGVizTests: XCTestCase {
+    let speedUp = false
+
+
+    func measureBlock(file: StaticString = #filePath, line: UInt = #line, _ f: () throws -> ()) rethrows {
+        if speedUp {
+//            measureMetrics([], automaticallyStartMeasuring: true) {
+//                do {
+                    try f()
+//                } catch {
+//                    XCTFail("\(error)", file: file, line: line)
+//                }
+//            }
+        } else {
+            measure {
+                do {
+                    try f()
+                } catch {
+                    XCTFail("\(error)", file: file, line: line)
+                }
+            }
+        }
+    }
+
     override class func tearDown() {
         XCTAssertEqual(0, GGDebugContext.liveContexts)
     }
@@ -68,24 +91,16 @@ final class GGVizTests: XCTestCase {
         let count = 0
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
-        measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, count: count, compile: true)
-            } catch {
-                XCTFail("\(error)")
-            }
+        try measureBlock {
+            try checkRenderResults(ctx, spec: spec, count: count, compile: true)
         }
     }
 
     func measureData(count: Int) throws {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
-        measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, count: count, data: true)
-            } catch {
-                XCTFail("\(error)")
-            }
+        try measureBlock {
+            try checkRenderResults(ctx, spec: spec, count: count, data: true)
         }
     }
 
@@ -108,12 +123,8 @@ final class GGVizTests: XCTestCase {
     func measureScenegraph(count: Int) throws {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
-        measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, count: count, sg: true)
-            } catch {
-                XCTFail("\(error)")
-            }
+        try measureBlock {
+            try checkRenderResults(ctx, spec: spec, count: count, sg: true)
         }
     }
 
@@ -140,12 +151,8 @@ final class GGVizTests: XCTestCase {
     func measureSVG(count: Int) throws {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
-        measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, count: count, svg: true)
-            } catch {
-                XCTFail("\(error)")
-            }
+        try measureBlock {
+            try checkRenderResults(ctx, spec: spec, count: count, svg: true)
         }
     }
 
@@ -172,12 +179,8 @@ final class GGVizTests: XCTestCase {
     func measureCanvas(count: Int) throws {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
-        measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, count: count, canvas: true)
-            } catch {
-                XCTFail("\(error)")
-            }
+        try measureBlock {
+            try checkRenderResults(ctx, spec: spec, count: count, canvas: true)
         }
     }
 
@@ -206,12 +209,8 @@ final class GGVizTests: XCTestCase {
         let count = 3
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
-        measure {
-            do {
-                try checkRenderResults(ctx, spec: spec, count: count, data: true, sg: true, svg: true)
-            } catch {
-                XCTFail("\(error)")
-            }
+        try measureBlock {
+            try checkRenderResults(ctx, spec: spec, count: count, data: true, sg: true, svg: true)
         }
     }
 
@@ -270,7 +269,7 @@ final class GGVizTests: XCTestCase {
 //            dbg("sg root:", sg["root"].stringValue)
 //            dbg("sg marktype:", sg["marktype"].stringValue)
 //            dbg("root marktype:", root["marktype"].stringValue)
-            let sceneGraph = try sg.toDecodable(ofType: Scenegraph.self) // not yet working…
+            let sceneGraph = try sg.toDecodable(ofType: Scenegraph.self) 
 
             //dbg("sceneGraph", sceneGraph, sceneGraph.jsonDebugDescription)
 
@@ -300,7 +299,7 @@ final class GGVizTests: XCTestCase {
             // dbg("SVG", svg.stringValue)
 
             // parse the SVG as XML, get the flattened elements, and check for expected values
-            let xml = try prf("SVG XMLTree.parse", level: 0) { try XMLTree.parse(data: svg.stringValue?.data(using: .utf8) ?? Data()) }
+            let xml = try prf("SVG XMLTree.parse", threshold: 0.5) { try XMLTree.parse(data: svg.stringValue?.data(using: .utf8) ?? Data()) }
             let elements = xml.flattenedElements
 
             // index by the role
