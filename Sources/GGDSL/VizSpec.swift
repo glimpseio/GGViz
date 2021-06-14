@@ -14,6 +14,9 @@ public typealias ErrorBar = ErrorBarLiteral
 public typealias ErrorBand = ErrorBandLiteral
 
 
+/// The direction of a repeating field
+public typealias RepeatFacet = RepeatRef.LiteralRowOrColumnOrRepeatOrLayer
+
 /// The type of ancoding channel; x, y, shape, color, etc…
 public typealias EncodingChannel = FacetedEncoding.CodingKeys
 
@@ -619,10 +622,95 @@ public extension CompositeMark { // i.e., OneOf3<BoxPlot, ErrorBar, ErrorBand>
             value
         }
         switch self.rawValue {
-        case .v1(let x): return check(arg: x, is: BoxPlot.self, value: .boxplot)
-        case .v2(let x): return check(arg: x, is: ErrorBar.self, value: .errorbar)
-        case .v3(let x): return check(arg: x, is: ErrorBand.self, value: .errorband)
+        case .v1(let x): return check(arg: x, is: BoxPlotLiteral.self, value: .boxplot)
+        case .v2(let x): return check(arg: x, is: ErrorBarLiteral.self, value: .errorbar)
+        case .v3(let x): return check(arg: x, is: ErrorBandLiteral.self, value: .errorband)
         }
     }
 }
 
+public extension Aggregate.RawValue { // i.e., OneOf3<GGSpec.NonArgAggregateOp, GGSpec.ArgmaxDef, GGSpec.ArgminDef>
+
+    /// Deprecated for clarity
+    @available(*, deprecated, renamed: "simpleAggregate")
+    var v1: T1? { simpleAggregate }
+
+    /// The simple no-argument aggregate choice
+    var simpleAggregate: NonArgAggregateOp? { infer() }
+}
+
+
+
+public extension NonArgAggregateOp {
+    /// Additive-based aggregation operations. These can be applied to stack.
+    static let summativeOps = Set<Self>(countingAggregateOps + [.sum])
+    var isSummativeOp: Bool { Self.summativeOps.contains(self) }
+
+    static let countingAggregateOps = Set<Self>([.count, .valid, .missing, .distinct])
+    var isCountingAggregateOp: Bool { Self.countingAggregateOps.contains(self) }
+
+    static let sharedDomainOps = Set<Self>([.mean, .average, .median, .q1, .q3, .min, .max])
+    var isSharedDomainOp: Bool { Self.sharedDomainOps.contains(self) }
+
+    static let minMaxOps = Set<Self>([.min, .max])
+    var isMinMaxOp: Bool { Self.minMaxOps.contains(self) }
+}
+
+public extension Aggregate {
+    var isSummativeOp: Bool { self.rawValue.simpleAggregate?.isSummativeOp == true }
+    var isCountingAggregateOp: Bool { self.rawValue.simpleAggregate?.isCountingAggregateOp == true }
+    var isSharedDomainOp: Bool { self.rawValue.simpleAggregate?.isSharedDomainOp == true }
+    var isMinMaxOp: Bool { self.rawValue.simpleAggregate?.isMinMaxOp == true }
+
+    init(_ op: NonArgAggregateOp) {
+        self = Self(rawValue: oneOf(op))
+    }
+
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let distinct = Self(NonArgAggregateOp.distinct)
+
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let count = Self(NonArgAggregateOp.count)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let valid = Self(NonArgAggregateOp.valid)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let missing = Self(NonArgAggregateOp.missing)
+
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let min = Self(NonArgAggregateOp.min)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let max = Self(NonArgAggregateOp.max)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let mean = Self(NonArgAggregateOp.mean)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let sum = Self(NonArgAggregateOp.sum)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let average = Self(NonArgAggregateOp.average)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let median = Self(NonArgAggregateOp.median)
+
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let stdev = Self(NonArgAggregateOp.stdev)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let stdevp = Self(NonArgAggregateOp.stdevp)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let variance = Self(NonArgAggregateOp.variance)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let variancep = Self(NonArgAggregateOp.variancep)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let stderr = Self(NonArgAggregateOp.stderr)
+
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let q1 = Self(NonArgAggregateOp.q1)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let q3 = Self(NonArgAggregateOp.q3)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let ci0 = Self(NonArgAggregateOp.ci0)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let ci1 = Self(NonArgAggregateOp.ci1)
+
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let values = Self(NonArgAggregateOp.values)
+    /// Pass-through for `NonArgAggregateOp.distinct`
+    static let product = Self(NonArgAggregateOp.product)
+}
