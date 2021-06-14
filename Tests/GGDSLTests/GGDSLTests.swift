@@ -254,14 +254,14 @@ extension VizSpec {
 //        }
 //    }
 
-    static func simple2() -> Self {
-        VizSpec(title: "Simple Bar Chart") {
-            VizMark(.bar) {
-                VizEncode(.x) { FieldName("A") }
-                VizEncode(.y) { FieldName("B") }.measure(.quantitative)
-            }
-        }
-    }
+//    static func simple2() -> Self {
+//        VizSpec(title: "Simple Bar Chart") {
+//            VizMark(.bar) {
+//                VizEncode(.x) { FieldName("A") }
+//                VizEncode(.y) { FieldName("B") }.measure(.quantitative)
+//            }
+//        }
+//    }
 }
 
 protocol FacetOrient {
