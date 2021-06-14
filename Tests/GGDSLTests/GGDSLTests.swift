@@ -215,16 +215,22 @@ final class GGDSLTests: XCTestCase {
 
     func testSimpleSpec() throws {
         let viz = SimpleViz {
-            //VizEncode(.color, field: FieldName("c"))//.measure(.ordinal)
-
             VizMark(.bar) {
-                VizEncode(.x, field: FieldName("a")).measure(.nominal)
-                VizEncode(.y, field: FieldName("b"))//.measure(.quantitative)
+                VizEncode(.x, field: FieldName("a"))
+                    .type(.nominal)
+                    .axis(.init(nil))
+                VizEncode(.y, field: FieldName("b"))
+                    .type(.quantitative)
+                VizEncode(.color, field: FieldName("c"))
+                    .legend(.init(nil))
+                    .type(.ordinal)
+                VizEncode(.size, value: 44)
             }
             .cornerRadius(.init(10))
         }
         .title(.init(.init("Bar Chart")))
         .description("A simple bar chart with embedded data.")
+
 
         try check(viz: viz, againstJSON: """
         {
@@ -232,8 +238,10 @@ final class GGDSLTests: XCTestCase {
             "description": "A simple bar chart with embedded data.",
             "mark": { "cornerRadius": 10, "type": "bar" },
             "encoding": {
-                "x": { "field": "a" },
-                "y": { "field":"b" }
+                "x": { "type": "nominal", "field": "a", "axis": null },
+                "y": { "type": "quantitative", "field":"b" },
+                "color": { "field": "c", "type": "ordinal", "legend": null },
+                "size": { "value": 44 }
             }
         }
         """)
@@ -265,7 +273,6 @@ final class GGDSLTests: XCTestCase {
             XCTAssertEqual(viz.spec, checkSpec)
         }
     }
-
 }
 
 extension VizSpec {
@@ -310,6 +317,11 @@ extension VizSpec {
 //        }
 //    }
 }
+
+
+protocol VizDSLType {
+}
+
 
 protocol FacetOrient {
 }
@@ -361,9 +373,12 @@ extension ErrorBandDef : VizMarkDefType {
 }
 
 @dynamicMemberLookup
-struct VizMark<Def : VizMarkDefType> : VizMarkType, Equatable {
+struct VizMark<Def : VizMarkDefType> : VizMarkType, VizDSLType {
     var markDef: Def
     var encodings: FacetedEncoding = FacetedEncoding()
+}
+
+extension VizMark {
     var anyMark: AnyMark { markDef.anyMark }
 }
 
@@ -403,22 +418,25 @@ extension VizMark where Def == ErrorBandDef {
     }
 }
 
-protocol VizEncodeType {
+protocol VizEncodeType : VizDSLType {
     /// Adds this encoding information to the given `FacetedEncoding`
     func addEncoding(to encodings: inout FacetedEncoding)
 }
 
 
-protocol VizEncodingType : Pure {
+protocol VizEncodingType : Pure, RawCodable {
     func addEncoding(to encodings: inout FacetedEncoding)
 }
 
 @dynamicMemberLookup
-struct VizEncode<Encoding : VizEncodingType> : VizEncodeType, Equatable {
-    var encoding: Encoding
+struct VizEncode<Encoding : VizEncodingType, Def: Equatable> : VizEncodeType {
+    private var def: Def
+    private let def2enc: (Def) -> (Encoding)
+}
 
+extension VizEncode {
     func addEncoding(to encodings: inout FacetedEncoding) {
-        encoding.addEncoding(to: &encodings)
+        def2enc(def).addEncoding(to: &encodings)
     }
 }
 
@@ -460,21 +478,17 @@ typealias VizEncodeArrayBuilder = VizArrayBuilder<VizEncodeType>
 
 
 @dynamicMemberLookup
-struct Viz<M: VizSpecMeta> : Equatable {
+struct Viz<M: VizSpecMeta> : VizDSLType {
     var spec: VizSpec<M>
 
     init(@VizMarkArrayBuilder _ makeMarks: () -> [VizMarkType]) {
         self.spec = VizSpec()
 
         let marks = makeMarks()
-        if marks.count == 0 {
-
-        } else if marks.count == 1 {
-            for mark in marks {
-                self.spec.mark = mark.anyMark
-                self.spec.encoding = mark.encodings
-            }
-        } else {
+        if let singleMark = marks.first, marks.count == 1 {
+            self.spec.mark = singleMark.anyMark
+            self.spec.encoding = singleMark.encodings
+        } else { // multiple marks
             for mark in marks {
                 var layer = VizSpec<M>(mark: mark.anyMark)
                 layer.encoding = mark.encodings
@@ -500,20 +514,21 @@ extension VizMark {
 
 extension VizEncode {
     /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the properties
-    public subscript<U>(dynamicMember keyPath: WritableKeyPath<Encoding, U>) -> (U) -> (Self) {
-        setting(path: (\Self.encoding).appending(path: keyPath))
+    public subscript<U>(dynamicMember keyPath: WritableKeyPath<Def, U>) -> (U) -> (Self) {
+         setting(path: (\Self.def).appending(path: keyPath))
     }
 }
 
 extension VizEncode {
-    public func measure(_ measure: StandardMeasureType) -> Self {
-        var this = self
-        return this
-    }
+//    public func measure(_ measure: StandardMeasureType) -> Self {
+//        var this = self
+//
+//        return this
+//    }
 }
 
 
-extension Equatable {
+extension VizDSLType {
     /// Fluent-style API for setting a value on a reference type and returning the type
     /// - Parameter keyPath: the path to assign
     /// - Parameter value: the value to set
@@ -758,19 +773,78 @@ extension FacetedEncoding.EncodingYError2 : VizEncodingType {
     }
 }
 
+
+// MARK: VizEncode: X
+
 extension VizEncode where Encoding == FacetedEncoding.EncodingX {
     enum EncodingXType { case x }
+}
 
+extension VizEncode where Encoding == FacetedEncoding.EncodingX, Def == FacetedEncoding.EncodingX.RawValue.RawValue.T1 {
     init(_ x: EncodingXType, field: FieldName) {
-        self.encoding = .init(.init(.init(field: .init(field))))
+        self.def = .init(field: .init(field))
+        self.def2enc = { .init(.init($0)) }
     }
 }
 
+
+// MARK: VizEncode: Y
+
 extension VizEncode where Encoding == FacetedEncoding.EncodingY {
     enum EncodingYType { case y }
+}
 
+extension VizEncode where Encoding == FacetedEncoding.EncodingY, Def == FacetedEncoding.EncodingY.RawValue.RawValue.T1 {
     init(_ y: EncodingYType, field: FieldName) {
-        self.encoding = .init(.init(.init(field: .init(field))))
+        self.def = .init(field: .init(field))
+        self.def2enc = { .init(.init($0)) }
+    }
+}
+
+
+// MARK: VizEncode: Color
+
+extension VizEncode where Encoding == FacetedEncoding.EncodingColor {
+    enum EncodingColorType { case color }
+}
+
+extension VizEncode where Encoding == FacetedEncoding.EncodingColor, Def == FacetedEncoding.EncodingColor.RawValue.RawValue.T1 {
+
+    init(_ color: EncodingColorType, field: FieldName) {
+        self.def = .init(field: .init(field))
+        self.def2enc = { .init(.init($0)) }
+    }
+}
+
+
+// MARK: VizEncode: Size
+
+extension VizEncode where Encoding == FacetedEncoding.EncodingSize {
+    enum EncodingSizeType { case size }
+}
+
+extension VizEncode where Encoding == FacetedEncoding.EncodingSize, Def == FacetedEncoding.EncodingSize.RawValue.RawValue.T1 {
+
+    init(_ size: EncodingSizeType, field: FieldName) {
+        self.def = .init(field: .init(field))
+        self.def2enc = { .init(.init($0)) }
+    }
+}
+
+//extension VizEncode where Encoding == FacetedEncoding.EncodingSize, Def == FacetedEncoding.EncodingSize.RawValue.RawValue.T2 {
+//
+//    init(_ size: EncodingSizeType, field: FieldName) {
+//        self.def = .init(bandPosition: <#T##Double?#>, condition: <#T##FieldOrDatumDefWithConditionDatumDefNumber.ConditionChoice?#>, datum: <#T##FieldOrDatumDefWithConditionDatumDefNumber.DatumChoice?#>, type: <#T##MeasureType?#>)
+//        self.def2enc = { .init(.init($0)) }
+//    }
+//}
+
+
+extension VizEncode where Encoding == FacetedEncoding.EncodingSize, Def == FacetedEncoding.EncodingSize.RawValue.RawValue.T3 {
+
+    init(_ size: EncodingSizeType, value: Double) {
+        self.def = .init(value: .init(value))
+        self.def2enc = { .init(.init($0)) }
     }
 }
 
