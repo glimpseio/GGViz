@@ -211,27 +211,30 @@ final class GGDSLTests: XCTestCase {
 
     }
 
+    typealias SimpleViz = Viz<Bric.ObjType>
 
     func testSimpleSpec() throws {
-        VizMark(.bar) {
-//                VizEncode(.x, field: FieldName("a")).measure(.nominal)
-//                VizEncode(.y, field: FieldName("b")).measure(.quantitative)
-        }
-
-
         let viz = SimpleViz {
-            VizMark(.bar) {
+            //VizEncode(.color, field: FieldName("c"))//.measure(.ordinal)
 
+            VizMark(.bar) {
+                VizEncode(.x, field: FieldName("a")).measure(.nominal)
+                VizEncode(.y, field: FieldName("b"))//.measure(.quantitative)
             }
             .cornerRadius(.init(10))
         }
+        .title(.init(.init("Bar Chart")))
         .description("A simple bar chart with embedded data.")
-        //.title(.init(.init("xxx")))
 
         try check(viz: viz, againstJSON: """
         {
-          "description": "A simple bar chart with embedded data.",
-          "mark": {"cornerRadius":10,"type":"bar"},
+            "title": "Bar Chart",
+            "description": "A simple bar chart with embedded data.",
+            "mark": { "cornerRadius": 10, "type": "bar" },
+            "encoding": {
+                "x": { "field": "a" },
+                "y": { "field":"b" }
+            }
         }
         """)
 
@@ -334,9 +337,10 @@ typealias RFacet<Field> = FacetLayer<Field, RFacetOrient>
 
 protocol VizMarkType {
     var anyMark: AnyMark { get }
+    var encodings: FacetedEncoding { get }
 }
 
-protocol VizMarkDefType {
+protocol VizMarkDefType : Pure {
     var anyMark: AnyMark { get }
 }
 
@@ -357,73 +361,66 @@ extension ErrorBandDef : VizMarkDefType {
 }
 
 @dynamicMemberLookup
-struct VizMark<Def : VizMarkDefType> : VizMarkType {
+struct VizMark<Def : VizMarkDefType> : VizMarkType, Equatable {
     var markDef: Def
+    var encodings: FacetedEncoding = FacetedEncoding()
     var anyMark: AnyMark { markDef.anyMark }
 }
 
+extension VizMark {
+    fileprivate mutating func addEncodings(_ newEncodings: [VizEncodeType]) {
+        for enc in newEncodings {
+            enc.addEncoding(to: &encodings)
+        }
+    }
+}
+
 extension VizMark where Def == MarkDef {
-    init(_ primitiveMark: PrimitiveMarkType, @VizEncodeArrayBuilder makeEncodings: () -> [VizEncode]) {
+    init(_ primitiveMark: PrimitiveMarkType, @VizEncodeArrayBuilder makeEncodings: () -> [VizEncodeType]) {
         markDef = MarkDef(type: primitiveMark)
+        addEncodings(makeEncodings())
     }
 }
 
 extension VizMark where Def == BoxPlotDef {
-    init(_ boxPlot: BoxPlotLiteral, @VizEncodeArrayBuilder makeEncodings: () -> [VizEncode]) {
+    init(_ boxPlot: BoxPlotLiteral, @VizEncodeArrayBuilder makeEncodings: () -> [VizEncodeType]) {
         markDef = BoxPlotDef(type: boxPlot)
+        addEncodings(makeEncodings())
     }
 }
 
 extension VizMark where Def == ErrorBarDef {
-    init(_ errorBar: ErrorBarLiteral, @VizEncodeArrayBuilder makeEncodings: () -> [VizEncode]) {
+    init(_ errorBar: ErrorBarLiteral, @VizEncodeArrayBuilder makeEncodings: () -> [VizEncodeType]) {
         markDef = ErrorBarDef(type: errorBar)
+        addEncodings(makeEncodings())
     }
 }
 
 extension VizMark where Def == ErrorBandDef {
-    init(_ errorBand: ErrorBandLiteral, @VizEncodeArrayBuilder makeEncodings: () -> [VizEncode]) {
+    init(_ errorBand: ErrorBandLiteral, @VizEncodeArrayBuilder makeEncodings: () -> [VizEncodeType]) {
         markDef = ErrorBandDef(type: errorBand)
+        addEncodings(makeEncodings())
     }
 }
 
-struct VizEncode {
-
-    init(_ encodeType: EncodingChannel, field: FieldName) {
-    }
+protocol VizEncodeType {
+    /// Adds this encoding information to the given `FacetedEncoding`
+    func addEncoding(to encodings: inout FacetedEncoding)
 }
 
-extension VizEncode {
-    func measure(_ measureType: StandardMeasureType) -> Self {
-        self
-    }
+
+protocol VizEncodingType : Pure {
+    func addEncoding(to encodings: inout FacetedEncoding)
 }
 
-extension Equatable {
-    /// Fluent-style API for setting a value on a reference type and returning the type
-    /// - Parameter keyPath: the path to assign
-    /// - Parameter value: the value to set
-    func setting<T>(path keyPath: WritableKeyPath<Self, T>, to value: T) -> Self {
-        var this = self
-        this[keyPath: keyPath] = value
-        return this
+@dynamicMemberLookup
+struct VizEncode<Encoding : VizEncodingType> : VizEncodeType, Equatable {
+    var encoding: Encoding
+
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encoding.addEncoding(to: &encodings)
     }
 }
-
-//protocol VizMark {
-//    static var markType: MarkType { get }
-//}
-
-//struct BarMark : VizMark {
-//    static let markType: MarkType = .bar
-//}
-//
-//struct TextMark : VizMark {
-//    static let markType: MarkType = .text
-//}
-//
-//protocol VizChannel {
-//    static var channelType: EncodingChannel { get }
-//}
 
 
 @resultBuilder
@@ -459,48 +456,15 @@ enum VizArrayBuilder<T> {
 }
 
 typealias VizMarkArrayBuilder = VizArrayBuilder<VizMarkType>
-typealias VizEncodeArrayBuilder = VizArrayBuilder<VizEncode>
+typealias VizEncodeArrayBuilder = VizArrayBuilder<VizEncodeType>
 
-@resultBuilder
-enum VizMarkArrayBuilderOLD {
-    static func buildEither(first component: [VizMarkType]) -> [VizMarkType] {
-        return component
-    }
-
-    static func buildEither(second component: [VizMarkType]) -> [VizMarkType] {
-        return component
-    }
-
-    static func buildOptional(_ component: [VizMarkType]?) -> [VizMarkType] {
-        return component ?? []
-    }
-
-    static func buildBlock(_ components: [VizMarkType]...) -> [VizMarkType] {
-        return components.flatMap { $0 }
-    }
-
-    static func buildExpression(_ expression: VizMarkType) -> [VizMarkType] {
-        return [expression]
-    }
-
-    static func buildExpression(_ expression: Void) -> [VizMarkType] {
-        return []
-    }
-
-//    @available(*, unavailable, message: "first statement of builder be an element")
-//    static func buildBlock(_ components: VizChannel...) -> [VizChannel] {
-//      fatalError()
-//    }
-}
-
-typealias SimpleViz = Viz<Bric.ObjType>
 
 @dynamicMemberLookup
 struct Viz<M: VizSpecMeta> : Equatable {
     var spec: VizSpec<M>
 
-    init(spec: VizSpec<M> = VizSpec(), @VizMarkArrayBuilder _ makeMarks: () -> [VizMarkType]) {
-        self.spec = spec
+    init(@VizMarkArrayBuilder _ makeMarks: () -> [VizMarkType]) {
+        self.spec = VizSpec()
 
         let marks = makeMarks()
         if marks.count == 0 {
@@ -508,39 +472,305 @@ struct Viz<M: VizSpecMeta> : Equatable {
         } else if marks.count == 1 {
             for mark in marks {
                 self.spec.mark = mark.anyMark
+                self.spec.encoding = mark.encodings
             }
         } else {
             for mark in marks {
-                self.spec.sublayers.append(VizSpec(mark: mark.anyMark))
+                var layer = VizSpec<M>(mark: mark.anyMark)
+                layer.encoding = mark.encodings
+                self.spec.sublayers.append(layer)
             }
         }
     }
 }
 
 extension Viz {
-    /// Creates a setter function for the given dynamic keypath
+    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the properties
     public subscript<U>(dynamicMember keyPath: WritableKeyPath<VizSpec<M>, U>) -> (U) -> (Self) {
-        get {
-            { newValue in
-                var spec = self.spec
-                spec[keyPath: keyPath] = newValue
-                return Viz(spec: spec) { }
-            }
-        }
+        setting(path: (\Self.spec).appending(path: keyPath))
     }
-
 }
 
 extension VizMark {
-    /// Creates a setter function for the given dynamic keypath
+    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the properties
     public subscript<U>(dynamicMember keyPath: WritableKeyPath<Def, U>) -> (U) -> (Self) {
-        get {
-            { newValue in
-                var def = self.markDef
-                def[keyPath: keyPath] = newValue
-                return VizMark(markDef: def)
-            }
+        setting(path: (\Self.markDef).appending(path: keyPath))
+    }
+}
+
+extension VizEncode {
+    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the properties
+    public subscript<U>(dynamicMember keyPath: WritableKeyPath<Encoding, U>) -> (U) -> (Self) {
+        setting(path: (\Self.encoding).appending(path: keyPath))
+    }
+}
+
+extension VizEncode {
+    public func measure(_ measure: StandardMeasureType) -> Self {
+        var this = self
+        return this
+    }
+}
+
+
+extension Equatable {
+    /// Fluent-style API for setting a value on a reference type and returning the type
+    /// - Parameter keyPath: the path to assign
+    /// - Parameter value: the value to set
+    func setting<T>(path keyPath: WritableKeyPath<Self, T>) -> (_ value: T) -> Self {
+        { value in
+            var this = self
+            this[keyPath: keyPath] = value
+            return this
         }
     }
-
 }
+
+
+
+// MARK: VizEncodingType Boilerplate
+
+extension FacetedEncoding.EncodingAngle : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.angle = self
+    }
+}
+
+extension FacetedEncoding.EncodingColor : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.color = self
+    }
+}
+
+extension FacetedEncoding.EncodingColumn : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.column = self
+    }
+}
+
+extension FacetedEncoding.EncodingDescription : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.description = self
+    }
+}
+
+extension FacetedEncoding.EncodingDetail : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.detail = self
+    }
+}
+
+extension FacetedEncoding.EncodingFacet : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.facet = self
+    }
+}
+
+extension FacetedEncoding.EncodingFill : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.fill = self
+    }
+}
+
+extension FacetedEncoding.EncodingFillOpacity : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.fillOpacity = self
+    }
+}
+
+extension FacetedEncoding.EncodingHref : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.href = self
+    }
+}
+
+extension FacetedEncoding.EncodingKey : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.key = self
+    }
+}
+
+extension FacetedEncoding.EncodingLatitude : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.latitude = self
+    }
+}
+
+extension FacetedEncoding.EncodingLatitude2 : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.latitude2 = self
+    }
+}
+
+extension FacetedEncoding.EncodingLongitude : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.longitude = self
+    }
+}
+
+extension FacetedEncoding.EncodingLongitude2 : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.longitude2 = self
+    }
+}
+
+extension FacetedEncoding.EncodingOpacity : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.opacity = self
+    }
+}
+
+extension FacetedEncoding.EncodingOrder : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.order = self
+    }
+}
+
+extension FacetedEncoding.EncodingRadius : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.radius = self
+    }
+}
+
+extension FacetedEncoding.EncodingRadius2 : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.radius2 = self
+    }
+}
+
+extension FacetedEncoding.EncodingRow : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.row = self
+    }
+}
+
+extension FacetedEncoding.EncodingShape : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.shape = self
+    }
+}
+
+extension FacetedEncoding.EncodingSize : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.size = self
+    }
+}
+
+extension FacetedEncoding.EncodingStroke : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.stroke = self
+    }
+}
+
+extension FacetedEncoding.EncodingStrokeDash : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.strokeDash = self
+    }
+}
+
+extension FacetedEncoding.EncodingStrokeOpacity : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.strokeOpacity = self
+    }
+}
+
+extension FacetedEncoding.EncodingStrokeWidth : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.strokeWidth = self
+    }
+}
+
+extension FacetedEncoding.EncodingText : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.text = self
+    }
+}
+
+extension FacetedEncoding.EncodingTheta : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.theta = self
+    }
+}
+
+extension FacetedEncoding.EncodingTheta2 : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.theta2 = self
+    }
+}
+
+extension FacetedEncoding.EncodingTooltip : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.tooltip = self
+    }
+}
+
+extension FacetedEncoding.EncodingUrl : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.url = self
+    }
+}
+
+extension FacetedEncoding.EncodingX : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.x = self
+    }
+}
+
+extension FacetedEncoding.EncodingX2 : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.x2 = self
+    }
+}
+
+extension FacetedEncoding.EncodingXError : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.xError = self
+    }
+}
+
+extension FacetedEncoding.EncodingXError2 : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.xError2 = self
+    }
+}
+
+extension FacetedEncoding.EncodingY : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.y = self
+    }
+}
+
+extension FacetedEncoding.EncodingY2 : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.y2 = self
+    }
+}
+
+extension FacetedEncoding.EncodingYError : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.yError = self
+    }
+}
+
+extension FacetedEncoding.EncodingYError2 : VizEncodingType {
+    func addEncoding(to encodings: inout FacetedEncoding) {
+        encodings.yError2 = self
+    }
+}
+
+extension VizEncode where Encoding == FacetedEncoding.EncodingX {
+    enum EncodingXType { case x }
+
+    init(_ x: EncodingXType, field: FieldName) {
+        self.encoding = .init(.init(.init(field: .init(field))))
+    }
+}
+
+extension VizEncode where Encoding == FacetedEncoding.EncodingY {
+    enum EncodingYType { case y }
+
+    init(_ y: EncodingYType, field: FieldName) {
+        self.encoding = .init(.init(.init(field: .init(field))))
+    }
+}
+

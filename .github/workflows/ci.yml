@@ -56,7 +56,6 @@ jobs:
     needs: [Linux] # Linux must pass first
     env:
       DEVELOPER_DIR: /Applications/Xcode_12.5.app/Contents/Developer
-5
 
     steps:
       - uses: actions/checkout@v2
