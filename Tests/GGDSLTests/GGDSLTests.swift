@@ -12,17 +12,100 @@ final class GGDSLTests: XCTestCase {
         }
     }
 
-    func testSimpleSpec() throws {
-        let viz = SimpleViz {
+    func testVizMark() throws {
+        try check(viz: SimpleViz {
+            VizMark(.square)
+        }, againstJSON: """
+        {
+            "mark": { "type": "square" }
+        }
+        """)
+    }
+
+    func testVizLayer() throws {
+        try check(viz: SimpleViz {
+            VizLayer(.overlay)
+        }, againstJSON: """
+        {
+            "layer": []
+        }
+        """)
+
+        try check(viz: SimpleViz {
+            VizLayer(.vconcat)
+        }, againstJSON: """
+        {
+            "vconcat": []
+        }
+        """)
+
+        try check(viz: SimpleViz {
+            VizLayer(.hconcat) {
+                VizMark(.bar)
+                VizMark(.line)
+                VizMark(.area)
+            }
+        }, againstJSON: """
+        {
+            "hconcat": [
+                { "mark": { "type": "bar" } },
+                { "mark": { "type": "line" } },
+                { "mark": { "type": "area" } }
+            ]
+        }
+        """)
+
+        try check(viz: SimpleViz {
+            VizLayer(.concat) {
+                VizMark(.bar) {
+                    VizEncode(.x)
+                    VizEncode(.y)
+                }
+            }
+        }, againstJSON: """
+        {"concat":[{"encoding":{"x":{},"y":{}},"mark":{"type":"bar"}}]}
+        """)
+
+    }
+
+    func testVizProjection() throws {
+        try check(viz: SimpleViz {
+            VizProjection()
+        }, againstJSON: """
+        {
+            "projection": { }
+        }
+        """)
+
+        try check(viz: SimpleViz {
+            VizProjection(.albersUsa)
+                .precision(.init(0.1))
+        }, againstJSON: """
+        {
+            "projection": {
+                "precision": 0.1,
+                "type": "albersUsa"
+            }
+        }
+        """)
+    }
+
+
+    func testRandomSpecs() throws {
+        _ = SimpleViz {
             VizTheme()
                 .font(.init("serif"))
                 .title(.init(fontSize: .init(ExprRef(expr: Expr("width * 0.05")))))
 
-            VizMark(.circle) {
-            }
+            VizMark(.arc)
 
-            VizMark(.boxplot) {
-            }
+            VizMark(.area)
+
+            VizMark(.geoshape)
+
+            VizMark(.text)
+
+            VizMark(.boxplot)
 
             VizMark(.bar) {
                 do {
@@ -49,13 +132,36 @@ final class GGDSLTests: XCTestCase {
                 }
 
                 do {
+                    VizEncode(.x2)
+                    VizEncode(.y2)
+                }
+
+                do {
+                    VizEncode(.latitude)
+                    VizEncode(.latitude2)
+                    VizEncode(.longitude)
+                    VizEncode(.longitude2)
+                }
+
+                do {
+//                    VizEncode(.description)
+//                    VizEncode(.href)
+//                    VizEncode(.url)
+//                    VizEncode(.key)
+//                    VizEncode(.order)
+//                    VizEncode(.shape)
+//                    VizEncode(.strokeDash)
+//                    VizEncode(.text)
+//                    VizEncode(.tooltip)
+//                    VizEncode(.detail)
+                }
+
+                do {
                     VizEncode(.color)
                     VizEncode(.color, field: FieldName("c"))
                         .legend(.init(nil))
                         .title(.init(.init("Colorful")))
                     VizEncode(.color, value: .null)
-                    VizEncode(.color, value: "red")
-
                     VizEncode(.color, value: "red")
                     //VizEncode(.color, value: .init(.init(.steelblue)))
                 }
@@ -68,6 +174,42 @@ final class GGDSLTests: XCTestCase {
                     VizEncode(.size, value: 33)
                 }
 
+                VizEncode(.x, field: FieldName("a"))
+                    .type(.nominal)
+                    .aggregate(.sum)
+                    .axis(.init(nil))
+
+                VizEncode(.y)
+                    .field(Field(FieldName("b")))
+                    .type(.quantitative)
+                    .bandPosition(11)
+
+                VizEncode(.color, field: FieldName("c"))
+                    .legend(.init(nil))
+                    .type(.ordinal)
+
+                VizEncode(.size, datum: 44)
+
+                do {
+                    VizEncode(.row)
+                    VizEncode(.column)
+                    VizEncode(.facet)
+                }
+
+            }
+            .cornerRadius(.init(10))
+        }
+        .title(.init(.init("Bar Chart")))
+        .description("A simple bar chart with embedded data.")
+    }
+
+    func testCondigSpec() throws {
+        let viz = SimpleViz {
+            VizTheme()
+                .font(.init("serif"))
+                .title(.init(fontSize: .init(ExprRef(expr: Expr("width * 0.05")))))
+
+            VizMark(.bar) {
                 VizEncode(.x, field: FieldName("a"))
                     .type(.nominal)
                     .aggregate(.sum)
