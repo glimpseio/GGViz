@@ -4,6 +4,16 @@ import GGSpec
 @available(*, deprecated, renamed: "PrimitiveMarkType")
 public typealias Mark = PrimitiveMarkType
 
+@available(*, deprecated, renamed: "BoxPlotLiteral")
+public typealias BoxPlot = BoxPlotLiteral
+
+@available(*, deprecated, renamed: "ErrorBarLiteral")
+public typealias ErrorBar = ErrorBarLiteral
+
+@available(*, deprecated, renamed: "ErrorBandLiteral")
+public typealias ErrorBand = ErrorBandLiteral
+
+
 /// The type of ancoding channel; x, y, shape, color, etc…
 public typealias EncodingChannel = FacetedEncoding.CodingKeys
 
@@ -527,7 +537,7 @@ public extension MarkDef {
 
 public extension MarkType {
     /// Returns `true` if this is a simple mark type (e.g, a `point`)
-    var isSimpleMark: Bool {
+    var isPrimitiveMark: Bool {
         switch markChoice {
         case .v1: return true
         case .v2: return false
