@@ -1,10 +1,17 @@
 import GGSpec
 
-/// A VizSpec that treats its metadata as an unstructured `Bric`
+/// The old alias for the PrimitiveMarkType
+@available(*, deprecated, renamed: "PrimitiveMarkType")
+public typealias Mark = PrimitiveMarkType
+
+/// The type of ancoding channel; x, y, shape, color, etc…
+public typealias EncodingChannel = FacetedEncoding.CodingKeys
+
+/// A VizSpec that stores its metadata as an unstructured JSON object.
 public typealias SimpleVizSpec = VizSpec<Bric.ObjType>
 
-/// The metadata associated with a `VizSpec`, which can be any `Hashable` & `Codable` type.
-public typealias VizSpecMeta = Hashable & Codable
+/// The metadata associated with a `VizSpec`, which can be any `Pure` (`Hashable` + `Codable` + `Sendable`)  type.
+public typealias VizSpecMeta = Pure
 
 /// A source of data for a layer
 public typealias VizDataSource = Nullable<DataProvider> // e.g., TopLevelUnitSpec.DataChoice
@@ -321,6 +328,9 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
 }
 
 
+// MARK: Layer Arrangement
+
+
 /// Child layers of this layer are arranged.
 public enum LayerArrangement : String, CaseIterable, Codable, Hashable {
     case overlay
@@ -448,4 +458,161 @@ public extension VizSpec {
 
 }
 
+
+
+// MARK: Mark types
+
+/// An identifier for a mark type.
+/// Isomorphic with `MarkChoice` (i.e., `OneOf2<PrimitiveMarkType, CompositeMark>`).
+public enum MarkType: String, CaseIterable, Hashable, Codable {
+    case point
+    case circle
+    case square
+    case rect
+
+    case text
+    case tick
+    case rule
+
+    case bar
+    case line
+    case area
+    case trail
+
+    case arc
+
+    case geoshape
+    case image
+
+    case boxplot
+    case errorbar
+    case errorband
+}
+
+/// Internal choice for a differnet mark type; used internally by `MarkType`
+public typealias MarkChoice = OneOf<PrimitiveMarkType>.Or<CompositeMark>
+
+/// An `AnyMarkDef` is a compound enumeration of the different mark types
+/// This is the complex enum part of:
+/// `AnyMark = OneOf4<CompositeMark, CompositeMarkDef, Mark, MarkDef>`
+public typealias AnyMarkDef = OneOf<MarkDef>.Or<CompositeMarkDef>
+
+extension AnyMarkDef {
+    public var markChoice: MarkChoice {
+        switch self {
+        case .v1(let x): return .init(x.type)
+        case .v2(let x): return .init(x.type)
+        }
+    }
+}
+
+public extension CompositeMarkDef {
+    /// Returns the `CompositeMark` type of this mark type
+    var type: CompositeMark {
+        switch rawValue {
+        case .v1(let x): return .init(.init(x.type))
+        case .v2(let x): return .init(.init(x.type))
+        case .v3(let x): return .init(.init(x.type))
+        }
+    }
+}
+
+public extension MarkDef {
+    var markChoice: MarkChoice {
+        return .init(self.type)
+    }
+}
+
+
+
+public extension MarkType {
+    /// Returns `true` if this is a simple mark type (e.g, a `point`)
+    var isSimpleMark: Bool {
+        switch markChoice {
+        case .v1: return true
+        case .v2: return false
+        }
+    }
+
+    /// Returns `true` if this is a composite mark type (e.g, a `boxplot`)
+    var isCompositeMark: Bool {
+        switch markChoice {
+        case .v1: return false
+        case .v2: return true
+        }
+    }
+
+}
+
+extension MarkType {
+    /// Convert from this single enum to a `MarkChoice` (aka ` OneOf2<PrimitiveMarkType, CompositeMark>`)
+    @inlinable public var markChoice: MarkChoice {
+        switch self {
+        case .arc: return .init(.arc)
+        case .area: return .init(.area)
+        case .bar: return .init(.bar)
+        case .line: return .init(.line)
+        case .trail: return .init(.trail)
+        case .point: return .init(.point)
+        case .text: return .init(.text)
+        case .tick: return .init(.tick)
+        case .rect: return .init(.rect)
+        case .rule: return .init(.rule)
+        case .circle: return .init(.circle)
+        case .square: return .init(.square)
+        case .image: return .init(.image)
+        case .geoshape: return .init(.geoshape)
+        case .boxplot: return .init(.boxplot)
+        case .errorbar: return .init(.errorbar)
+        case .errorband: return .init(.errorband)
+        }
+    }
+}
+
+public extension PrimitiveMarkType {
+    var markType: MarkType {
+        switch self {
+        case .arc: return .arc
+        case .area: return .area
+        case .bar: return .bar
+        case .line: return .line
+        case .trail: return .trail
+        case .point: return .point
+        case .text: return .text
+        case .tick: return .tick
+        case .rect: return .rect
+        case .rule: return .rule
+        case .circle: return .circle
+        case .square: return .square
+        case .image: return .image
+        case .geoshape: return .geoshape
+        }
+    }
+}
+
+public extension MarkChoice {
+    /// The unified `MarkType` for this mark
+    var markType: MarkType {
+        self[routing: (\.markType, \.markType)]
+    }
+}
+
+
+public extension CompositeMark { // i.e., OneOf3<BoxPlot, ErrorBar, ErrorBand>
+    static let boxplot = Self(.init(.boxplot))
+    static let errorbar = Self(.init(.errorbar))
+    static let errorband = Self(.init(.errorband))
+
+
+    var markType: MarkType {
+        func check<T, U>(arg typeValue: T, is type: T.Type, value: U) -> U {
+            value
+        }
+        switch self.rawValue {
+        case .v1(let x): return check(arg: x, is: BoxPlot.self, value: .boxplot)
+        case .v2(let x): return check(arg: x, is: ErrorBar.self, value: .errorbar)
+        case .v3(let x): return check(arg: x, is: ErrorBand.self, value: .errorband)
+        }
+    }
+}
 

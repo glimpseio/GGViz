@@ -1,6 +1,7 @@
 import Foundation
 import MiscKit
 
+
 extension Scenegraph {
     /// Returns the root `Mark` of the scenegraph
     public var root: SceneMark {
