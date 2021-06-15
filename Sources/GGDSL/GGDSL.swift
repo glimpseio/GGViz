@@ -46,6 +46,11 @@ extension ErrorBandDef : VizMarkDefType {
 }
 
 
+public protocol VizTransformDefType : Pure {
+    var anyTransform: Transform { get }
+}
+
+
 @dynamicMemberLookup
 public struct VizTheme : VizSpecElementType, VizDSLType {
     var config: GGSpec.Config
@@ -58,7 +63,7 @@ public struct VizTheme : VizSpecElementType, VizDSLType {
         spec.config = config
     }
 
-    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the properties
+    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
     public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSpec.Config, U>) -> (U) -> (Self) {
         setting(path: (\Self.config).appending(path: keyPath))
     }
@@ -79,22 +84,55 @@ public struct VizProjection : VizSpecElementType, VizDSLType {
         spec.projection = projection
     }
 
-    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the properties
+    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
     public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSpec.Projection, U>) -> (U) -> (Self) {
         setting(path: (\Self.projection).appending(path: keyPath))
     }
 }
 
 
+// MARK: DataTransform
+
+
+@dynamicMemberLookup
+public struct VizTransform<Def : VizTransformDefType> : VizSpecElementType, VizDSLType {
+    public var transformDef: Def
+
+    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+        spec.transform[defaulting: []].append(transformDef.anyTransform)
+    }
+
+    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
+    public subscript<U>(dynamicMember keyPath: WritableKeyPath<Def, U>) -> (U) -> (Self) {
+        setting(path: (\Self.transformDef).appending(path: keyPath))
+    }
+}
+
+// MARK: DataTransform: Sample
+
+extension SampleTransform : VizTransformDefType {
+    public var anyTransform: Transform { .init(self) }
+}
+
+public extension VizTransform where Def == SampleTransform {
+    enum SampleLiteral { case sample }
+    init(_ sampleTransform: SampleLiteral, sample: Double = 999) {
+        self.transformDef = .init(sample: sample)
+    }
+}
+
+
+
+// MARK: Marks
+
+
 @dynamicMemberLookup
 public struct VizMark<Def : VizMarkDefType> : VizMarkType, VizDSLType {
     public var markDef: Def
     public var encodings: FacetedEncoding = FacetedEncoding()
-}
 
-public extension VizMark {
-    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the properties
-    subscript<U>(dynamicMember keyPath: WritableKeyPath<Def, U>) -> (U) -> (Self) {
+    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
+    public subscript<U>(dynamicMember keyPath: WritableKeyPath<Def, U>) -> (U) -> (Self) {
         setting(path: (\Self.markDef).appending(path: keyPath))
     }
 }
@@ -102,7 +140,7 @@ public extension VizMark {
 public extension VizMark {
     /// Adds this `VizMark` to an enclosing spec
     func add<M>(to spec: inout VizSpec<M>) where M : Pure {
-        spec.mark = self.markDef.anyMark
+        spec.mark = self.markDef.anyMark.compactRepresentation
         spec.encoding[defaulting: .init()] = self.encodings
     }
 }
@@ -184,20 +222,24 @@ public protocol VizEncodingChannelType : Pure, RawCodable {
 }
 
 @dynamicMemberLookup
-public struct VizEncode<Channel : VizEncodingChannelType, Def : Pure> : VizEncodeType {
+public struct VizEncode<Channel : VizEncodingChannelType, Def : Pure> {
     private var def: Def
     private let def2enc: (Def) -> (Channel)
-}
 
-public extension VizEncode {
-    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the properties
-    subscript<U>(dynamicMember keyPath: WritableKeyPath<Def, U>) -> (U) -> (Self) {
-         setting(path: (\Self.def).appending(path: keyPath))
+    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
+    public subscript<U>(dynamicMember keyPath: WritableKeyPath<Def, U>) -> (U) -> (Self) {
+        setting(path: (\Self.def).appending(path: keyPath))
     }
 }
 
-public extension VizEncode {
-    func addEncoding(to encodings: inout FacetedEncoding) {
+extension VizEncode : VizSpecElementType {
+    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+        def2enc(def).addChannel(to: &spec.encoding[defaulting: .init()])
+    }
+}
+
+extension VizEncode : VizEncodeType {
+    public func addEncoding(to encodings: inout FacetedEncoding) {
         def2enc(def).addChannel(to: &encodings)
     }
 }
@@ -262,20 +304,26 @@ public struct VizLayer : VizSpecElementType, VizLayerType {
 //        spec.sublayers = self.layers
         for element in makeElements() {
             var child = VizSpec<M>()
-            element.add(to: &child)
+            let shouldAddToParent = false
+            if shouldAddToParent {
+                element.add(to: &spec)
+            } else {
+                element.add(to: &child)
+            }
             spec.sublayers.append(child)
         }
     }
 
-//    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the properties
+//    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
 //    public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSpec.Projection, U>) -> (U) -> (Self) {
 //        setting(path: (\Self.projection).appending(path: keyPath))
 //    }
 }
 
+/// A `Viz` encapsulates a top-level `VizSpec` layer and is used as the basis for the builder DSL.
 @dynamicMemberLookup
 public struct Viz<M: Pure> : VizLayerType {
-    var spec: VizSpec<M>
+    public private(set) var spec: VizSpec<M>
 
     public init(@VizSpecElementArrayBuilder _ makeElements: () -> [VizSpecElementType]) {
         var spec = VizSpec<M>()
@@ -284,11 +332,9 @@ public struct Viz<M: Pure> : VizLayerType {
         }
         self.spec = spec
     }
-}
 
-public extension Viz {
-    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the properties
-    subscript<U>(dynamicMember keyPath: WritableKeyPath<VizSpec<M>, U>) -> (U) -> (Self) {
+    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
+    public subscript<U>(dynamicMember keyPath: WritableKeyPath<VizSpec<M>, U>) -> (U) -> (Self) {
         setting(path: (\Self.spec).appending(path: keyPath))
     }
 }
@@ -330,6 +376,9 @@ extension VizDSLType {
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingX {
     enum XChannel { case x }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Empty Initializers
@@ -452,6 +501,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Ch
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingY {
     enum YChannel { case y }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Empty Initializers
@@ -570,6 +622,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Ch
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingX2 {
     enum X2Channel { case x2 }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Empty Initializers
@@ -691,6 +746,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == C
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingY2 {
     enum Y2Channel { case y2 }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Empty Initializers
@@ -809,6 +867,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == C
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingColor {
     enum ColorChannel { case color }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -929,6 +990,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def =
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingFill {
     enum FillChannel { case fill }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -1049,13 +1113,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def ==
 
 
 
-
-
-
 // MARK: VizEncode: Stroke
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingStroke {
     enum StrokeChannel { case stroke }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -1169,13 +1233,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def 
 }
 
 
-
-
-
 // MARK: VizEncode: size
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingSize {
     enum SizeChannel { case size }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -1271,14 +1335,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
 
 
 
-
-
-
-
 // MARK: VizEncode: strokeWidth
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth {
     enum StrokeWidthChannel { case strokeWidth }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -1374,13 +1437,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
 
 
 
-
-
-
 // MARK: VizEncode: strokeOpacity
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacity {
     enum StrokeOpacityChannel { case strokeOpacity }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -1476,15 +1539,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
 
 
 
-
-
-
-
-
 // MARK: VizEncode: fillOpacity
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity {
     enum FillOpacityChannel { case fillOpacity }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -1580,14 +1641,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
 
 
 
-
-
-
-
 // MARK: VizEncode: opacity
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity {
     enum OpacityChannel { case opacity }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -1683,12 +1743,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
 
 
 
-
-
 // MARK: VizEncode: angle
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingAngle {
     enum AngleChannel { case angle }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -1784,13 +1845,14 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
 
 
 
-
-
 // MARK: VizEncode: theta
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingTheta {
     enum ThetaChannel { case theta }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -1900,10 +1962,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
 }
 
 
-// MARK: VizEncode: theta
+// MARK: VizEncode: theta2
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2 {
     enum Theta2Channel { case theta2 }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -2013,12 +2078,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
 
 
 
-
-
 // MARK: VizEncode: radius
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingRadius {
     enum RadiusChannel { case radius }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -2129,12 +2195,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
 
 
 
-
-
 // MARK: VizEncode: radius2
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2 {
     enum Radius2Channel { case radius2 }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Field Initializers
@@ -2245,12 +2312,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
 
 
 
-
-
 // MARK: VizEncode: xError
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingXError {
     enum XErrorChannel { case xError }
+    typealias ChannelFieldType = Channel.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.T2
 }
 
 /// Empty Initializers
@@ -2286,6 +2354,8 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError, Def 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingXError2 {
     enum XError2Channel { case xError2 }
+    typealias ChannelFieldType = Channel.RawValue.T1
+    typealias ChannelValueType = Channel.RawValue.T2
 }
 
 /// Empty Initializers
@@ -2320,6 +2390,8 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError2, Def
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingYError {
     enum YErrorChannel { case yError }
+    typealias ChannelFieldType = Channel.RawValue.T1
+    typealias ChannelValueType = Channel.RawValue.T2
 }
 
 /// Empty Initializers
@@ -2348,12 +2420,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError, Def 
 
 
 
-
 // MARK: VizEncode: yError2
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingYError2 {
     enum YError2Channel { case yError2 }
+    typealias ChannelFieldType = Channel.RawValue.T1
+    typealias ChannelValueType = Channel.RawValue.T2
 }
 
 /// Empty Initializers
@@ -2382,13 +2455,12 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError2, Def
 
 
 
-
-
 // MARK: VizEncode: column
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingColumn {
     enum ColumnChannel { case column }
+    typealias ChannelFieldType = Channel.RawValue
 }
 
 /// Empty Initializers
@@ -2411,6 +2483,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColumn, Def 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingRow {
     enum RowChannel { case row }
+    typealias ChannelFieldType = Channel.RawValue
 }
 
 /// Empty Initializers
@@ -2436,6 +2509,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRow, Def == 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingFacet {
     enum FacetChannel { case facet }
+    typealias ChannelFieldType = Channel.RawValue
 }
 
 /// Empty Initializers
@@ -2454,12 +2528,14 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFacet, Def =
 }
 
 
-
-
 // MARK: VizEncode: latitude
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude {
     enum LatitudeChannel { case latitude }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelValueType = Channel.RawValue.RawValue.T2
+
+//    func fieldType(for field: Self.ChannelFieldType) -> Self.ChannelFieldType { field }
 }
 
 /// Empty Initializers
@@ -2546,6 +2622,8 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, De
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude {
     enum LongitudeChannel { case longitude }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelValueType = Channel.RawValue.RawValue.T2
 }
 
 /// Empty Initializers
@@ -2633,6 +2711,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, D
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2 {
     enum Latitude2Channel { case latitude2 }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Empty Initializers
@@ -2719,6 +2800,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, D
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2 {
     enum Longitude2Channel { case longitude2 }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
 }
 
 /// Empty Initializers
@@ -2800,47 +2884,466 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, 
 }
 
 
-// MARK: VizEncode: description
 
 // MARK: VizEncode: href
 
+public extension VizEncode where Channel == FacetedEncoding.EncodingHref {
+    enum HrefChannel { case href }
+    typealias ChannelFieldType = Channel.RawValue.T1
+    typealias ChannelValueType = Channel.RawValue.T2
+}
+
+/// Field Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def == Channel.RawValue.T1 {
+    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    init(_ Href: HrefChannel) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init()
+    }
+
+    /// Creates this encoding with the value mapped to the given field name in the data.
+    init(_ Href: HrefChannel, field: FieldName) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(field: .init(field))
+    }
+
+    /// Creates this encoding with the repeat reference to one or more fields.
+    init(_ Href: HrefChannel, repeat: RepeatRef) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(field: .init(`repeat`))
+    }
+}
+
+/// Value Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def == StringValueDefWithCondition {
+    /// Creates this encoding with the given constant value.
+    init(_ Href: HrefChannel, value constant: ExplicitNull) {
+        let value: Def.ValueChoice.T1 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(value))
+    }
+
+    /// Creates this encoding with the given constant value.
+    init(_ Href: HrefChannel, value constant: String) {
+        let value: Def.ValueChoice.T2.T1 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given constant value.
+    init(_ Href: HrefChannel, expr constant: ExprRef) {
+        let value: Def.ValueChoice.T2.T2 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(.init(value))) // ambiguous with the other expr init?
+    }
+}
+
+
+// MARK: VizEncode: description
+
+public extension VizEncode where Channel == FacetedEncoding.EncodingDescription {
+    enum DescriptionChannel { case description }
+    typealias ChannelFieldType = Channel.RawValue.T1
+    typealias ChannelValueType = Channel.RawValue.T2
+}
+
+/// Field Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingDescription, Def == Channel.RawValue.T1 {
+    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    init(_ Description: DescriptionChannel) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init()
+    }
+
+    /// Creates this encoding with the value mapped to the given field name in the data.
+    init(_ Description: DescriptionChannel, field: FieldName) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(field: .init(field))
+    }
+
+    /// Creates this encoding with the repeat reference to one or more fields.
+    init(_ Description: DescriptionChannel, repeat: RepeatRef) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(field: .init(`repeat`))
+    }
+}
+
+/// Value Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingDescription, Def == StringValueDefWithCondition {
+    /// Creates this encoding with the given constant value.
+    init(_ Description: DescriptionChannel, value constant: ExplicitNull) {
+        let value: Def.ValueChoice.T1 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(value))
+    }
+
+    /// Creates this encoding with the given constant value.
+    init(_ Description: DescriptionChannel, value constant: String) {
+        let value: Def.ValueChoice.T2.T1 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given constant value.
+    init(_ Description: DescriptionChannel, expr constant: ExprRef) {
+        let value: Def.ValueChoice.T2.T2 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(.init(value))) // ambiguous with the other expr init?
+    }
+}
+
 // MARK: VizEncode: url
 
-// MARK: VizEncode: key
+public extension VizEncode where Channel == FacetedEncoding.EncodingUrl {
+    enum UrlChannel { case url }
+    typealias ChannelFieldType = Channel.RawValue.T1
+    typealias ChannelValueType = Channel.RawValue.T2
+}
 
-// MARK: VizEncode: order
+/// Field Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == Channel.RawValue.T1 {
+    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    init(_ Url: UrlChannel) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init()
+    }
 
-// MARK: VizEncode: shape
+    /// Creates this encoding with the value mapped to the given field name in the data.
+    init(_ Url: UrlChannel, field: FieldName) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(field: .init(field))
+    }
+
+    /// Creates this encoding with the repeat reference to one or more fields.
+    init(_ Url: UrlChannel, repeat: RepeatRef) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(field: .init(`repeat`))
+    }
+}
+
+/// Value Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == StringValueDefWithCondition {
+    /// Creates this encoding with the given constant value.
+    init(_ Url: UrlChannel, value constant: ExplicitNull) {
+        let value: Def.ValueChoice.T1 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(value))
+    }
+
+    /// Creates this encoding with the given constant value.
+    init(_ Url: UrlChannel, value constant: String) {
+        let value: Def.ValueChoice.T2.T1 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given constant value.
+    init(_ Url: UrlChannel, expr constant: ExprRef) {
+        let value: Def.ValueChoice.T2.T2 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(.init(value))) // ambiguous with the other expr init?
+    }
+}
+
 
 // MARK: VizEncode: strokeDash
 
+public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash {
+    enum StrokeDashChannel { case strokeDash }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
+}
+
+
+/// Field Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T1 {
+    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    init(_ StrokeDash: StrokeDashChannel) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init()
+    }
+
+    /// Creates this encoding with the value mapped to the given field name in the data.
+    init(_ StrokeDash: StrokeDashChannel, field: FieldName) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(field: .init(field))
+    }
+
+    /// Creates this encoding with the repeat reference to one or more fields.
+    init(_ StrokeDash: StrokeDashChannel, repeat: RepeatRef) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(field: .init(`repeat`))
+    }
+}
+
+public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T2 {
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ StrokeDash: StrokeDashChannel, datum: ExplicitNull) {
+        let value: Def.DatumChoice.T1.RawValue.T1 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ StrokeDash: StrokeDashChannel, datum: Double) {
+        let value: Def.DatumChoice.T1.RawValue.T2 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ StrokeDash: StrokeDashChannel, datum: String) {
+        let value: Def.DatumChoice.T1.RawValue.T3 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ StrokeDash: StrokeDashChannel, datum: Bool) {
+        let value: Def.DatumChoice.T1.RawValue.T4 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ StrokeDash: StrokeDashChannel, datum: DateTime) {
+        let datetime: Def.DatumChoice.T2 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(datetime))
+    }
+
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ StrokeDash: StrokeDashChannel, expression: String) {
+        let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(ref))
+    }
+
+    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    init(_ StrokeDash: StrokeDashChannel, datum: RepeatRef) {
+        let ref: Def.DatumChoice.T4 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(ref))
+    }
+}
+
+public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T3 {
+    /// Creates this encoding with the given constant value.
+    init(_ StrokeDash: StrokeDashChannel, value constant: [Double]) {
+        let value: Def.ValueChoice.T1 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(value))
+    }
+
+    /// Creates this encoding with the given constant value.
+    init(_ StrokeDash: StrokeDashChannel, expr constant: ExprRef) {
+        let value: Def.ValueChoice.T2 = constant
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: .init(value)) // ambiguous with the other expr init?
+    }
+}
+
+
+// MARK: VizEncode: key
+
+public extension VizEncode where Channel == FacetedEncoding.EncodingKey {
+    enum KeyChannel { case key }
+    typealias ChannelFieldType = Channel.RawValue
+}
+
+/// Field Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingKey, Def == Channel.RawValue {
+    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    init(_ Key: KeyChannel) {
+        self.def2enc = { .init($0) }
+        self.def = .init()
+    }
+
+    /// Creates this encoding with the value mapped to the given field name in the data.
+    init(_ Key: KeyChannel, field: FieldName) {
+        self.def2enc = { .init($0) }
+        self.def = .init(field: .init(field))
+    }
+
+    /// Creates this encoding with the value mapped to the given field name in the data.
+    init(_ Key: KeyChannel, repeat: RepeatRef) {
+        self.def2enc = { .init($0) }
+        self.def = .init(field: .init(`repeat`))
+    }
+}
+
+
+// MARK: VizEncode: shape
+
+public extension VizEncode where Channel == FacetedEncoding.EncodingShape {
+    enum ShapeChannel { case shape }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
+}
+
+/// Field Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def == Channel.RawValue.RawValue.T1 {
+    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    init(_ Shape: ShapeChannel) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init()
+    }
+
+    /// Creates this encoding with the value mapped to the given field name in the data.
+    init(_ Shape: ShapeChannel, field: FieldName) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(field: .init(field))
+    }
+
+    /// Creates this encoding with the repeat reference to one or more fields.
+    init(_ Shape: ShapeChannel, repeat: RepeatRef) {
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(field: .init(`repeat`))
+    }
+
+}
+
+/// Datum Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def == Channel.RawValue.RawValue.T2 {
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ Shape: ShapeChannel, datum: ExplicitNull) {
+        let value: Def.DatumChoice.T1.RawValue.T1 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ Shape: ShapeChannel, datum: Double) {
+        let value: Def.DatumChoice.T1.RawValue.T2 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ Shape: ShapeChannel, datum: String) {
+        let value: Def.DatumChoice.T1.RawValue.T3 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ Shape: ShapeChannel, datum: Bool) {
+        let value: Def.DatumChoice.T1.RawValue.T4 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(.init(value)))
+    }
+
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ Shape: ShapeChannel, datum: DateTime) {
+        let datetime: Def.DatumChoice.T2 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(datetime))
+    }
+
+    /// Creates this encoding with the given datum that will be resolved against the scaled data values.
+    init(_ Shape: ShapeChannel, expression: String) {
+        let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(ref))
+    }
+
+    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    init(_ Shape: ShapeChannel, datum: RepeatRef) {
+        let ref: Def.DatumChoice.T4 = datum
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(datum: .init(ref))
+    }
+}
+
+/// Value Initializers
+public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def == Channel.RawValue.RawValue.T3 {
+    /// Creates this encoding with the given constant value.
+    init(_ Shape: ShapeChannel, value constant: SymbolShape?) {
+        let value: Nullable<SymbolShape> = constant.map({ Nullable($0) }) ?? .v1(ExplicitNull())
+        self.def2enc = { .init(.init($0)) }
+        self.def = .init(value: value)
+    }
+}
+
+
+
+// MARK: VizEncode: detail
+
+public extension VizEncode where Channel == FacetedEncoding.EncodingDetail {
+    enum DetailChannel { case detail }
+    typealias ChannelFieldType = Channel.RawValue.T1
+    typealias ChannelValueType = Channel.RawValue.T2
+}
+
+//public extension VizEncode where Channel == FacetedEncoding.EncodingXXX, Def == … {
+//}
+
+
+// MARK: VizEncode: order
+
+public extension VizEncode where Channel == FacetedEncoding.EncodingOrder {
+    enum OrderChannel { case order }
+    typealias ChannelFieldType = Channel.RawValue.T1
+    typealias ChannelValueType = Channel.RawValue.T2 // OrderValueDef
+}
+
+//public extension VizEncode where Channel == FacetedEncoding.EncodingXXX, Def == … {
+//}
+
 // MARK: VizEncode: text
+
+public extension VizEncode where Channel == FacetedEncoding.EncodingText {
+    enum TextChannel { case text }
+    typealias ChannelFieldType = Channel.RawValue.RawValue.T1
+    typealias ChannelDatumType = Channel.RawValue.RawValue.T2
+    typealias ChannelValueType = Channel.RawValue.RawValue.T3
+}
+
+//public extension VizEncode where Channel == FacetedEncoding.EncodingXXX, Def == … {
+//}
+
 
 // MARK: VizEncode: tooltip
 
-// MARK: VizEncode: detail
+public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip {
+    enum TooltipChannel { case tooltip }
+    typealias ChannelNullType = Channel.RawValue.T1
+    typealias ChannelFieldType = Channel.RawValue.T2.T1
+    typealias ChannelDatumType = Channel.RawValue.T2.T2
+    typealias ChannelValueType = Channel.RawValue.T2.T3
+}
+
+//public extension VizEncode where Channel == FacetedEncoding.EncodingXXX, Def == … {
+//}
+
 
 
 private func emptyConstructor(channel: EncodingChannel) -> VizEncodeType {
     switch channel {
-    case .angle: return VizEncode(.angle)
-    case .color: return VizEncode(.color)
-    case .fill: return VizEncode(.fill)
-    case .fillOpacity: return VizEncode(.fillOpacity)
-    case .opacity: return VizEncode(.opacity)
-    case .radius: return VizEncode(.radius)
-    case .radius2: return VizEncode(.radius2)
-    case .size: return VizEncode(.size)
-    case .stroke: return VizEncode(.stroke)
-    case .strokeOpacity: return VizEncode(.strokeOpacity)
-    case .strokeWidth: return VizEncode(.strokeWidth)
-    case .theta: return VizEncode(.theta)
-    case .theta2: return VizEncode(.theta2)
-        
     case .x: return VizEncode(.x)
     case .y: return VizEncode(.y)
     case .x2: return VizEncode(.x2)
     case .y2: return VizEncode(.y2)
+
+    case .color: return VizEncode(.color)
+    case .opacity: return VizEncode(.opacity)
+
+    case .fill: return VizEncode(.fill)
+    case .fillOpacity: return VizEncode(.fillOpacity)
+
+    case .size: return VizEncode(.size)
+
+    case .angle: return VizEncode(.angle)
+    case .theta: return VizEncode(.theta)
+    case .theta2: return VizEncode(.theta2)
+    case .radius: return VizEncode(.radius)
+    case .radius2: return VizEncode(.radius2)
+
+    case .stroke: return VizEncode(.stroke)
+    case .strokeOpacity: return VizEncode(.strokeOpacity)
+    case .strokeWidth: return VizEncode(.strokeWidth)
 
     case .xError: return VizEncode(.xError)
     case .xError2: return VizEncode(.xError2)
@@ -2856,30 +3359,26 @@ private func emptyConstructor(channel: EncodingChannel) -> VizEncodeType {
     case .longitude: return VizEncode(.longitude)
     case .longitude2: return VizEncode(.longitude2)
 
-    default: fatalError(wip("WIP"))
+    case .href: return VizEncode(.href)
+    case .url: return VizEncode(.url)
+    case .description: return VizEncode(.description)
+    case .key: return VizEncode(.key)
 
-//    case .description: return VizEncode(.description)
-//    case .detail: return VizEncode(.detail)
-//    case .facet: return VizEncode(.facet)
-//    case .href: return VizEncode(.href)
-//    case .key: return VizEncode(.key)
-//    case .order: return VizEncode(.order)
-//    case .shape: return VizEncode(.shape)
-//    case .strokeDash: return VizEncode(.strokeDash)
-//    case .text: return VizEncode(.text)
-//    case .tooltip: return VizEncode(.tooltip)
-//    case .url: return VizEncode(.url)
+    case .strokeDash: return VizEncode(.strokeDash)
+
+    case .shape: return VizEncode(.shape)
+
+    case .detail: fatalError(wip("WIP")) // return VizEncode(.detail)
+    case .order: fatalError(wip("WIP")) // return VizEncode(.order)
+    case .text: fatalError(wip("WIP")) // return VizEncode(.text)
+    case .tooltip: fatalError(wip("WIP")) // return VizEncode(.tooltip)
     }
 }
-
 
 
 /// Work-in-progress, simply to highlight a line with a deprecation warning
 @available(*, deprecated, message: "work-in-progress")
 fileprivate func wip<T>(_ value: T) -> T { value }
-
-
-
 
 
 // MARK: VizEncodingChannelType Boilerplate

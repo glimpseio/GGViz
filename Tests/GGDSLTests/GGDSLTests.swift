@@ -6,18 +6,115 @@ final class GGDSLTests: XCTestCase {
 
     func check<M: Pure>(viz: Viz<M>, againstJSON json: String) throws {
         let checkSpec = try VizSpec<M>.loadFromJSON(data: json.data(using: .utf8) ?? Data())
+        // first check if they both to serialize to the same JSON…
         XCTAssertEqual("\n" + viz.debugDescription + "\n", "\n" + checkSpec.jsonDebugDescription + "\n")
         if viz.debugDescription == checkSpec.jsonDebugDescription {
-            //XCTAssertEqual(viz.spec, checkSpec)
+            // … then check for actual equality of thw structure
+            XCTAssertEqual(viz.spec, checkSpec)
         }
     }
 
-    func testVizMark() throws {
+    func testVizMarkSimple() throws {
         try check(viz: SimpleViz {
             VizMark(.square)
         }, againstJSON: """
+            {"mark":"square"}
+        """)
+    }
+
+    func testVizMarkCompound() throws {
+        try check(viz: SimpleViz {
+            VizMark(.boxplot)
+        }, againstJSON: """
+            {"mark":"boxplot"}
+        """)
+    }
+
+    func testVizTransform() throws {
+        try check(viz: SimpleViz {
+            VizTransform(.sample)
+            VizMark(.square)
+        }, againstJSON: """
+            {
+                "mark":"square",
+                "transform":[
+                    {"sample":999}
+                ]
+            }
+            """)
+    }
+
+
+    func testVizFacets() throws {
+        try check(viz: SimpleViz {
+            VizMark(.rect) {
+                VizEncode(.row, field: FieldName("ROW_FIELD"))
+                VizEncode(.column, field: FieldName("COLUMN_FIELD"))
+                VizEncode(.facet, field: FieldName("FACET_FIELD"))
+            }
+        }, againstJSON: """
         {
-            "mark": { "type": "square" }
+          "mark": "rect",
+          "encoding": {
+            "column": {
+              "field": "COLUMN_FIELD"
+            },
+            "facet": {
+              "field": "FACET_FIELD"
+            },
+            "row": {
+              "field": "ROW_FIELD"
+            }
+          }
+        }
+        """)
+    }
+
+    func testVizStrokeDash() throws {
+        try check(viz: SimpleViz {
+            VizMark(.line) {
+                VizEncode(.strokeDash, value: [1, 2, 3])
+            }
+        }, againstJSON: """
+        {
+            "mark": "line",
+            "encoding": {
+                "strokeDash": {
+                    "value": [1, 2, 3]
+                }
+            }
+        }
+        """)
+    }
+
+    func testVizShapes() throws {
+        try check(viz: SimpleViz {
+            VizMark(.point) {
+                VizEncode(.shape, value: .circle)
+            }
+        }, againstJSON: """
+        {
+            "mark": "point",
+            "encoding": {
+                "shape": {
+                    "value": "circle"
+                }
+            }
+        }
+        """)
+
+        try check(viz: SimpleViz {
+            VizMark(.point) {
+                VizEncode(.shape, value: .path("M0,0 L1,1"))
+            }
+        }, againstJSON: """
+        {
+            "mark": "point",
+            "encoding": {
+                "shape": {
+                    "value": "M0,0 L1,1"
+                }
+            }
         }
         """)
     }
@@ -40,22 +137,6 @@ final class GGDSLTests: XCTestCase {
         """)
 
         try check(viz: SimpleViz {
-            VizLayer(.hconcat) {
-                VizMark(.bar)
-                VizMark(.line)
-                VizMark(.area)
-            }
-        }, againstJSON: """
-        {
-            "hconcat": [
-                { "mark": { "type": "bar" } },
-                { "mark": { "type": "line" } },
-                { "mark": { "type": "area" } }
-            ]
-        }
-        """)
-
-        try check(viz: SimpleViz {
             VizLayer(.concat) {
                 VizMark(.bar) {
                     VizEncode(.x)
@@ -63,9 +144,114 @@ final class GGDSLTests: XCTestCase {
                 }
             }
         }, againstJSON: """
-        {"concat":[{"encoding":{"x":{},"y":{}},"mark":{"type":"bar"}}]}
+        { "concat": [ { "encoding": { "x": { }, "y": { } }, "mark": "bar" } ] }
+        """)
+    }
+
+    func testVizLayerMarkTypes() throws {
+        try check(viz: SimpleViz {
+            VizLayer(.hconcat) {
+                VizMark(.arc)
+                VizMark(.area)
+                VizMark(.bar)
+                VizMark(.boxplot)
+                VizMark(.circle)
+                VizMark(.errorband)
+                VizMark(.errorbar)
+                VizMark(.geoshape)
+                VizMark(.image)
+                VizMark(.line)
+                VizMark(.point)
+                VizMark(.rect)
+                VizMark(.rule)
+                VizMark(.square)
+                VizMark(.text)
+                VizMark(.tick)
+                VizMark(.trail)
+            }
+        }, againstJSON: """
+        {
+            "hconcat": [
+                { "mark": "arc" },
+                { "mark": "area" },
+                { "mark": "bar" },
+                { "mark": "boxplot" },
+                { "mark": "circle" },
+                { "mark": "errorband" },
+                { "mark": "errorbar" },
+                { "mark": "geoshape" },
+                { "mark": "image" },
+                { "mark": "line" },
+                { "mark": "point" },
+                { "mark": "rect" },
+                { "mark": "rule" },
+                { "mark": "square" },
+                { "mark": "text" },
+                { "mark": "tick" },
+                { "mark": "trail" }
+            ]
+        }
         """)
 
+    }
+
+    func testVizLayerNesting() throws {
+
+        let actual = """
+        {
+          "hconcat": [
+            {
+              "encoding": {
+                "x": {}
+              }
+            },
+            {
+              "vconcat": [
+                {
+                  "encoding": {
+                    "y": {}
+                  }
+                },
+                {
+                  "mark": "bar",
+                  "encoding": {
+                    "size": {}
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """
+
+        let aspirational = """
+        {
+          "encoding": { "x": { } },
+          "hconcat": [
+            {
+              "encoding": { "y": { } },
+              "vconcat": [
+                {
+                  "mark": "bar",
+                  "encoding": { "size": { } }
+                }
+              ]
+            }
+          ]
+        }
+        """
+
+        try check(viz: SimpleViz {
+            VizLayer(.hconcat) {
+                VizEncode(.x)
+                VizLayer(.vconcat) {
+                    VizEncode(.y)
+                    VizMark(.bar) {
+                        VizEncode(.size)
+                    }
+                }
+            }
+        }, againstJSON: actual)
     }
 
     func testVizProjection() throws {
@@ -90,21 +276,16 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-
-    func testRandomSpecs() throws {
+    func testEncodingVariations() throws {
         _ = SimpleViz {
             VizTheme()
                 .font(.init("serif"))
                 .title(.init(fontSize: .init(ExprRef(expr: Expr("width * 0.05")))))
 
             VizMark(.arc)
-
             VizMark(.area)
-
             VizMark(.geoshape)
-
             VizMark(.text)
-
             VizMark(.boxplot)
 
             VizMark(.bar) {
@@ -131,30 +312,140 @@ final class GGDSLTests: XCTestCase {
                     VizEncode(.y, repeat: RepeatRef(repeat: .row))
                 }
 
+
+                do {
+                    VizEncode(.row)
+                    VizEncode(.row, field: FieldName("FIELD"))
+                }
+
+                do {
+                    VizEncode(.column)
+                    VizEncode(.column, field: FieldName("FIELD"))
+                }
+
+                do {
+                    VizEncode(.facet)
+                    VizEncode(.facet, field: FieldName("FIELD"))
+                }
+
                 do {
                     VizEncode(.x2)
+                    VizEncode(.x2, field: FieldName("FIELD"))
+                }
+
+                do {
                     VizEncode(.y2)
+                    VizEncode(.y2, field: FieldName("FIELD"))
                 }
 
                 do {
                     VizEncode(.latitude)
-                    VizEncode(.latitude2)
-                    VizEncode(.longitude)
-                    VizEncode(.longitude2)
+                    VizEncode(.latitude, field: FieldName("FIELD"))
+                    VizEncode(.latitude, datum: nil)
+                    VizEncode(.latitude, datum: "X")
+                    VizEncode(.latitude, datum: 1)
                 }
 
                 do {
-//                    VizEncode(.description)
-//                    VizEncode(.href)
-//                    VizEncode(.url)
-//                    VizEncode(.key)
-//                    VizEncode(.order)
-//                    VizEncode(.shape)
-//                    VizEncode(.strokeDash)
-//                    VizEncode(.text)
-//                    VizEncode(.tooltip)
-//                    VizEncode(.detail)
+                    VizEncode(.latitude2)
+                    VizEncode(.latitude2, field: FieldName("FIELD"))
+                    VizEncode(.latitude2, datum: nil)
+                    VizEncode(.latitude2, datum: "X")
+                    VizEncode(.latitude2, datum: 1)
                 }
+
+                do {
+                    VizEncode(.longitude)
+                    VizEncode(.longitude, field: FieldName("FIELD"))
+                    VizEncode(.longitude, datum: nil)
+                    VizEncode(.longitude, datum: "X")
+                    VizEncode(.longitude, datum: 1)
+                }
+
+                do {
+                    VizEncode(.longitude2)
+                    VizEncode(.longitude2, field: FieldName("FIELD"))
+                    VizEncode(.longitude2, datum: nil)
+                    VizEncode(.longitude2, datum: "X")
+                    VizEncode(.longitude2, datum: 1)
+                }
+
+                do {
+                    VizEncode(.href)
+                    VizEncode(.href, field: FieldName("FIELD"))
+                    VizEncode(.href, value: nil)
+                    VizEncode(.href, value: .null)
+                    VizEncode(.href, value: "https://www.example.org")
+                    VizEncode(.href, expr: .init(expr: Expr("'https://' + 'whatever.net'")))
+                }
+
+                do {
+                    VizEncode(.url)
+                    VizEncode(.url, field: FieldName("FIELD"))
+                    VizEncode(.url, value: nil)
+                    VizEncode(.url, value: .null)
+                    VizEncode(.url, value: "https://www.example.org")
+                    VizEncode(.url, expr: .init(expr: Expr("'https://' + 'whatever.net'")))
+                }
+
+                do {
+                    VizEncode(.description)
+                    VizEncode(.description, field: FieldName("FIELD"))
+                    VizEncode(.description, value: nil)
+                    VizEncode(.description, value: .null) // same
+                    VizEncode(.description, value: "Description")
+                    VizEncode(.description, expr: .init(expr: Expr("'Desc' + 'ription'")))
+                }
+
+                do {
+                    VizEncode(.strokeDash)
+                    VizEncode(.strokeDash, field: FieldName("FIELD"))
+                    VizEncode(.strokeDash, value: [1, 2, 3])
+                }
+
+                do {
+                    VizEncode(.description)
+                    VizEncode(.description, field: FieldName("FIELD"))
+                    VizEncode(.description, value: nil)
+                    VizEncode(.description, value: .null)
+                    VizEncode(.description, value: "Accessible Description")
+                }
+
+                do {
+                    VizEncode(.url)
+                    VizEncode(.url, field: FieldName("FIELD"))
+                    VizEncode(.url, value: nil)
+                    VizEncode(.url, value: .null)
+                    VizEncode(.url, value: "https://www.example.org/image.png")
+                }
+
+                do {
+                    VizEncode(.key)
+                    VizEncode(.key, field: FieldName("FIELD")) // key only permits field encodings
+                }
+
+                do {
+                    VizEncode(.shape)
+                    VizEncode(.shape, field: FieldName("FIELD"))
+                    VizEncode(.shape, value: nil)
+                    VizEncode(.shape, value: SymbolShape.circle)
+                }
+
+
+//                do {
+//                    VizEncode(.order)
+//                }
+//                do {
+//                    VizEncode(.text)
+//                }
+//
+//                do {
+//                    VizEncode(.tooltip)
+//                }
+//
+//                do {
+//                    VizEncode(.detail)
+//                }
 
                 do {
                     VizEncode(.color)
@@ -189,12 +480,6 @@ final class GGDSLTests: XCTestCase {
                     .type(.ordinal)
 
                 VizEncode(.size, datum: 44)
-
-                do {
-                    VizEncode(.row)
-                    VizEncode(.column)
-                    VizEncode(.facet)
-                }
 
             }
             .cornerRadius(.init(10))
