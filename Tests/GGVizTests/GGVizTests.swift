@@ -54,7 +54,7 @@ final class GGVizTests: XCTestCase {
     }
 
     /// A very simple spec for testing rendering and compiling
-    func simpleSampleSpec(mark: Mark = .bar, count: Int, width: Double = 900, height: Double = 600) -> SimpleVizSpec {
+    func simpleSampleSpec(mark: PrimitiveMarkType = .bar, count: Int, width: Double = 900, height: Double = 600) -> SimpleVizSpec {
 
         var rows: [Bric] = []
         for i in 0..<count {

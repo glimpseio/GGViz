@@ -5,13 +5,13 @@ public protocol SpecType : Codable {
     var description: String? { get set }
 //    var title: OneOf2<String, TitleParams>? { get set }
     /// The list of transforms applied to this layer's data
-    var transform: [Transform]? { get set }
+    var transform: [DataTransformation]? { get set }
 }
 
 
 public protocol TopLevelSpecType : SpecType {
     var schema: String? { get set }
-    var config: Config? { get set }
+    var config: ConfigTheme? { get set }
     //var usermeta: Dict? { get set }
 }
 
@@ -20,7 +20,7 @@ public typealias ColorExprable = Exprable<ColorCode>
 
 
 /// The different options for a `Param` definition
-public typealias ParamChoice = OneOf<VariableParameter>.Or<TopLevelSelectionParameter> // Config.ParamsItemChoice
+public typealias ParamChoice = OneOf<VariableParameter>.Or<TopLevelSelectionParameter> // ConfigTheme.ParamsItemChoice
 
 /// A visualization specification with generic metadata.
 ///
@@ -53,7 +53,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     public var data: VizDataSource? // i.e., Nullable<DataProvider>
 
     /// An array of data transformations such as filter and new field calculation.
-    public var transform: [Transform]?
+    public var transform: [DataTransformation]?
 
     /// Scale, axis, and legend resolutions for view composition specifications.
     public var resolve: Resolve?
@@ -83,7 +83,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     public var params: [ParamChoice]? // [OneOf<VariableParameter>.Or<TopLevelSelectionParameter>]
 
     /// Vega-Lite configuration object.  This property can only be defined at the top-level of a specification.
-    public var config: Config? {
+    public var config: ConfigTheme? {
         get { _config?.wrappedValue }
         _modify {
             var cfg = _config?.wrappedValue
@@ -93,7 +93,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     }
 
     /// Storing `Config` as an indirect reduces the potential memory layout size, but more importantly, it seems to work around a crash on encoding that we were seeing
-    private var _config: Indirect<Config>?
+    private var _config: Indirect<ConfigTheme>?
 
     /// Optional metadata that will be passed to Vega.
     /// This object is completely ignored by Vega and Vega-Lite and can be used for custom metadata.
@@ -203,7 +203,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     public var hconcat: [SubSpec]? // HConcatSpec
 
 
-    public init(id: LayerId? = .none, schema: String? = .none, align: AlignChoice? = .none, autosize: AutosizeChoice? = .none, background: ColorExprable? = .none, bounds: LiteralFullOrFlush? = .none, center: CenterChoice? = .none, columns: Double? = .none, config: Config? = .none, data: VizDataSource? = .none, datasets: Datasets? = .none, description: String? = .none, encoding: FacetedEncoding? = .none, height: TopLevelUnitSpec.HeightChoice? = .none, mark: AnyMark? = .none, name: String? = .none, padding: Padding? = .none, projection: Projection? = .none, resolve: Resolve? = .none, spacing: SpacingChoice? = .none, title: TitleChoice? = .none, transform: [Transform]? = .none, params: [ParamChoice]? = .none, usermeta: Meta? = .none, view: ViewBackground? = .none, width: TopLevelUnitSpec.WidthChoice? = .none,
+    public init(id: LayerId? = .none, schema: String? = .none, align: AlignChoice? = .none, autosize: AutosizeChoice? = .none, background: ColorExprable? = .none, bounds: LiteralFullOrFlush? = .none, center: CenterChoice? = .none, columns: Double? = .none, config: ConfigTheme? = .none, data: VizDataSource? = .none, datasets: Datasets? = .none, description: String? = .none, encoding: FacetedEncoding? = .none, height: TopLevelUnitSpec.HeightChoice? = .none, mark: AnyMark? = .none, name: String? = .none, padding: Padding? = .none, projection: Projection? = .none, resolve: Resolve? = .none, spacing: SpacingChoice? = .none, title: TitleChoice? = .none, transform: [DataTransformation]? = .none, params: [ParamChoice]? = .none, usermeta: Meta? = .none, view: ViewBackground? = .none, width: TopLevelUnitSpec.WidthChoice? = .none,
                 concat: [SubSpec]? = .none, facet: FacetChoice? = .none, layer: [SubSpec]? = .none, `repeat`: RepeatChoice? = .none, spec: SubSpec? = .none, vconcat: [SubSpec]? = .none, hconcat: [SubSpec]? = .none) {
         self.id = id
         self.schema = schema

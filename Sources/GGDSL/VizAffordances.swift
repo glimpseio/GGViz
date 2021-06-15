@@ -1,14 +1,13 @@
 
 import GGSpec
 
-///// The old alias for `Transform`
-//@available(*, deprecated, renamed: "DataTransformation")
-//public typealias Transform = DataTransformation
-//
-///// The old alias for the `Config`
-//@available(*, deprecated, renamed: "Config")
-//public typealias Config = ConfigTheme
+/// The old alias for `Transform`
+@available(*, deprecated, renamed: "DataTransformation")
+public typealias Transform = DataTransformation
 
+/// The old alias for the `Config`
+@available(*, deprecated, renamed: "Config")
+public typealias Config = ConfigTheme
 
 /// The old alias for the PrimitiveMarkType
 @available(*, deprecated, renamed: "PrimitiveMarkType")

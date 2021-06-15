@@ -1,10 +1,14 @@
 import XCTest
 import GGDSL
 
-final class GGDSLTests: XCTestCase {
-    typealias SimpleViz = Viz<Bric.ObjType>
+typealias SimpleViz = Viz<Bric.ObjType>
 
-    func check<M: Pure>(viz: Viz<M>, againstJSON json: String) throws {
+extension XCTestCase {
+    func check<M: Pure>(viz: Viz<M>, againstJSON json: String, file: StaticString = #file, line: UInt = #line, function: StaticString = #function) throws {
+        if viz.spec == Viz({ }).spec {
+            throw XCTSkip("skip empty check for \(function)", file: file, line: line)
+        }
+
         let checkSpec = try VizSpec<M>.loadFromJSON(data: json.data(using: .utf8) ?? Data())
         // first check if they both to serialize to the same JSON…
         XCTAssertEqual("\n" + viz.debugDescription + "\n", "\n" + checkSpec.jsonDebugDescription + "\n")
@@ -13,6 +17,9 @@ final class GGDSLTests: XCTestCase {
             XCTAssertEqual(viz.spec, checkSpec)
         }
     }
+}
+
+final class GGDSLTests: XCTestCase {
 
     func testVizMarkSimple() throws {
         try check(viz: SimpleViz {
@@ -538,256 +545,171 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testSimpleVizSpec() throws {
-        _ = SimpleVizSpec()
-    }
 
-    func testSimpleBarChart() throws {
-        _ = """
+
+    func test_interactive_global_development() throws {
+        throw XCTSkip();
+        try check(viz: SimpleViz {
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "An interactive scatter plot of global health statistics by country and year.",
+  "data": {"url": "data/gapminder.json"},
+  "width": 800,
+  "height": 500,
+  "layer": [
+    {
+      "transform": [
+        {"filter": {"field": "country", "equal": "Afghanistan"}},
+        {"filter": {"param": "year"}}
+      ],
+      "mark": {
+        "type": "text",
+        "fontSize": 100,
+        "x": 420,
+        "y": 250,
+        "opacity": 0.06
+      },
+      "encoding": {"text": {"field": "year"}}
+    },
+    {
+      "transform": [
         {
-          "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-          "description": "A simple bar chart with embedded data.",
-          "data": {
-            "values": [
-              {"a": "A", "b": 28}, {"a": "B", "b": 55}, {"a": "C", "b": 43},
-              {"a": "D", "b": 91}, {"a": "E", "b": 81}, {"a": "F", "b": 53},
-              {"a": "G", "b": 19}, {"a": "H", "b": 87}, {"a": "I", "b": 52}
-            ]
-          },
-          "mark": "bar",
-          "encoding": {
-            "x": {"field": "a", "type": "nominal", "axis": {"labelAngle": 0}},
-            "y": {"field": "b", "type": "quantitative"}
-          }
-        }
-        """
-
-//        _ = VizMark(.bar, description: "A simple bar chart with embedded data.") {
-//            VizEncode(.x, field: "a", type: .nominal)
-//                .axis(labelAngle: 0)
-//            VizEncode(.y, field: "b", type: .quantitative)
-//        }
-    }
-
-    func testStackedBarChartwithRoundedCorners() throws {
-        _ = """
-        {
-          "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-          "data": {"url": "data/seattle-weather.csv"},
-          "mark": {"type": "bar", "cornerRadiusTopLeft": 3, "cornerRadiusTopRight": 3},
-          "encoding": {
-            "x": {"timeUnit": "month", "field": "date", "type": "ordinal"},
-            "y": {"aggregate": "count"},
-            "color": {"field": "weather"}
-          }
-        }
-        """
-
-//        _ = VizMark(.bar) {
-//            VizEncode(.x, field: "date")
-//                .measure(.ordinal)
-//                .timeUnit(.month)
-//            VizEncode(.y, aggregate: .count)
-//            VizEncode(.color, field: "weather")
-//        }
-//        .cornerRadiusTopLeft(3)
-//        .cornerRadiusTopRight(3)
-    }
-
-    func testLineChartWithHighlightedRectangles() {
-        _ = """
-        {
-          "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-          "description": "The population of the German city of Falkensee over time",
-          "width": 500,
-          "data": {
-            "values": [
-              {"year": "1875", "population": 1309},
-              {"year": "2014", "population": 41777}
-            ],
-            "format": {
-              "parse": {"year": "date:'%Y'"}
+          "lookup": "cluster",
+          "from": {
+            "key": "id",
+            "fields": ["name"],
+            "data": {
+              "values": [
+                {"id": 0, "name": "South Asia"},
+                {"id": 1, "name": "Europe & Central Asia"},
+                {"id": 2, "name": "Sub-Saharan Africa"},
+                {"id": 3, "name": "America"},
+                {"id": 4, "name": "East Asia & Pacific"},
+                {"id": 5, "name": "Middle East & North Africa"}
+              ]
             }
+          }
+        }
+      ],
+      "encoding": {
+        "x": {
+          "field": "fertility",
+          "type": "quantitative",
+          "scale": {"domain": [0, 9]},
+          "axis": {"tickCount": 5, "title": "Fertility"}
+        },
+        "y": {
+          "field": "life_expect",
+          "type": "quantitative",
+          "scale": {"domain": [20, 85]},
+          "axis": {"tickCount": 5, "title": "Life Expectancy"}
+        }
+      },
+      "layer": [
+        {
+          "mark": {
+            "type": "line",
+            "size": 4,
+            "color": "lightgray",
+            "strokeCap": "round"
           },
+          "encoding": {
+            "detail": {"field": "country"},
+            "order": {"field": "year"},
+            "opacity": {
+              "condition": {
+                "test": {"or": [
+                  {"param": "hovered", "empty": false},
+                  {"param": "clicked", "empty": false}
+                ]},
+                "value": 0.8
+              },
+              "value": 0
+            }
+          }
+        },
+        {
+          "params": [
+            {
+              "name": "year",
+              "value": [{"year": 1955}],
+              "select": {
+                "type": "point",
+                "fields": ["year"]
+              },
+              "bind": {
+                "name": "Year",
+                "input": "range",
+                "min": 1955, "max": 2005, "step": 5
+              }
+            },
+            {
+              "name": "hovered",
+              "select": {
+                "type": "point",
+                "fields": ["country"],
+                "toggle": false,
+                "on": "mouseover"
+              }
+            },
+            {
+              "name": "clicked",
+              "select": {"type": "point", "fields": ["country"]}
+            }
+          ],
+          "transform": [{"filter": {"param": "year"}}],
+          "mark": {"type": "circle", "size": 100, "opacity": 0.9},
+          "encoding": {"color": {"field": "name", "title": "Region"}}
+        },
+        {
+          "transform": [
+            {
+              "filter": {
+                "and": [
+                  {"param": "year"},
+                  {"or": [
+                    {"param": "clicked", "empty": false},
+                    {"param": "hovered", "empty": false}
+                  ]}
+                ]
+              }
+            }
+          ],
+          "mark": {
+            "type": "text",
+            "yOffset": -12,
+            "fontSize": 12,
+            "fontWeight": "bold"
+          },
+          "encoding": {
+            "text": {"field": "country"},
+            "color": {"field": "name", "title": "Region"}
+          }
+        },
+        {
+          "transform": [
+            {"filter": {"param": "hovered", "empty": false}},
+            {"filter": {"not": {"param": "year"}}}
+          ],
           "layer": [
             {
-              "mark": "rect",
-              "data": {
-                "values": [
-                  {
-                    "start": "1933",
-                    "end": "1945",
-                    "event": "Nazi Rule"
-                  },
-                  {
-                    "start": "1948",
-                    "end": "1989",
-                    "event": "GDR (East Germany)"
-                  }
-                ],
-                "format": {
-                  "parse": {"start": "date:'%Y'", "end": "date:'%Y'"}
-                }
+              "mark": {
+                "type": "text",
+                "yOffset": -12,
+                "fontSize": 12,
+                "color": "gray"
               },
-              "encoding": {
-                "x": {
-                  "field": "start",
-                  "timeUnit": "year"
-                },
-                "x2": {
-                  "field": "end",
-                  "timeUnit": "year"
-                },
-                "color": {"field": "event", "type": "nominal"}
-              }
+              "encoding": {"text": {"field": "year"}}
             },
-            {
-              "mark": "line",
-              "encoding": {
-                "x": {
-                  "field": "year",
-                  "timeUnit": "year",
-                  "title": "year (year)"
-                },
-                "y": {"field": "population", "type": "quantitative"},
-                "color": {"value": "#333"}
-              }
-            },
-            {
-              "mark": "point",
-              "encoding": {
-                "x": {
-                  "field": "year",
-                  "timeUnit": "year"
-                },
-                "y": {"field": "population", "type": "quantitative"},
-                "color": {"value": "#333"}
-              }
-            }
+            {"mark": {"type": "circle", "color": "gray"}}
           ]
         }
-        """
-
-//        _ = Viz {
-//            Layer(.overlay) {
-//                Mark(.rect) {
-//                    Source {
-//                        [
-//                            ["start": "1933", "end": "1945", "event": "Nazi Rule"],
-//                            ["start": "1948", "end": "1989", "event": "GDR (East Germany)"],
-//                        ]
-//                    }
-//                    Encode(.x, field: "start").timeUnit(.year)
-//                    Encode(.x2, field: "end").timeUnit(.year)
-//                    Encode(.color, field: "event").measure(.nominal)
-//                }
-//                Mark(.line) {
-//                    Encode(.x, field: "year").timeUnit(.year).title("year (year)")
-//                    Encode(.y, field: "population").measure(.quantitative)
-//                    Encode(.color, value: "#333")
-//                }
-//                Mark(.point) {
-//                    Encode(.x, field: "year").timeUnit(.year)
-//                    Encode(.y, field: "population").measure(.quantitative)
-//                    Encode(.color, value: "#333")
-//                }
-//            }
-//        }
-//        .arrangement(.overlay)
-//        .width(500)
-
+      ]
     }
-
-    func testMultiSeriesLineChartWithRepeatOperator() throws {
-        _ = """
-        {
-          "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-          "data": {
-            "url": "data/movies.json"
-          },
-          "repeat": {
-            "layer": ["US Gross", "Worldwide Gross"]
-          },
-          "spec": {
-            "mark": "line",
-            "encoding": {
-              "x": {
-                "bin": true,
-                "field": "IMDB Rating",
-                "type": "quantitative"
-              },
-              "y": {
-                "aggregate": "mean",
-                "field": {"repeat": "layer"},
-                "type": "quantitative",
-                "title": "Mean of US and Worldwide Gross"
-              },
-              "color": {
-                "datum": {"repeat": "layer"},
-                "type": "nominal"
-              }
-            }
-          }
-        }
-        """
-
-//        _ = ZRepeat(["US Gross", "Worldwide Gross"]) { repeatField in
-//            Mark(.line) {
-//                Encode(.x, field: "IMDB Rating")
-//                    .measure(.quantitative)
-//                    .bin(true)
-//                Encode(.y, field: repeatField)
-//                    .aggregate(.mean)
-//                    .title("Mean of US and Worldwide Gross")
-//                Encode(.color, datum: repeatField, type: .nominal)
-//            }
-//        }
-//        .cornerRadiusTopLeft(3)
-//        .cornerRadiusTopRight(3)
-
-    }
+  ]
 }
-
-extension VizSpec {
-//    static func sample() -> Self {
-//        ZGroup {
-//            Encode(.x, field: "a").axis(false)
-//            Encode(.y, field: "b").axis(true)
-//            VizMark(.bar) {
-//                Encode(.color, field: "c").legend(true)
-//                Encode(.tooltip, fields: ["d", "e"])
-//            }
-//            VizMark(.text) {
-//                Encode(.text, value: "Fields")
-//                Encode(.text, field: "c")
-//                Encode(.text, field: "d")
-//                Encode(.text, field: "e")
-//                Encode(.color, value: .gray)
-//            }
-//        }
-//    }
-
-//    static func simple1() -> Self {
-//        VizSpec(title: "Simple Bar Chart") {
-//            ZLayer(fields: ["A", "B"]) { field in
-//                Mark(.bar) {
-//                    Channel(.x, from: Field("COL_A"), type: .temporal).axis(false)
-//                    Channel(.y, from: Field("COL_B"), type: .ordinal)
-//                    Channel(.fill, from: Field("COL_C"), type: .nominal).legend(true)
-//                }
-//                .axis(true)
-//                .legend(true)
-//
-//                Mark(.text) {
-//                    Channel(.x, from: Field("COL_A"), type: .temporal).axis(false)
-//                    Channel(.y, from: Field("COL_B"), type: .ordinal)
-//                    Channel(.fill, from: Field("COL_C"), type: .nominal).legend(true)
-//                }
-//                .axis(true)
-//                .legend(true)
-//            }
-//            .arrangement(.overlay)
-//        }
-//    }
+""")
+    }
 }
 

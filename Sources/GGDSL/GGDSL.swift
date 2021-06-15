@@ -47,15 +47,15 @@ extension ErrorBandDef : VizMarkDefType {
 
 
 public protocol VizTransformDefType : Pure {
-    var anyTransform: Transform { get }
+    var anyTransform: DataTransformation { get }
 }
 
 
 @dynamicMemberLookup
 public struct VizTheme : VizSpecElementType, VizDSLType {
-    var config: GGSpec.Config
+    var config: GGSpec.ConfigTheme
 
-    public init(config: GGSpec.Config = GGSpec.Config()) {
+    public init(config: GGSpec.ConfigTheme = GGSpec.ConfigTheme()) {
         self.config = config
     }
     
@@ -64,7 +64,7 @@ public struct VizTheme : VizSpecElementType, VizDSLType {
     }
 
     /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
-    public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSpec.Config, U>) -> (U) -> (Self) {
+    public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSpec.ConfigTheme, U>) -> (U) -> (Self) {
         setting(path: (\Self.config).appending(path: keyPath))
     }
 }
