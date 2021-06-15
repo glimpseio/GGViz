@@ -1,5 +1,8 @@
-
 import GGSpec
+
+/// The old alias for `Field` goes to `SourceColumnRef`
+@available(*, deprecated, renamed: "SourceColumnRef")
+public typealias Field = SourceColumnRef
 
 /// The old alias for `Transform`
 @available(*, deprecated, renamed: "DataTransformation")

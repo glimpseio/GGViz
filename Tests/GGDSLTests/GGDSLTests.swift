@@ -438,20 +438,22 @@ final class GGDSLTests: XCTestCase {
                     VizEncode(.shape, value: SymbolShape.circle)
                 }
 
+                do {
+                    VizEncode(.detail)
+                    VizEncode(.detail, field: "ABC")
+                }
+
 
 //                do {
 //                    VizEncode(.order)
 //                }
+//
 //                do {
 //                    VizEncode(.text)
 //                }
 //
 //                do {
 //                    VizEncode(.tooltip)
-//                }
-//
-//                do {
-//                    VizEncode(.detail)
 //                }
 
                 do {
