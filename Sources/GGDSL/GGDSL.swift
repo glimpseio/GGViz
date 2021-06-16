@@ -151,7 +151,7 @@ public struct VizTransform<Def : VizTransformDefType> : VizSpecElementType, VizD
 // MARK: DataTransform: Sample
 
 extension SampleTransform : VizTransformDefType {
-    public var anyTransform: Transform { .init(self) }
+    public var anyTransform: DataTransformation { .init(self) }
 }
 
 public extension VizTransform where Def == SampleTransform {
@@ -258,6 +258,7 @@ public protocol VizEncodeType : VizDSLType {
 //}
 
 public protocol VizEncodingChannelType : Pure, RawCodable {
+    static var encodingChannel: EncodingChannel { get }
     func addChannel(to encodings: inout FacetedEncoding)
 }
 
@@ -273,7 +274,7 @@ public struct VizEncode<Channel : VizEncodingChannelType, Def : Pure> {
 }
 
 extension VizEncode : VizSpecElementType {
-    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+    public func add<M: Pure>(to spec: inout VizSpec<M>) {
         def2enc(def).addChannel(to: &spec.encoding[defaulting: .init()])
     }
 }
@@ -683,19 +684,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == S
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ X2: X2Channel) {
+    init(_ x2: X2Channel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ X2: X2Channel, field: SourceColumnRepresentable) {
+    init(_ x2: X2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ X2: X2Channel, repeat: RepeatRef) {
+    init(_ x2: X2Channel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -708,49 +709,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == C
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ X2: X2Channel, datum: ExplicitNull) {
+    init(_ x2: X2Channel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ X2: X2Channel, datum: Double) {
+    init(_ x2: X2Channel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ X2: X2Channel, datum: String) {
+    init(_ x2: X2Channel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ X2: X2Channel, datum: Bool) {
+    init(_ x2: X2Channel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ X2: X2Channel, datum: DateTime) {
+    init(_ x2: X2Channel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ X2: X2Channel, expression: String) {
+    init(_ x2: X2Channel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ X2: X2Channel, datum: RepeatRef) {
+    init(_ x2: X2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -763,28 +764,28 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == C
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ X2: X2Channel, value constant: Double) {
+    init(_ x2: X2Channel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ X2: X2Channel, value constant: LiteralWidth) {
+    init(_ x2: X2Channel, value constant: LiteralWidth) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ X2: X2Channel, value constant: LiteralHeight) {
+    init(_ x2: X2Channel, value constant: LiteralHeight) {
         let value: Def.ValueChoice.T3 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ X2: X2Channel, value constant: ExprRef) {
+    init(_ x2: X2Channel, value constant: ExprRef) {
         let value: Def.ValueChoice.T4 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
@@ -812,19 +813,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == S
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Y2: Y2Channel) {
+    init(_ y2: Y2Channel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Y2: Y2Channel, field: SourceColumnRepresentable) {
+    init(_ y2: Y2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Y2: Y2Channel, repeat: RepeatRef) {
+    init(_ y2: Y2Channel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -837,49 +838,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == C
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Y2: Y2Channel, datum: ExplicitNull) {
+    init(_ y2: Y2Channel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Y2: Y2Channel, datum: Double) {
+    init(_ y2: Y2Channel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Y2: Y2Channel, datum: String) {
+    init(_ y2: Y2Channel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Y2: Y2Channel, datum: Bool) {
+    init(_ y2: Y2Channel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Y2: Y2Channel, datum: DateTime) {
+    init(_ y2: Y2Channel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Y2: Y2Channel, expression: String) {
+    init(_ y2: Y2Channel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Y2: Y2Channel, datum: RepeatRef) {
+    init(_ y2: Y2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -892,28 +893,28 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == C
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Y2: Y2Channel, value constant: Double) {
+    init(_ y2: Y2Channel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Y2: Y2Channel, value constant: LiteralWidth) {
+    init(_ y2: Y2Channel, value constant: LiteralWidth) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Y2: Y2Channel, value constant: LiteralHeight) {
+    init(_ y2: Y2Channel, value constant: LiteralHeight) {
         let value: Def.ValueChoice.T3 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Y2: Y2Channel, value constant: ExprRef) {
+    init(_ y2: Y2Channel, value constant: ExprRef) {
         let value: Def.ValueChoice.T4 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
@@ -1335,19 +1336,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Size: SizeChannel) {
+    init(_ size: SizeChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Size: SizeChannel, field: SourceColumnRepresentable) {
+    init(_ size: SizeChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Size: SizeChannel, repeat: RepeatRef) {
+    init(_ size: SizeChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -1360,49 +1361,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Size: SizeChannel, datum: ExplicitNull) {
+    init(_ size: SizeChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Size: SizeChannel, datum: Double) {
+    init(_ size: SizeChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Size: SizeChannel, datum: String) {
+    init(_ size: SizeChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Size: SizeChannel, datum: Bool) {
+    init(_ size: SizeChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Size: SizeChannel, datum: DateTime) {
+    init(_ size: SizeChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Size: SizeChannel, expression: String) {
+    init(_ size: SizeChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Size: SizeChannel, datum: RepeatRef) {
+    init(_ size: SizeChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -1415,14 +1416,14 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Size: SizeChannel, value constant: Double) {
+    init(_ size: SizeChannel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Size: SizeChannel, expr constant: ExprRef) {
+    init(_ size: SizeChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -1446,19 +1447,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ StrokeWidth: StrokeWidthChannel) {
+    init(_ strokeWidth: StrokeWidthChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ StrokeWidth: StrokeWidthChannel, field: SourceColumnRepresentable) {
+    init(_ strokeWidth: StrokeWidthChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ StrokeWidth: StrokeWidthChannel, repeat: RepeatRef) {
+    init(_ strokeWidth: StrokeWidthChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -1471,49 +1472,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeWidth: StrokeWidthChannel, datum: ExplicitNull) {
+    init(_ strokeWidth: StrokeWidthChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeWidth: StrokeWidthChannel, datum: Double) {
+    init(_ strokeWidth: StrokeWidthChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeWidth: StrokeWidthChannel, datum: String) {
+    init(_ strokeWidth: StrokeWidthChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeWidth: StrokeWidthChannel, datum: Bool) {
+    init(_ strokeWidth: StrokeWidthChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeWidth: StrokeWidthChannel, datum: DateTime) {
+    init(_ strokeWidth: StrokeWidthChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeWidth: StrokeWidthChannel, expression: String) {
+    init(_ strokeWidth: StrokeWidthChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ StrokeWidth: StrokeWidthChannel, datum: RepeatRef) {
+    init(_ strokeWidth: StrokeWidthChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -1526,14 +1527,14 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ StrokeWidth: StrokeWidthChannel, value constant: Double) {
+    init(_ strokeWidth: StrokeWidthChannel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ StrokeWidth: StrokeWidthChannel, expr constant: ExprRef) {
+    init(_ strokeWidth: StrokeWidthChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -1557,19 +1558,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ StrokeOpacity: StrokeOpacityChannel) {
+    init(_ strokeOpacity: StrokeOpacityChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ StrokeOpacity: StrokeOpacityChannel, field: SourceColumnRepresentable) {
+    init(_ strokeOpacity: StrokeOpacityChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ StrokeOpacity: StrokeOpacityChannel, repeat: RepeatRef) {
+    init(_ strokeOpacity: StrokeOpacityChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -1582,49 +1583,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeOpacity: StrokeOpacityChannel, datum: ExplicitNull) {
+    init(_ strokeOpacity: StrokeOpacityChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeOpacity: StrokeOpacityChannel, datum: Double) {
+    init(_ strokeOpacity: StrokeOpacityChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeOpacity: StrokeOpacityChannel, datum: String) {
+    init(_ strokeOpacity: StrokeOpacityChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeOpacity: StrokeOpacityChannel, datum: Bool) {
+    init(_ strokeOpacity: StrokeOpacityChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeOpacity: StrokeOpacityChannel, datum: DateTime) {
+    init(_ strokeOpacity: StrokeOpacityChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeOpacity: StrokeOpacityChannel, expression: String) {
+    init(_ strokeOpacity: StrokeOpacityChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ StrokeOpacity: StrokeOpacityChannel, datum: RepeatRef) {
+    init(_ strokeOpacity: StrokeOpacityChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -1637,14 +1638,14 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ StrokeOpacity: StrokeOpacityChannel, value constant: Double) {
+    init(_ strokeOpacity: StrokeOpacityChannel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ StrokeOpacity: StrokeOpacityChannel, expr constant: ExprRef) {
+    init(_ strokeOpacity: StrokeOpacityChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -1668,19 +1669,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ FillOpacity: FillOpacityChannel) {
+    init(_ fillOpacity: FillOpacityChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ FillOpacity: FillOpacityChannel, field: SourceColumnRepresentable) {
+    init(_ fillOpacity: FillOpacityChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ FillOpacity: FillOpacityChannel, repeat: RepeatRef) {
+    init(_ fillOpacity: FillOpacityChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -1693,49 +1694,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ FillOpacity: FillOpacityChannel, datum: ExplicitNull) {
+    init(_ fillOpacity: FillOpacityChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ FillOpacity: FillOpacityChannel, datum: Double) {
+    init(_ fillOpacity: FillOpacityChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ FillOpacity: FillOpacityChannel, datum: String) {
+    init(_ fillOpacity: FillOpacityChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ FillOpacity: FillOpacityChannel, datum: Bool) {
+    init(_ fillOpacity: FillOpacityChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ FillOpacity: FillOpacityChannel, datum: DateTime) {
+    init(_ fillOpacity: FillOpacityChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ FillOpacity: FillOpacityChannel, expression: String) {
+    init(_ fillOpacity: FillOpacityChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ FillOpacity: FillOpacityChannel, datum: RepeatRef) {
+    init(_ fillOpacity: FillOpacityChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -1748,14 +1749,14 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ FillOpacity: FillOpacityChannel, value constant: Double) {
+    init(_ fillOpacity: FillOpacityChannel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ FillOpacity: FillOpacityChannel, expr constant: ExprRef) {
+    init(_ fillOpacity: FillOpacityChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -1779,19 +1780,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Opacity: OpacityChannel) {
+    init(_ opacity: OpacityChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Opacity: OpacityChannel, field: SourceColumnRepresentable) {
+    init(_ opacity: OpacityChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Opacity: OpacityChannel, repeat: RepeatRef) {
+    init(_ opacity: OpacityChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -1804,49 +1805,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Opacity: OpacityChannel, datum: ExplicitNull) {
+    init(_ opacity: OpacityChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Opacity: OpacityChannel, datum: Double) {
+    init(_ opacity: OpacityChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Opacity: OpacityChannel, datum: String) {
+    init(_ opacity: OpacityChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Opacity: OpacityChannel, datum: Bool) {
+    init(_ opacity: OpacityChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Opacity: OpacityChannel, datum: DateTime) {
+    init(_ opacity: OpacityChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Opacity: OpacityChannel, expression: String) {
+    init(_ opacity: OpacityChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Opacity: OpacityChannel, datum: RepeatRef) {
+    init(_ opacity: OpacityChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -1859,14 +1860,14 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Opacity: OpacityChannel, value constant: Double) {
+    init(_ opacity: OpacityChannel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Opacity: OpacityChannel, expr constant: ExprRef) {
+    init(_ opacity: OpacityChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -1890,19 +1891,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Angle: AngleChannel) {
+    init(_ angle: AngleChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Angle: AngleChannel, field: SourceColumnRepresentable) {
+    init(_ angle: AngleChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Angle: AngleChannel, repeat: RepeatRef) {
+    init(_ angle: AngleChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -1915,49 +1916,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Angle: AngleChannel, datum: ExplicitNull) {
+    init(_ angle: AngleChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Angle: AngleChannel, datum: Double) {
+    init(_ angle: AngleChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Angle: AngleChannel, datum: String) {
+    init(_ angle: AngleChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Angle: AngleChannel, datum: Bool) {
+    init(_ angle: AngleChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Angle: AngleChannel, datum: DateTime) {
+    init(_ angle: AngleChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Angle: AngleChannel, expression: String) {
+    init(_ angle: AngleChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Angle: AngleChannel, datum: RepeatRef) {
+    init(_ angle: AngleChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -1970,14 +1971,14 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Angle: AngleChannel, value constant: Double) {
+    init(_ angle: AngleChannel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Angle: AngleChannel, expr constant: ExprRef) {
+    init(_ angle: AngleChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -2002,19 +2003,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Theta: ThetaChannel) {
+    init(_ theta: ThetaChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Theta: ThetaChannel, field: SourceColumnRepresentable) {
+    init(_ theta: ThetaChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Theta: ThetaChannel, repeat: RepeatRef) {
+    init(_ theta: ThetaChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -2027,49 +2028,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta: ThetaChannel, datum: ExplicitNull) {
+    init(_ theta: ThetaChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta: ThetaChannel, datum: Double) {
+    init(_ theta: ThetaChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta: ThetaChannel, datum: String) {
+    init(_ theta: ThetaChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta: ThetaChannel, datum: Bool) {
+    init(_ theta: ThetaChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta: ThetaChannel, datum: DateTime) {
+    init(_ theta: ThetaChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta: ThetaChannel, expression: String) {
+    init(_ theta: ThetaChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Theta: ThetaChannel, datum: RepeatRef) {
+    init(_ theta: ThetaChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -2082,28 +2083,28 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Theta: ThetaChannel, value constant: Double) {
+    init(_ theta: ThetaChannel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Theta: ThetaChannel, value constant: LiteralWidth) {
+    init(_ theta: ThetaChannel, value constant: LiteralWidth) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Theta: ThetaChannel, expr constant: LiteralHeight) {
+    init(_ theta: ThetaChannel, expr constant: LiteralHeight) {
         let value: Def.ValueChoice.T3 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Theta: ThetaChannel, expr constant: ExprRef) {
+    init(_ theta: ThetaChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T4 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -2127,19 +2128,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Theta2: Theta2Channel) {
+    init(_ theta2: Theta2Channel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Theta2: Theta2Channel, field: SourceColumnRepresentable) {
+    init(_ theta2: Theta2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Theta2: Theta2Channel, repeat: RepeatRef) {
+    init(_ theta2: Theta2Channel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -2152,49 +2153,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta2: Theta2Channel, datum: ExplicitNull) {
+    init(_ theta2: Theta2Channel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta2: Theta2Channel, datum: Double) {
+    init(_ theta2: Theta2Channel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta2: Theta2Channel, datum: String) {
+    init(_ theta2: Theta2Channel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta2: Theta2Channel, datum: Bool) {
+    init(_ theta2: Theta2Channel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta2: Theta2Channel, datum: DateTime) {
+    init(_ theta2: Theta2Channel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Theta2: Theta2Channel, expression: String) {
+    init(_ theta2: Theta2Channel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Theta2: Theta2Channel, datum: RepeatRef) {
+    init(_ theta2: Theta2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -2207,28 +2208,28 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Theta2: Theta2Channel, value constant: Double) {
+    init(_ theta2: Theta2Channel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Theta2: Theta2Channel, value constant: LiteralWidth) {
+    init(_ theta2: Theta2Channel, value constant: LiteralWidth) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Theta2: Theta2Channel, expr constant: LiteralHeight) {
+    init(_ theta2: Theta2Channel, expr constant: LiteralHeight) {
         let value: Def.ValueChoice.T3 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Theta2: Theta2Channel, expr constant: ExprRef) {
+    init(_ theta2: Theta2Channel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T4 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -2252,19 +2253,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Radius: RadiusChannel) {
+    init(_ radius: RadiusChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Radius: RadiusChannel, field: SourceColumnRepresentable) {
+    init(_ radius: RadiusChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Radius: RadiusChannel, repeat: RepeatRef) {
+    init(_ radius: RadiusChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -2277,49 +2278,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius: RadiusChannel, datum: ExplicitNull) {
+    init(_ radius: RadiusChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius: RadiusChannel, datum: Double) {
+    init(_ radius: RadiusChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius: RadiusChannel, datum: String) {
+    init(_ radius: RadiusChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius: RadiusChannel, datum: Bool) {
+    init(_ radius: RadiusChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius: RadiusChannel, datum: DateTime) {
+    init(_ radius: RadiusChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius: RadiusChannel, expression: String) {
+    init(_ radius: RadiusChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Radius: RadiusChannel, datum: RepeatRef) {
+    init(_ radius: RadiusChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -2332,7 +2333,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Radius: RadiusChannel, value constant: Double) {
+    init(_ radius: RadiusChannel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
@@ -2340,21 +2341,21 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
 
 
     /// Creates this encoding with the given constant value.
-    init(_ Radius: RadiusChannel, value constant: LiteralWidth) {
+    init(_ radius: RadiusChannel, value constant: LiteralWidth) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Radius: RadiusChannel, expr constant: LiteralHeight) {
+    init(_ radius: RadiusChannel, expr constant: LiteralHeight) {
         let value: Def.ValueChoice.T3 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Radius: RadiusChannel, expr constant: ExprRef) {
+    init(_ radius: RadiusChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T4 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -2378,19 +2379,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Radius2: Radius2Channel) {
+    init(_ radius2: Radius2Channel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Radius2: Radius2Channel, field: SourceColumnRepresentable) {
+    init(_ radius2: Radius2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Radius2: Radius2Channel, repeat: RepeatRef) {
+    init(_ radius2: Radius2Channel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -2403,49 +2404,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius2: Radius2Channel, datum: ExplicitNull) {
+    init(_ radius2: Radius2Channel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius2: Radius2Channel, datum: Double) {
+    init(_ radius2: Radius2Channel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius2: Radius2Channel, datum: String) {
+    init(_ radius2: Radius2Channel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius2: Radius2Channel, datum: Bool) {
+    init(_ radius2: Radius2Channel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius2: Radius2Channel, datum: DateTime) {
+    init(_ radius2: Radius2Channel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Radius2: Radius2Channel, expression: String) {
+    init(_ radius2: Radius2Channel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Radius2: Radius2Channel, datum: RepeatRef) {
+    init(_ radius2: Radius2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -2458,7 +2459,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Radius2: Radius2Channel, value constant: Double) {
+    init(_ radius2: Radius2Channel, value constant: Double) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
@@ -2466,21 +2467,21 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
 
 
     /// Creates this encoding with the given constant value.
-    init(_ Radius2: Radius2Channel, value constant: LiteralWidth) {
+    init(_ radius2: Radius2Channel, value constant: LiteralWidth) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Radius2: Radius2Channel, expr constant: LiteralHeight) {
+    init(_ radius2: Radius2Channel, expr constant: LiteralHeight) {
         let value: Def.ValueChoice.T3 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Radius2: Radius2Channel, expr constant: ExprRef) {
+    init(_ radius2: Radius2Channel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T4 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -2504,12 +2505,12 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ XError: XErrorChannel) {
+    init(_ xError: XErrorChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
-    init(_ XError: XErrorChannel, field: SourceColumnRepresentable) {
+    init(_ xError: XErrorChannel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
         self.def = .init(field: field.columnRepresentation)
@@ -2522,7 +2523,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ XError: XErrorChannel, value constant: Double) {
+    init(_ xError: XErrorChannel, value constant: Double) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: constant)
     }
@@ -2547,12 +2548,12 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError2, Def
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ XError2: XError2Channel) {
+    init(_ xError2: XError2Channel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
-    init(_ XError2: XError2Channel, field: SourceColumnRepresentable) {
+    init(_ xError2: XError2Channel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
         self.def = .init(field: field.columnRepresentation)
@@ -2565,7 +2566,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError2, Def
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ XError2: XError2Channel, value constant: Double) {
+    init(_ xError2: XError2Channel, value constant: Double) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: constant)
     }
@@ -2589,12 +2590,12 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ YError: YErrorChannel) {
+    init(_ yError: YErrorChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
-    init(_ YError: YErrorChannel, field: SourceColumnRepresentable) {
+    init(_ yError: YErrorChannel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
         self.def = .init(field: field.columnRepresentation)
@@ -2607,7 +2608,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ YError: YErrorChannel, value constant: Double) {
+    init(_ yError: YErrorChannel, value constant: Double) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: constant)
     }
@@ -2630,12 +2631,12 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError2, Def
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ YError2: YError2Channel) {
+    init(_ yError2: YError2Channel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
-    init(_ YError2: YError2Channel, field: SourceColumnRepresentable) {
+    init(_ yError2: YError2Channel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
         self.def = .init(field: field.columnRepresentation)
@@ -2648,7 +2649,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError2, Def
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ YError2: YError2Channel, value constant: Double) {
+    init(_ yError2: YError2Channel, value constant: Double) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: constant)
     }
@@ -2670,12 +2671,12 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColumn, Def 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Column: ColumnChannel) {
+    init(_ column: ColumnChannel) {
         self.def2enc = { .init($0) }
         self.def = .init()
     }
 
-    init(_ Column: ColumnChannel, field: SourceColumnRepresentable) {
+    init(_ column: ColumnChannel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
         self.def = .init(field: field.columnRepresentation)
@@ -2696,12 +2697,12 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRow, Def == 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Row: RowChannel) {
+    init(_ row: RowChannel) {
         self.def2enc = { .init($0) }
         self.def = .init()
     }
 
-    init(_ Row: RowChannel, field: SourceColumnRepresentable) {
+    init(_ row: RowChannel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
         self.def = .init(field: field.columnRepresentation)
@@ -2725,12 +2726,12 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFacet, Def =
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Facet: FacetChannel) {
+    init(_ facet: FacetChannel) {
         self.def2enc = { .init($0) }
         self.def = .init()
     }
 
-    init(_ Facet: FacetChannel, field: SourceColumnRepresentable) {
+    init(_ facet: FacetChannel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
         self.def = .init(field: field.columnRepresentation)
@@ -2754,19 +2755,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, De
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Latitude: LatitudeChannel) {
+    init(_ latitude: LatitudeChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Latitude: LatitudeChannel, field: SourceColumnRepresentable) {
+    init(_ latitude: LatitudeChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Latitude: LatitudeChannel, repeat: RepeatRef) {
+    init(_ latitude: LatitudeChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -2779,49 +2780,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, De
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude: LatitudeChannel, datum: ExplicitNull) {
+    init(_ latitude: LatitudeChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude: LatitudeChannel, datum: Double) {
+    init(_ latitude: LatitudeChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude: LatitudeChannel, datum: String) {
+    init(_ latitude: LatitudeChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude: LatitudeChannel, datum: Bool) {
+    init(_ latitude: LatitudeChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude: LatitudeChannel, datum: DateTime) {
+    init(_ latitude: LatitudeChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude: LatitudeChannel, expression: String) {
+    init(_ latitude: LatitudeChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Latitude: LatitudeChannel, datum: RepeatRef) {
+    init(_ latitude: LatitudeChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -2844,19 +2845,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, D
     private func toDef(_ def: Def) -> LatLongFieldDef { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Longitude: LongitudeChannel) {
+    init(_ longitude: LongitudeChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Longitude: LongitudeChannel, field: SourceColumnRepresentable) {
+    init(_ longitude: LongitudeChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Longitude: LongitudeChannel, repeat: RepeatRef) {
+    init(_ longitude: LongitudeChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -2869,49 +2870,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, D
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude: LongitudeChannel, datum: ExplicitNull) {
+    init(_ longitude: LongitudeChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude: LongitudeChannel, datum: Double) {
+    init(_ longitude: LongitudeChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude: LongitudeChannel, datum: String) {
+    init(_ longitude: LongitudeChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude: LongitudeChannel, datum: Bool) {
+    init(_ longitude: LongitudeChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude: LongitudeChannel, datum: DateTime) {
+    init(_ longitude: LongitudeChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude: LongitudeChannel, expression: String) {
+    init(_ longitude: LongitudeChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Longitude: LongitudeChannel, datum: RepeatRef) {
+    init(_ longitude: LongitudeChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -2936,19 +2937,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, D
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Latitude2: Latitude2Channel) {
+    init(_ latitude2: Latitude2Channel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Latitude2: Latitude2Channel, field: SourceColumnRepresentable) {
+    init(_ latitude2: Latitude2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Latitude2: Latitude2Channel, repeat: RepeatRef) {
+    init(_ latitude2: Latitude2Channel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -2961,49 +2962,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, D
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude2: Latitude2Channel, datum: ExplicitNull) {
+    init(_ latitude2: Latitude2Channel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude2: Latitude2Channel, datum: Double) {
+    init(_ latitude2: Latitude2Channel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude2: Latitude2Channel, datum: String) {
+    init(_ latitude2: Latitude2Channel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude2: Latitude2Channel, datum: Bool) {
+    init(_ latitude2: Latitude2Channel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude2: Latitude2Channel, datum: DateTime) {
+    init(_ latitude2: Latitude2Channel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Latitude2: Latitude2Channel, expression: String) {
+    init(_ latitude2: Latitude2Channel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Latitude2: Latitude2Channel, datum: RepeatRef) {
+    init(_ latitude2: Latitude2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -3027,19 +3028,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Longitude2: Longitude2Channel) {
+    init(_ longitude2: Longitude2Channel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Longitude2: Longitude2Channel, field: SourceColumnRepresentable) {
+    init(_ longitude2: Longitude2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Longitude2: Longitude2Channel, repeat: RepeatRef) {
+    init(_ longitude2: Longitude2Channel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -3052,49 +3053,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude2: Longitude2Channel, datum: ExplicitNull) {
+    init(_ longitude2: Longitude2Channel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude2: Longitude2Channel, datum: Double) {
+    init(_ longitude2: Longitude2Channel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude2: Longitude2Channel, datum: String) {
+    init(_ longitude2: Longitude2Channel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude2: Longitude2Channel, datum: Bool) {
+    init(_ longitude2: Longitude2Channel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude2: Longitude2Channel, datum: DateTime) {
+    init(_ longitude2: Longitude2Channel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Longitude2: Longitude2Channel, expression: String) {
+    init(_ longitude2: Longitude2Channel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Longitude2: Longitude2Channel, datum: RepeatRef) {
+    init(_ longitude2: Longitude2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -3117,19 +3118,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def ==
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Href: HrefChannel) {
+    init(_ href: HrefChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Href: HrefChannel, field: SourceColumnRepresentable) {
+    init(_ href: HrefChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Href: HrefChannel, repeat: RepeatRef) {
+    init(_ href: HrefChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -3141,21 +3142,21 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def ==
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Href: HrefChannel, value constant: ExplicitNull) {
+    init(_ href: HrefChannel, value constant: ExplicitNull) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Href: HrefChannel, value constant: String) {
+    init(_ href: HrefChannel, value constant: String) {
         let value: Def.ValueChoice.T2.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(.init(value)))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Href: HrefChannel, expr constant: ExprRef) {
+    init(_ href: HrefChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T2.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(.init(value))) // ambiguous with the other expr init?
@@ -3177,19 +3178,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDescription,
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Description: DescriptionChannel) {
+    init(_ description: DescriptionChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Description: DescriptionChannel, field: SourceColumnRepresentable) {
+    init(_ description: DescriptionChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Description: DescriptionChannel, repeat: RepeatRef) {
+    init(_ description: DescriptionChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -3201,21 +3202,21 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDescription,
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Description: DescriptionChannel, value constant: ExplicitNull) {
+    init(_ description: DescriptionChannel, value constant: ExplicitNull) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Description: DescriptionChannel, value constant: String) {
+    init(_ description: DescriptionChannel, value constant: String) {
         let value: Def.ValueChoice.T2.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(.init(value)))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Description: DescriptionChannel, expr constant: ExprRef) {
+    init(_ description: DescriptionChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T2.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(.init(value))) // ambiguous with the other expr init?
@@ -3236,19 +3237,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Url: UrlChannel) {
+    init(_ url: UrlChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Url: UrlChannel, field: SourceColumnRepresentable) {
+    init(_ url: UrlChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Url: UrlChannel, repeat: RepeatRef) {
+    init(_ url: UrlChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -3260,21 +3261,21 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == 
     private func toDef(_ def: Def) -> StringValueDefWithCondition { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Url: UrlChannel, value constant: ExplicitNull) {
+    init(_ url: UrlChannel, value constant: ExplicitNull) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Url: UrlChannel, value constant: String) {
+    init(_ url: UrlChannel, value constant: String) {
         let value: Def.ValueChoice.T2.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(.init(value)))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ Url: UrlChannel, expr constant: ExprRef) {
+    init(_ url: UrlChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T2.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(.init(value))) // ambiguous with the other expr init?
@@ -3298,19 +3299,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ StrokeDash: StrokeDashChannel) {
+    init(_ strokeDash: StrokeDashChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ StrokeDash: StrokeDashChannel, field: SourceColumnRepresentable) {
+    init(_ strokeDash: StrokeDashChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ StrokeDash: StrokeDashChannel, repeat: RepeatRef) {
+    init(_ strokeDash: StrokeDashChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -3321,49 +3322,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeDash: StrokeDashChannel, datum: ExplicitNull) {
+    init(_ strokeDash: StrokeDashChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeDash: StrokeDashChannel, datum: Double) {
+    init(_ strokeDash: StrokeDashChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeDash: StrokeDashChannel, datum: String) {
+    init(_ strokeDash: StrokeDashChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeDash: StrokeDashChannel, datum: Bool) {
+    init(_ strokeDash: StrokeDashChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeDash: StrokeDashChannel, datum: DateTime) {
+    init(_ strokeDash: StrokeDashChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ StrokeDash: StrokeDashChannel, expression: String) {
+    init(_ strokeDash: StrokeDashChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ StrokeDash: StrokeDashChannel, datum: RepeatRef) {
+    init(_ strokeDash: StrokeDashChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -3375,14 +3376,14 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ StrokeDash: StrokeDashChannel, value constant: [Double]) {
+    init(_ strokeDash: StrokeDashChannel, value constant: [Double]) {
         let value: Def.ValueChoice.T1 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value))
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ StrokeDash: StrokeDashChannel, expr constant: ExprRef) {
+    init(_ strokeDash: StrokeDashChannel, expr constant: ExprRef) {
         let value: Def.ValueChoice.T2 = constant
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
@@ -3403,19 +3404,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingKey, Def == 
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Key: KeyChannel) {
+    init(_ key: KeyChannel) {
         self.def2enc = { .init($0) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Key: KeyChannel, field: SourceColumnRepresentable) {
+    init(_ key: KeyChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init($0) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Key: KeyChannel, repeat: RepeatRef) {
+    init(_ key: KeyChannel, repeat: RepeatRef) {
         self.def2enc = { .init($0) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -3437,19 +3438,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def =
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Shape: ShapeChannel) {
+    init(_ shape: ShapeChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Shape: ShapeChannel, field: SourceColumnRepresentable) {
+    init(_ shape: ShapeChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Shape: ShapeChannel, repeat: RepeatRef) {
+    init(_ shape: ShapeChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -3462,49 +3463,49 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def =
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Shape: ShapeChannel, datum: ExplicitNull) {
+    init(_ shape: ShapeChannel, datum: ExplicitNull) {
         let value: Def.DatumChoice.T1.RawValue.T1 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Shape: ShapeChannel, datum: Double) {
+    init(_ shape: ShapeChannel, datum: Double) {
         let value: Def.DatumChoice.T1.RawValue.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Shape: ShapeChannel, datum: String) {
+    init(_ shape: ShapeChannel, datum: String) {
         let value: Def.DatumChoice.T1.RawValue.T3 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Shape: ShapeChannel, datum: Bool) {
+    init(_ shape: ShapeChannel, datum: Bool) {
         let value: Def.DatumChoice.T1.RawValue.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(.init(value)))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Shape: ShapeChannel, datum: DateTime) {
+    init(_ shape: ShapeChannel, datum: DateTime) {
         let datetime: Def.DatumChoice.T2 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(datetime))
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ Shape: ShapeChannel, expression: String) {
+    init(_ shape: ShapeChannel, expression: String) {
         let ref: Def.DatumChoice.T3 = .init(expr: .init(expression))
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Shape: ShapeChannel, datum: RepeatRef) {
+    init(_ shape: ShapeChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.def2enc = { .init(.init($0)) }
         self.def = .init(datum: .init(ref))
@@ -3517,7 +3518,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def =
     private func toDef(_ def: Def) -> Any { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ Shape: ShapeChannel, value constant: SymbolShape?) {
+    init(_ shape: ShapeChannel, value constant: SymbolShape?) {
         let value: Nullable<SymbolShape> = constant.map({ Nullable($0) }) ?? .v1(ExplicitNull())
         self.def2enc = { .init(.init($0)) }
         self.def = .init(value: value)
@@ -3539,19 +3540,19 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDetail, Def 
     private func toDef(_ def: Def) -> FieldDefWithoutScale { def }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
-    init(_ Detail: DetailChannel) {
+    init(_ detail: DetailChannel) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Detail: DetailChannel, field: SourceColumnRepresentable) {
+    init(_ detail: DetailChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ Detail: DetailChannel, repeat: RepeatRef) {
+    init(_ detail: DetailChannel, repeat: RepeatRef) {
         self.def2enc = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
@@ -3654,237 +3655,423 @@ private func emptyConstructor(channel: EncodingChannel) -> VizEncodeType {
 }
 
 
-/// Work-in-progress, simply to highlight a line with a deprecation warning
-@available(*, deprecated, message: "work-in-progress")
-fileprivate func wip<T>(_ value: T) -> T { value }
+
+// MARK: VizEncodingChannelType Multi-Field
 
 
-// MARK: VizEncodingChannelType Boilerplate
+extension FacetedEncoding.EncodingDetail : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .detail
+
+    public func addChannel(to encodings: inout FacetedEncoding) {
+        var defs: [TypedFieldDef] = []
+
+        if let detail = encodings.detail {
+            // adds the new detail to the existing detail(s)
+            switch detail.rawValue {
+            case .v1(let singleDef):
+                defs.append(singleDef)
+            case .v2(let multiDef):
+                defs.append(contentsOf: multiDef)
+            }
+        }
+
+        switch self.rawValue {
+        case .v1(let singleDef):
+            defs.append(singleDef)
+        case .v2(let multiDef):
+            defs.append(contentsOf: multiDef)
+        }
+
+        // reduce to a single typing
+        if let field = defs.first, defs.count == 1 {
+            encodings.detail = .init(field)
+        } else {
+            encodings.detail = .init(defs)
+        }
+    }
+}
+
+extension FacetedEncoding.EncodingText : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .text
+    public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.text != wip(nil) {
+            warnReplaceEncoding(self)
+        }
+        encodings.text = self
+    }
+}
+
+extension FacetedEncoding.EncodingTooltip : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .tooltip
+    public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.tooltip != wip(nil) {
+            warnReplaceEncoding(self)
+        }
+        encodings.tooltip = self
+    }
+}
+
+extension FacetedEncoding.EncodingOrder : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .order
+    public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.order != wip(nil) {
+            warnReplaceEncoding(self)
+        }
+        encodings.order = self
+    }
+}
+
+// MARK: VizEncodingChannelType Single-Field
 
 extension FacetedEncoding.EncodingAngle : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .angle
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.angle != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.angle = self
     }
 }
 
 extension FacetedEncoding.EncodingColor : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .color
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.color != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.color = self
     }
 }
 
 extension FacetedEncoding.EncodingDescription : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .description
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.description != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.description = self
     }
 }
 
-extension FacetedEncoding.EncodingDetail : VizEncodingChannelType {
-    public func addChannel(to encodings: inout FacetedEncoding) {
-        encodings.detail = self
-    }
-}
-
 extension FacetedEncoding.EncodingFill : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .fill
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.fill != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.fill = self
     }
 }
 
 extension FacetedEncoding.EncodingFillOpacity : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .fillOpacity
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.fillOpacity != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.fillOpacity = self
     }
 }
 
 extension FacetedEncoding.EncodingHref : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .href
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.href != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.href = self
     }
 }
 
 extension FacetedEncoding.EncodingLatitude : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .latitude
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.latitude != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.latitude = self
     }
 }
 
 extension FacetedEncoding.EncodingLatitude2 : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .latitude2
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.latitude2 != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.latitude2 = self
     }
 }
 
 extension FacetedEncoding.EncodingLongitude : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .longitude
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.longitude != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.longitude = self
     }
 }
 
 extension FacetedEncoding.EncodingLongitude2 : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .longitude2
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.longitude2 != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.longitude2 = self
     }
 }
 
 extension FacetedEncoding.EncodingOpacity : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .opacity
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.opacity != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.opacity = self
     }
 }
 
-extension FacetedEncoding.EncodingOrder : VizEncodingChannelType {
-    public func addChannel(to encodings: inout FacetedEncoding) {
-        encodings.order = self
-    }
-}
 
 extension FacetedEncoding.EncodingRadius : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .radius
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.radius != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.radius = self
     }
 }
 
 extension FacetedEncoding.EncodingRadius2 : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .radius2
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.radius2 != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.radius2 = self
     }
 }
 
 extension FacetedEncoding.EncodingShape : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .shape
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.shape != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.shape = self
     }
 }
 
 extension FacetedEncoding.EncodingSize : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .size
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.size != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.size = self
     }
 }
 
 extension FacetedEncoding.EncodingStroke : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .stroke
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.stroke != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.stroke = self
     }
 }
 
 extension FacetedEncoding.EncodingStrokeDash : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .strokeDash
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.strokeDash != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.strokeDash = self
     }
 }
 
 extension FacetedEncoding.EncodingStrokeOpacity : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .strokeOpacity
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.strokeOpacity != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.strokeOpacity = self
     }
 }
 
 extension FacetedEncoding.EncodingStrokeWidth : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .strokeWidth
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.strokeWidth != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.strokeWidth = self
     }
 }
 
-extension FacetedEncoding.EncodingText : VizEncodingChannelType {
-    public func addChannel(to encodings: inout FacetedEncoding) {
-        encodings.text = self
-    }
-}
-
 extension FacetedEncoding.EncodingTheta : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .theta
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.theta != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.theta = self
     }
 }
 
 extension FacetedEncoding.EncodingTheta2 : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .theta2
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.theta2 != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.theta2 = self
     }
 }
 
-extension FacetedEncoding.EncodingTooltip : VizEncodingChannelType {
-    public func addChannel(to encodings: inout FacetedEncoding) {
-        encodings.tooltip = self
-    }
-}
 
 extension FacetedEncoding.EncodingUrl : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .url
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.url != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.url = self
     }
 }
 
 extension FacetedEncoding.EncodingX : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .x
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.x != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.x = self
     }
 }
 
 extension FacetedEncoding.EncodingX2 : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .x2
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.x2 != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.x2 = self
     }
 }
 
 extension FacetedEncoding.EncodingXError : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .xError
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.xError != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.xError = self
     }
 }
 
 extension FacetedEncoding.EncodingXError2 : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .xError2
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.xError2 != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.xError2 = self
     }
 }
 
 extension FacetedEncoding.EncodingY : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .y
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.y != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.y = self
     }
 }
 
 extension FacetedEncoding.EncodingY2 : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .y2
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.y2 != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.y2 = self
     }
 }
 
 extension FacetedEncoding.EncodingYError : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .yError
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.yError != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.yError = self
     }
 }
 
 extension FacetedEncoding.EncodingYError2 : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .yError2
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.yError2 != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.yError2 = self
     }
 }
 
 extension FacetedEncoding.EncodingRow : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .row
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.row != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.row = self
     }
 }
 
 extension FacetedEncoding.EncodingColumn : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .column
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.column != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.column = self
     }
 }
 
 extension FacetedEncoding.EncodingFacet : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .facet
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.facet != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.facet = self
     }
 }
 
 extension FacetedEncoding.EncodingKey : VizEncodingChannelType {
+    public static let encodingChannel: EncodingChannel = .key
     public func addChannel(to encodings: inout FacetedEncoding) {
+        if encodings.key != nil {
+            warnReplaceEncoding(self)
+        }
         encodings.key = self
     }
 }
+
+
+/// Issues a warning to the console that the existing encoding is being replaced
+func warnReplaceEncoding<C: VizEncodingChannelType>(_ instance: C) {
+    print("warnReplaceEncoding: encoding for \(C.encodingChannel.rawValue) overrides existing definition")
+}
+
+
+/// Work-in-progress, simply to highlight a line with a deprecation warning
+@available(*, deprecated, message: "work-in-progress")
+fileprivate func wip<T>(_ value: T) -> T { value }
