@@ -51,13 +51,23 @@ final class GGDSLTests: XCTestCase {
             """)
     }
 
+    func testVizDetailEncoding() throws {
+        try check(viz: SimpleViz {
+            VizMark(.circle) {
+                VizEncode(.detail, field: "X")
+                VizEncode(.detail, field: FieldName("Y"))
+            }
+        }, againstJSON: """
+            {"mark":"circle", "encoding": { "detail": {"field":"Y"} } }
+        """)
+    }
 
     func testVizFacets() throws {
         try check(viz: SimpleViz {
             VizMark(.rect) {
-                VizEncode(.row, field: FieldName("ROW_FIELD"))
-                VizEncode(.column, field: FieldName("COLUMN_FIELD"))
-                VizEncode(.facet, field: FieldName("FACET_FIELD"))
+                VizEncode(.row, field: "ROW_FIELD")
+                VizEncode(.column, field: "COLUMN_FIELD")
+                VizEncode(.facet, field: "FACET_FIELD")
             }
         }, againstJSON: """
         {
@@ -301,7 +311,7 @@ final class GGDSLTests: XCTestCase {
 
                     VizEncode(.x).aggregate(Aggregate(NonArgAggregateOp.average))
 
-                    VizEncode(.x, field: FieldName("a"))
+                    VizEncode(.x, field: "a")
                     VizEncode(.x, value: .width)
                     VizEncode(.x, value: 22)
                     VizEncode(.x, datum: 22)
@@ -311,7 +321,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     VizEncode(.y)
-                    VizEncode(.y, field: FieldName("b"))
+                    VizEncode(.y, field: "b")
                     VizEncode(.y, value: .height)
                     VizEncode(.y, value: 22)
                     VizEncode(.y, datum: 22)
@@ -322,27 +332,27 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     VizEncode(.row)
-                    VizEncode(.row, field: FieldName("FIELD"))
+                    VizEncode(.row, field: "FIELD")
                 }
 
                 do {
                     VizEncode(.column)
-                    VizEncode(.column, field: FieldName("FIELD"))
+                    VizEncode(.column, field: "FIELD")
                 }
 
                 do {
                     VizEncode(.facet)
-                    VizEncode(.facet, field: FieldName("FIELD"))
+                    VizEncode(.facet, field: "FIELD")
                 }
 
                 do {
                     VizEncode(.x2)
-                    VizEncode(.x2, field: FieldName("FIELD"))
+                    VizEncode(.x2, field: "FIELD")
                 }
 
                 do {
                     VizEncode(.y2)
-                    VizEncode(.y2, field: FieldName("FIELD"))
+                    VizEncode(.y2, field: "FIELD")
                 }
 
                 do {
@@ -480,7 +490,7 @@ final class GGDSLTests: XCTestCase {
                     .axis(.init(nil))
 
                 VizEncode(.y)
-                    .field(Field(FieldName("b")))
+                    .field(SourceColumnRef(FieldName("b")))
                     .type(.quantitative)
                     .bandPosition(11)
 

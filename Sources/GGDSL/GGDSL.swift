@@ -1,20 +1,20 @@
 
 
 /// A type that can be used to create a field value
-public protocol VizFieldRepresentable {
+public protocol SourceColumnRepresentable {
     /// The `GGSpec.Field` form of this specification
     var columnRepresentation: SourceColumnRef { get }
 }
 
-extension String : VizFieldRepresentable {
+extension String : SourceColumnRepresentable {
     public var columnRepresentation: SourceColumnRef { .init(FieldName(self)) }
 }
 
-extension FieldName : VizFieldRepresentable {
+extension FieldName : SourceColumnRepresentable {
     public var columnRepresentation: SourceColumnRef { .init(self) }
 }
 
-extension RepeatRef : VizFieldRepresentable {
+extension RepeatRef : SourceColumnRepresentable {
     public var columnRepresentation: SourceColumnRef { .init(self) }
 }
 
@@ -31,12 +31,12 @@ extension ColumnProtocol {
     public var columnRepresentation: SourceColumnRef { .init(FieldName(name)) }
 }
 
-extension TabularData.AnyColumn : VizFieldRepresentable { }
-extension TabularData.AnyColumnSlice : VizFieldRepresentable { }
-extension TabularData.Column : VizFieldRepresentable { }
-extension TabularData.ColumnSlice : VizFieldRepresentable { }
-extension TabularData.DiscontiguousColumnSlice : VizFieldRepresentable { }
-extension TabularData.FilledColumn : VizFieldRepresentable { }
+extension TabularData.AnyColumn : SourceColumnRepresentable { }
+extension TabularData.AnyColumnSlice : SourceColumnRepresentable { }
+extension TabularData.Column : SourceColumnRepresentable { }
+extension TabularData.ColumnSlice : SourceColumnRepresentable { }
+extension TabularData.DiscontiguousColumnSlice : SourceColumnRepresentable { }
+extension TabularData.FilledColumn : SourceColumnRepresentable { }
 
 #endif
 
@@ -433,9 +433,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Po
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ x: XChannel, field: FieldName) {
+    init(_ x: XChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -563,9 +563,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Po
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ y: YChannel, field: FieldName) {
+    init(_ y: YChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -689,9 +689,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == S
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ X2: X2Channel, field: FieldName) {
+    init(_ X2: X2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -818,9 +818,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == S
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Y2: Y2Channel, field: FieldName) {
+    init(_ Y2: Y2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -944,9 +944,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def =
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ color: ColorChannel, field: FieldName) {
+    init(_ color: ColorChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1076,9 +1076,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def ==
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ fill: FillChannel, field: FieldName) {
+    init(_ fill: FillChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1212,9 +1212,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def 
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ stroke: StrokeChannel, field: FieldName) {
+    init(_ stroke: StrokeChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1341,9 +1341,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Size: SizeChannel, field: FieldName) {
+    init(_ Size: SizeChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1452,9 +1452,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ StrokeWidth: StrokeWidthChannel, field: FieldName) {
+    init(_ StrokeWidth: StrokeWidthChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1563,9 +1563,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ StrokeOpacity: StrokeOpacityChannel, field: FieldName) {
+    init(_ StrokeOpacity: StrokeOpacityChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1674,9 +1674,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ FillOpacity: FillOpacityChannel, field: FieldName) {
+    init(_ FillOpacity: FillOpacityChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1785,9 +1785,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Opacity: OpacityChannel, field: FieldName) {
+    init(_ Opacity: OpacityChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1896,9 +1896,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Angle: AngleChannel, field: FieldName) {
+    init(_ Angle: AngleChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2008,9 +2008,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Theta: ThetaChannel, field: FieldName) {
+    init(_ Theta: ThetaChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2133,9 +2133,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Theta2: Theta2Channel, field: FieldName) {
+    init(_ Theta2: Theta2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2258,9 +2258,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Radius: RadiusChannel, field: FieldName) {
+    init(_ Radius: RadiusChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2384,9 +2384,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Radius2: Radius2Channel, field: FieldName) {
+    init(_ Radius2: Radius2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2509,10 +2509,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError, Def 
         self.def = .init()
     }
 
-    init(_ XError: XErrorChannel, field: FieldName) {
+    init(_ XError: XErrorChannel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 }
 
@@ -2552,10 +2552,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError2, Def
         self.def = .init()
     }
 
-    init(_ XError2: XError2Channel, field: FieldName) {
+    init(_ XError2: XError2Channel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 }
 
@@ -2594,10 +2594,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError, Def 
         self.def = .init()
     }
 
-    init(_ YError: YErrorChannel, field: FieldName) {
+    init(_ YError: YErrorChannel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 }
 
@@ -2635,10 +2635,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError2, Def
         self.def = .init()
     }
 
-    init(_ YError2: YError2Channel, field: FieldName) {
+    init(_ YError2: YError2Channel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 }
 
@@ -2675,10 +2675,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColumn, Def 
         self.def = .init()
     }
 
-    init(_ Column: ColumnChannel, field: FieldName) {
+    init(_ Column: ColumnChannel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 }
 
@@ -2701,10 +2701,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRow, Def == 
         self.def = .init()
     }
 
-    init(_ Row: RowChannel, field: FieldName) {
+    init(_ Row: RowChannel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 }
 
@@ -2730,10 +2730,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFacet, Def =
         self.def = .init()
     }
 
-    init(_ Facet: FacetChannel, field: FieldName) {
+    init(_ Facet: FacetChannel, field: SourceColumnRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.def2enc = { .init($0) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 }
 
@@ -2760,9 +2760,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, De
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Latitude: LatitudeChannel, field: FieldName) {
+    init(_ Latitude: LatitudeChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2850,9 +2850,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, D
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Longitude: LongitudeChannel, field: FieldName) {
+    init(_ Longitude: LongitudeChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2942,9 +2942,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, D
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Latitude2: Latitude2Channel, field: FieldName) {
+    init(_ Latitude2: Latitude2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3033,9 +3033,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, 
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Longitude2: Longitude2Channel, field: FieldName) {
+    init(_ Longitude2: Longitude2Channel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3123,9 +3123,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def ==
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Href: HrefChannel, field: FieldName) {
+    init(_ Href: HrefChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3183,9 +3183,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDescription,
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Description: DescriptionChannel, field: FieldName) {
+    init(_ Description: DescriptionChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3242,9 +3242,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == 
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Url: UrlChannel, field: FieldName) {
+    init(_ Url: UrlChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3304,9 +3304,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, 
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ StrokeDash: StrokeDashChannel, field: FieldName) {
+    init(_ StrokeDash: StrokeDashChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3409,9 +3409,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingKey, Def == 
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Key: KeyChannel, field: FieldName) {
+    init(_ Key: KeyChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init($0) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
@@ -3443,9 +3443,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def =
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Shape: ShapeChannel, field: FieldName) {
+    init(_ Shape: ShapeChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3545,9 +3545,9 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDetail, Def 
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ Detail: DetailChannel, field: FieldName) {
+    init(_ Detail: DetailChannel, field: SourceColumnRepresentable) {
         self.def2enc = { .init(.init($0)) }
-        self.def = .init(field: .init(field))
+        self.def = .init(field: field.columnRepresentation)
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
