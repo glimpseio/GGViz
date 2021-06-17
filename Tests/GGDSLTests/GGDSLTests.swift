@@ -54,12 +54,48 @@ final class GGDSLTests: XCTestCase {
     func testVizDetailEncoding() throws {
         try check(viz: SimpleViz {
             VizMark(.circle) {
+                VizEncode(.color, field: "C")
+                    .aggregate(.min)
+                    .sort(Sort(.init(SortByEncoding(encoding: .color, order: .init(.descending)))))
+
+                VizEncode(.color, field: "D").aggregate(.max) // single-encoding override
+
                 VizEncode(.detail, field: "X").aggregate(.min)
-                VizEncode(.detail, field: FieldName("Y"))
-                VizEncode(.detail, field: "Z").aggregate(.sum)
+                VizEncode(.detail, field: FieldName("Y")) // multi-encoding
+                VizEncode(.detail).aggregate(.count) // multi-encoding
+            }
+            .opacity(.init(0.80))
+        }, againstJSON: """
+        {
+            "mark": { "opacity": 0.80000000000000004, "type": "circle" },
+            "encoding": {
+                "color": { "aggregate": "max", "field": "D" },
+                "detail": [
+                    { "aggregate": "min", "field": "X" },
+                    { "field": "Y" },
+                    { "aggregate": "count" }
+                ]
+            }
+        }
+        """)
+    }
+
+    func testVizOrderEncoding() throws {
+        try check(viz: SimpleViz {
+            VizMark(.point) {
+                VizEncode(.order, field: "A").sort(.ascending)
+                VizEncode(.order, field: "B").sort(.descending)
             }
         }, againstJSON: """
-            { "mark": "circle", "encoding": { "detail": [ { "aggregate": "min", "field": "X"}, { "field": "Y"}, { "aggregate": "sum", "field": "Z" } ] } }
+        {
+            "mark": "point",
+            "encoding": {
+                "order": [
+                    { "field": "A", "sort": "ascending" },
+                    { "field": "B", "sort": "descending" }
+                ]
+            }
+        }
         """)
     }
 
@@ -100,6 +136,41 @@ final class GGDSLTests: XCTestCase {
                 "strokeDash": {
                     "value": [1, 2, 3]
                 }
+            }
+        }
+        """)
+    }
+
+    func testVizText() throws {
+        try check(viz: SimpleViz {
+            VizMark(.text) {
+                VizEncode(.text, values: ["Hello", "There!"])
+            }
+        }, againstJSON: """
+        {
+            "mark": "text",
+            "encoding": {
+                "text": {
+                    "value": ["Hello", "There!"]
+                }
+            }
+        }
+        """)
+    }
+
+    func testVizTooltip() throws {
+        try check(viz: SimpleViz {
+            VizMark(.rect) {
+                VizEncode(.tooltip, fields: ["A", "B"])
+            }
+        }, againstJSON: """
+        {
+            "mark": "rect",
+            "encoding": {
+                "tooltip": [
+                    { "field": "A" },
+                    { "field": "B" }
+                ]
             }
         }
         """)
@@ -169,6 +240,9 @@ final class GGDSLTests: XCTestCase {
     func testVizLayerMarkTypes() throws {
         try check(viz: SimpleViz {
             VizLayer(.hconcat) {
+                VizEncode(.x, value: .width)
+                VizEncode(.y, value: .height)
+
                 VizMark(.arc)
                 VizMark(.area)
                 VizMark(.bar)
@@ -189,6 +263,10 @@ final class GGDSLTests: XCTestCase {
             }
         }, againstJSON: """
         {
+            "encoding": {
+                "x": { "value": "width" },
+                "y": { "value": "height" }
+            },
             "hconcat": [
                 { "mark": "arc" },
                 { "mark": "area" },
@@ -210,66 +288,35 @@ final class GGDSLTests: XCTestCase {
             ]
         }
         """)
-
     }
 
     func testVizLayerNesting() throws {
-
-        let actual = """
-        {
-          "hconcat": [
-            {
-              "encoding": {
-                "x": {}
-              }
-            },
-            {
-              "vconcat": [
-                {
-                  "encoding": {
-                    "y": {}
-                  }
-                },
-                {
-                  "mark": "bar",
-                  "encoding": {
-                    "size": {}
-                  }
-                }
-              ]
-            }
-          ]
-        }
-        """
-
-        let aspirational = """
-        {
-          "encoding": { "x": { } },
-          "hconcat": [
-            {
-              "encoding": { "y": { } },
-              "vconcat": [
-                {
-                  "mark": "bar",
-                  "encoding": { "size": { } }
-                }
-              ]
-            }
-          ]
-        }
-        """
-
         try check(viz: SimpleViz {
             VizLayer(.hconcat) {
-                VizEncode(.x)
+                VizEncode(.x, value: .width)
                 VizLayer(.vconcat) {
-                    VizEncode(.y)
+                    VizEncode(.y, value: .height)
                     VizMark(.bar) {
-                        VizEncode(.size)
+                        VizEncode(.size, value: 44)
                     }
                 }
             }
-        }, againstJSON: actual)
+        }, againstJSON: """
+        {
+          "encoding": { "x": { "value": "width" } },
+          "hconcat": [
+            {
+              "encoding": { "y": { "value": "height" } },
+              "vconcat": [
+                {
+                  "mark": "bar",
+                  "encoding": { "size": { "value": 44 } }
+                }
+              ]
+            }
+          ]
+        }
+        """)
     }
 
     func testVizProjection() throws {
@@ -329,7 +376,6 @@ final class GGDSLTests: XCTestCase {
                     VizEncode(.y, expression: "1+2")
                     VizEncode(.y, repeat: RepeatRef(repeat: .row))
                 }
-
 
                 do {
                     VizEncode(.row)
@@ -455,17 +501,27 @@ final class GGDSLTests: XCTestCase {
                 }
 
 
-//                do {
-//                    VizEncode(.order)
-//                }
-//
-//                do {
-//                    VizEncode(.text)
-//                }
-//
-//                do {
-//                    VizEncode(.tooltip)
-//                }
+                do {
+                    VizEncode(.order)
+                    VizEncode(.order, value: 1)
+                    VizEncode(.order, field: "ORDER_FIELD")
+                        .sort(.ascending)
+                }
+
+                do {
+                    VizEncode(.text)
+                    VizEncode(.text, value: "text value")
+                    VizEncode(.text, field: "TEXT_FIELD")
+                    VizEncode(.text, values: ["text", "value"])
+                    VizEncode(.text, expression: "'a' + 'b'")
+                }
+
+                do {
+                    VizEncode(.tooltip)
+                    VizEncode(.tooltip, value: "tip value")
+                    VizEncode(.tooltip, field: "TIP_FIELD")
+                    VizEncode(.tooltip, fields: ["TIP_FIELD1", "TIP_FIELD2"])
+                }
 
                 do {
                     VizEncode(.color)
