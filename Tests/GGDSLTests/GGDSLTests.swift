@@ -341,6 +341,23 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
+//    func testVizRepeat() throws {
+//        try check(viz: SimpleViz {
+//            VizRepeat(.horizontal, ["A", "B"]) { hfield in
+//                VizTransform(.aggregate, op: .mean, field: "Acceleration") { mean_acc in
+//                    VizRepeat(.vertical, ["C", "D"]) { vfield in
+//                        VizMark(.bar) {
+//                            VizEncode(.x, field: hfield)
+//                            VizEncode(.y, field: vfield)
+//                            VizEncode(.color, field: mean_acc)
+//                        }
+//                    }
+//                }
+//            }
+//        }, againstJSON: """
+//        """)
+//    }
+
     func testEncodingVariations() throws {
         _ = SimpleViz {
             VizTheme()

@@ -67,7 +67,6 @@ public protocol VizSpecElementType : VizLayerElementType {
 }
 
 
-
 public protocol VizMarkType : VizSpecElementType {
     var encodings: FacetedEncoding { get }
 }
@@ -507,6 +506,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Ch
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ x: XChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -637,6 +637,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Ch
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ y: YChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -763,6 +764,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == C
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ x2: X2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -892,6 +894,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == C
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ y2: Y2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1018,6 +1021,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def =
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ color: ColorChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1150,6 +1154,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def ==
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ fill: FillChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1286,6 +1291,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def 
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ stroke: StrokeChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1415,6 +1421,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ size: SizeChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1526,6 +1533,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ strokeWidth: StrokeWidthChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1637,6 +1645,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ strokeOpacity: StrokeOpacityChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1748,6 +1757,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ fillOpacity: FillOpacityChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1859,6 +1869,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ opacity: OpacityChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1970,6 +1981,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ angle: AngleChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2082,6 +2094,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ theta: ThetaChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2207,6 +2220,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ theta2: Theta2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2332,6 +2346,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ radius: RadiusChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2458,6 +2473,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ radius2: Radius2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2834,6 +2850,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, De
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ latitude: LatitudeChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2924,6 +2941,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, D
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ longitude: LongitudeChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3016,6 +3034,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, D
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ latitude2: Latitude2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3107,6 +3126,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, 
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ longitude2: Longitude2Channel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3376,6 +3396,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, 
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ strokeDash: StrokeDashChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3517,6 +3538,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def =
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ shape: ShapeChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3705,6 +3727,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingText, Def ==
     }
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    @available(*, unavailable, message: "use repeat field initializer")
     init(_ text: TextChannel, datum: RepeatRef) {
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }

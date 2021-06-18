@@ -44,9 +44,7 @@ public typealias VizDataSource = Nullable<DataProvider> // e.g., TopLevelUnitSpe
 public typealias Exprable<T> = OneOf2<T, ExprRef>
 
 
-
 // MARK: Layer Arrangement
-
 
 /// The arrangement of sublayers in this `VizSpec`.
 public enum LayerArrangement : String, CaseIterable, Codable, Hashable {
@@ -56,7 +54,6 @@ public enum LayerArrangement : String, CaseIterable, Codable, Hashable {
     case concat
     case `repeat`
 }
-
 
 public extension VizSpec {
     /// The arrangement of sub-layers of this spec, based on which sublayer property is set; this should only ever have at most one element
@@ -172,9 +169,7 @@ public extension VizSpec {
             }
         }
     }
-
 }
-
 
 
 // MARK: Mark types
@@ -271,8 +266,6 @@ public extension MarkDef {
     }
 }
 
-
-
 public extension MarkType {
     /// Returns `true` if this is a simple mark type (e.g, a `point`)
     var isPrimitiveMark: Bool {
@@ -289,7 +282,6 @@ public extension MarkType {
         case .v2: return true
         }
     }
-
 }
 
 extension MarkType {
@@ -345,7 +337,6 @@ public extension MarkChoice {
     }
 }
 
-
 public extension CompositeMark { // i.e., OneOf3<BoxPlot, ErrorBar, ErrorBand>
     static let boxplot = Self(.init(.boxplot))
     static let errorbar = Self(.init(.errorbar))
@@ -374,8 +365,6 @@ public extension Aggregate.RawValue { // i.e., OneOf3<GGSpec.NonArgAggregateOp, 
     var simpleAggregate: NonArgAggregateOp? { infer() }
 }
 
-
-
 /// Standard shapes: https://vega.github.io/vega-lite/docs/point#properties
 public extension SymbolShape {
     static let circle = Self("circle")
@@ -398,7 +387,6 @@ public extension SymbolShape {
     static func path(_ pathString: String) -> Self {
         Self(pathString)
     }
-
 }
 
 public extension NonArgAggregateOp {
@@ -474,7 +462,6 @@ public extension Aggregate {
     /// Pass-through for `NonArgAggregateOp.distinct`
     static let product = Self(NonArgAggregateOp.product)
 }
-
 
 public extension UtcSingleTimeUnit {
     /// Returns the local version of this UTC time unit
