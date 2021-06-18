@@ -25,9 +25,6 @@ public typealias ErrorBar = ErrorBarLiteral
 @available(*, deprecated, renamed: "ErrorBandLiteral")
 public typealias ErrorBand = ErrorBandLiteral
 
-
-
-
 /// The direction of a repeating field
 public typealias RepeatFacet = RepeatRef.LiteralRowOrColumnOrRepeatOrLayer
 
