@@ -387,6 +387,34 @@ public extension VizTransform where Def == PivotTransform {
 }
 
 
+// MARK: Layers
+
+/// A `Viz` encapsulates a top-level `VizSpec` layer and is used as the basis for the builder DSL.
+@dynamicMemberLookup
+public struct Viz<M: Pure> : VizLayerType {
+    public private(set) var spec: VizSpec<M>
+
+    public init(@VizSpecElementArrayBuilder _ makeElements: () -> [VizSpecElementType]) {
+        var spec = VizSpec<M>()
+        for element in makeElements() {
+            element.add(to: &spec)
+        }
+        self.spec = spec
+    }
+
+    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
+    public subscript<U>(dynamicMember keyPath: WritableKeyPath<VizSpec<M>, U>) -> (U) -> (Self) {
+        setting(path: (\Self.spec).appending(path: keyPath))
+    }
+}
+
+extension Viz : CustomDebugStringConvertible {
+    /// The Viz's description is the JSON describing the spec
+    public var debugDescription: String { spec.jsonDebugDescription }
+}
+
+
+
 // MARK: Marks
 
 
@@ -399,6 +427,11 @@ public struct VizMark<Def : VizMarkDefType> : VizMarkType, VizDSLType {
     public subscript<U>(dynamicMember keyPath: WritableKeyPath<Def, U>) -> (U) -> (Self) {
         setting(path: (\Self.markDef).appending(path: keyPath))
     }
+
+//    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
+//    public subscript<Choice: OneOf2Type>(dynamicMember keyPath: WritableKeyPath<Def, Choice?>) -> (Choice.T1) -> (Self) {
+//        setting(path: (\Self.markDef).appending(path: keyPath).appending(path: \.!.v1))
+//    }
 }
 
 public extension VizMark {
@@ -509,6 +542,9 @@ extension VizEncode : VizEncodeType {
     }
 }
 
+
+// MARK: Builders
+
 //public typealias VizMarkArrayBuilder = VizArrayBuilder<VizMarkType>
 
 public typealias VizSpecElementArrayBuilder = VizArrayBuilder<VizSpecElementType>
@@ -554,7 +590,7 @@ extension VizSpecElementArrayBuilder {
 }
 
 
-/// A layer for a visualization, either top-level
+/// A layer for a visualization, either top-level of nested
 public protocol VizLayerType : VizDSLType {
 
 }
@@ -590,28 +626,48 @@ public struct VizLayer : VizSpecElementType, VizLayerType {
 //    }
 }
 
-/// A `Viz` encapsulates a top-level `VizSpec` layer and is used as the basis for the builder DSL.
-@dynamicMemberLookup
-public struct Viz<M: Pure> : VizLayerType {
-    public private(set) var spec: VizSpec<M>
+public struct VizRepeat : VizSpecElementType, VizLayerType {
+    var repeatArrangement: LayerArrangement
+    let repeatFields: [FieldNameRepresentable]
+    let makeElements: () -> [VizLayerElementType]
 
-    public init(@VizSpecElementArrayBuilder _ makeElements: () -> [VizSpecElementType]) {
-        var spec = VizSpec<M>()
-        for element in makeElements() {
-            element.add(to: &spec)
+    public init(_ repeatArrangement: LayerArrangement = .overlay, fields repeatFields: [FieldNameRepresentable], @VizLayerElementArrayBuilder _ makeElements: @escaping (_ ref: RepeatRef) -> [VizLayerElementType]) {
+        self.repeatArrangement = repeatArrangement
+        self.repeatFields = repeatFields
+        self.makeElements = { makeElements(repeatArrangement.repeatRef) }
+    }
+
+    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+        spec.arrangement = .repeat
+        switch repeatArrangement {
+        case .overlay:
+            spec.repeat = .init(LayerRepeatMapping(layer: repeatFields.map(\.fieldName)))
+        case .hconcat:
+            spec.repeat = .init(RepeatMapping(column: repeatFields.map(\.fieldName)))
+        case .vconcat:
+            spec.repeat = .init(RepeatMapping(row: repeatFields.map(\.fieldName)))
+        case .concat:
+            spec.repeat = .init(repeatFields.map(\.fieldName))
+        case .repeat: // ???
+            spec.repeat = .init(repeatFields.map(\.fieldName))
         }
-        self.spec = spec
+
+        for element in makeElements() {
+            // marks and layers create their own child specs; all others (e.g., encodings) are set directly in the parent
+            if element is VizMarkType || element is VizLayerType {
+                var child = VizSpec<M>()
+                element.add(to: &child)
+                spec.sublayers.append(child)
+            } else {
+                element.add(to: &spec)
+            }
+        }
     }
 
-    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
-    public subscript<U>(dynamicMember keyPath: WritableKeyPath<VizSpec<M>, U>) -> (U) -> (Self) {
-        setting(path: (\Self.spec).appending(path: keyPath))
-    }
-}
-
-extension Viz : CustomDebugStringConvertible {
-    /// The Viz's description is the JSON describing the spec
-    public var debugDescription: String { spec.jsonDebugDescription }
+//    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
+//    public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSpec.Projection, U>) -> (U) -> (Self) {
+//        setting(path: (\Self.projection).appending(path: keyPath))
+//    }
 }
 
 
@@ -645,7 +701,11 @@ extension VizDSLType {
 // MARK: VizEncode: X
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingX {
-    enum XChannel { case x }
+    enum XChannel {
+        /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
+        case x
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -776,7 +836,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Ch
 // MARK: VizEncode: Y
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingY {
-    enum YChannel { case y }
+    enum YChannel {
+        /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
+        case y
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -903,7 +967,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Ch
 // MARK: VizEncode: x2
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingX2 {
-    enum X2Channel { case x2 }
+    enum X2Channel {
+        /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
+        case x2
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -1033,7 +1101,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == C
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingY2 {
-    enum Y2Channel { case y2 }
+    enum Y2Channel {
+        /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
+        case y2
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -1160,7 +1232,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == C
 // MARK: VizEncode: Color
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingColor {
-    enum ColorChannel { case color }
+    enum ColorChannel {
+        /// Color of the marks – either fill or stroke color based on the filled property of mark definition. By default, color represents fill color for "area", "bar", "tick", "text", "trail", "circle", and "square" / stroke color for "line" and "point".
+        case color
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -1293,7 +1369,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def =
 // MARK: VizEncode: Fill
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingFill {
-    enum FillChannel { case fill }
+    enum FillChannel {
+        /// Fill color of the marks. Default value: If undefined, the default color depends on mark config’s color property.
+        case fill
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -1430,7 +1510,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def ==
 // MARK: VizEncode: Stroke
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingStroke {
-    enum StrokeChannel { case stroke }
+    enum StrokeChannel {
+        /// Stroke color of the marks. Default value: If undefined, the default color depends on mark config’s color property.
+        case stroke
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -1560,7 +1644,17 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def 
 // MARK: VizEncode: size
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingSize {
-    enum SizeChannel { case size }
+    enum SizeChannel {
+        /// Size of the mark.
+        ///
+        /// - For "point", "square" and "circle", – the symbol size, or pixel area of the mark.
+        /// - For "bar" and "tick" – the bar and tick’s size.
+        /// - For "text" – the text’s font size.
+        ///
+        /// - Size is unsupported for "line", "area", and "rect". (Use "trail" instead of line with varying size)
+        case size
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -1672,7 +1766,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
 // MARK: VizEncode: strokeWidth
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth {
-    enum StrokeWidthChannel { case strokeWidth }
+    enum StrokeWidthChannel {
+        /// Stroke width of the marks.
+        ///
+        /// - Default value: If undefined, the default stroke width depends on mark config’s strokeWidth property.
+        case strokeWidth
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -1784,7 +1884,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
 // MARK: VizEncode: strokeOpacity
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacity {
-    enum StrokeOpacityChannel { case strokeOpacity }
+    enum StrokeOpacityChannel {
+        /// Stroke opacity of the marks.
+        case strokeOpacity
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -1896,7 +2000,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
 // MARK: VizEncode: fillOpacity
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity {
-    enum FillOpacityChannel { case fillOpacity }
+    enum FillOpacityChannel {
+        /// Fill opacity of the marks.
+        case fillOpacity
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -2008,7 +2116,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
 // MARK: VizEncode: opacity
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity {
-    enum OpacityChannel { case opacity }
+    enum OpacityChannel {
+        /// Opacity of the marks.
+        case opacity
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -2120,7 +2232,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
 // MARK: VizEncode: angle
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingAngle {
-    enum AngleChannel { case angle }
+    enum AngleChannel {
+        /// Rotation angle of point and text marks.
+        case angle
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -2233,7 +2349,12 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingTheta {
-    enum ThetaChannel { case theta }
+    enum ThetaChannel {
+        /// For arc marks, the arc length in radians if theta2 is not specified, otherwise the start arc angle. (A value of 0 indicates up or “north”, increasing values proceed clockwise.)
+        /// For text marks, polar coordinate angle in radians.
+        case theta
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -2359,7 +2480,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
 // MARK: VizEncode: theta2
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2 {
-    enum Theta2Channel { case theta2 }
+    enum Theta2Channel {
+        /// The end angle of arc marks in radians. A value of 0 indicates up or “north”, increasing values proceed clockwise.
+        case theta2
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -2485,7 +2610,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
 // MARK: VizEncode: radius
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingRadius {
-    enum RadiusChannel { case radius }
+    enum RadiusChannel {
+        /// The outer radius in pixels of arc marks.
+        case radius
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -2612,7 +2741,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
 // MARK: VizEncode: radius2
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2 {
-    enum Radius2Channel { case radius2 }
+    enum Radius2Channel {
+        /// The inner radius in pixels of arc marks.
+        case radius2
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -2739,7 +2872,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
 // MARK: VizEncode: xError
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingXError {
-    enum XErrorChannel { case xError }
+    enum XErrorChannel {
+        case xError
+    }
+
     typealias ChannelFieldType = Channel.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.T2
@@ -2783,7 +2919,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError, Def 
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingXError2 {
-    enum XError2Channel { case xError2 }
+    enum XError2Channel {
+        case xError2
+    }
+
     typealias ChannelFieldType = Channel.RawValue.T1
     typealias ChannelValueType = Channel.RawValue.T2
 }
@@ -2825,7 +2964,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError2, Def
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingYError {
-    enum YErrorChannel { case yError }
+    enum YErrorChannel {
+        case yError
+    }
+
     typealias ChannelFieldType = Channel.RawValue.T1
     typealias ChannelValueType = Channel.RawValue.T2
 }
@@ -2866,7 +3008,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError, Def 
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingYError2 {
-    enum YError2Channel { case yError2 }
+    enum YError2Channel {
+        case yError2
+    }
+
     typealias ChannelFieldType = Channel.RawValue.T1
     typealias ChannelValueType = Channel.RawValue.T2
 }
@@ -2907,7 +3052,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError2, Def
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingColumn {
-    enum ColumnChannel { case column }
+    enum ColumnChannel {
+        /// Facet, row and column are special encoding channels that facets single plots into trellis plots (or small multiples).
+        case column
+    }
+
     typealias ChannelFieldType = Channel.RawValue
 }
 
@@ -2933,7 +3082,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColumn, Def 
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingRow {
-    enum RowChannel { case row }
+    enum RowChannel {
+        /// Facet, row and column are special encoding channels that facets single plots into trellis plots (or small multiples).
+        case row
+    }
+
     typealias ChannelFieldType = Channel.RawValue
 }
 
@@ -2962,7 +3115,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRow, Def == 
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingFacet {
-    enum FacetChannel { case facet }
+    enum FacetChannel {
+        /// Facet, row and column are special encoding channels that facets single plots into trellis plots (or small multiples).
+        case facet
+    }
+
     typealias ChannelFieldType = Channel.RawValue
 }
 
@@ -2988,7 +3145,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFacet, Def =
 // MARK: VizEncode: latitude
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude {
-    enum LatitudeChannel { case latitude }
+    enum LatitudeChannel {
+        /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
+        case latitude
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelValueType = Channel.RawValue.RawValue.T2
 
@@ -3081,7 +3242,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, De
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude {
-    enum LongitudeChannel { case longitude }
+    enum LongitudeChannel {
+        /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
+        case longitude
+    }
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelValueType = Channel.RawValue.RawValue.T2
 }
@@ -3173,7 +3337,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, D
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2 {
-    enum Latitude2Channel { case latitude2 }
+    enum Latitude2Channel {
+        /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
+        case latitude2
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -3265,7 +3433,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, D
 
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2 {
-    enum Longitude2Channel { case longitude2 }
+    enum Longitude2Channel {
+        /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
+        case longitude2
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -3357,7 +3529,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, 
 // MARK: VizEncode: href
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingHref {
-    enum HrefChannel { case href }
+    enum HrefChannel {
+        /// A URL to load upon mouse click.
+        case href
+    }
+
     typealias ChannelFieldType = Channel.RawValue.T1
     typealias ChannelValueType = Channel.RawValue.T2
 }
@@ -3417,7 +3593,11 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def ==
 // MARK: VizEncode: description
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingDescription {
-    enum DescriptionChannel { case description }
+    enum DescriptionChannel {
+        /// A text description of this mark for ARIA accessibility. For SVG output the "aria-label" attribute will be set to this description.
+        case description
+    }
+
     typealias ChannelFieldType = Channel.RawValue.T1
     typealias ChannelValueType = Channel.RawValue.T2
 }
@@ -3476,7 +3656,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDescription,
 // MARK: VizEncode: url
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingUrl {
-    enum UrlChannel { case url }
+    enum UrlChannel {
+        case url
+    }
+
     typealias ChannelFieldType = Channel.RawValue.T1
     typealias ChannelValueType = Channel.RawValue.T2
 }
@@ -3536,7 +3719,13 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == 
 // MARK: VizEncode: strokeDash
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash {
-    enum StrokeDashChannel { case strokeDash }
+    enum StrokeDashChannel {
+        /// Stroke dash of the marks.
+        ///
+        /// Default value: [1,0] (No dash).
+        case strokeDash
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -3645,7 +3834,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, 
 // MARK: VizEncode: key
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingKey {
-    enum KeyChannel { case key }
+    enum KeyChannel {
+        case key
+    }
+
     typealias ChannelFieldType = Channel.RawValue
 }
 
@@ -3677,7 +3869,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingKey, Def == 
 // MARK: VizEncode: shape
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingShape {
-    enum ShapeChannel { case shape }
+    enum ShapeChannel {
+        /// Shape of the mark.
+        ///
+        /// - For point marks the supported values include: - plotting shapes: "circle", "square", "cross", "diamond", "triangle-up", "triangle-down", "triangle-right", or "triangle-left". - the line symbol "stroke" - centered directional shapes "arrow", "wedge", or "triangle" - a custom SVG path string (For correct sizing, custom shape paths should be defined within a square bounding box with coordinates ranging from -1 to 1 along both the x and y dimensions.)
+        /// - For geoshape marks it should be a field definition of the geojson data
+        ///
+        /// Default value: If undefined, the default shape depends on mark config’s shape property. ("circle" if unset.)
+        case shape
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -3782,7 +3983,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def =
 // MARK: VizEncode: detail
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingDetail {
-    enum DetailChannel { case detail }
+    enum DetailChannel {
+        case detail
+    }
+
     typealias ChannelFieldType = Channel.RawValue.T1 // TypedFieldDef
     typealias ChannelMultiFieldType = Channel.RawValue.T2 // [TypedFieldDef]
 }
@@ -3814,7 +4018,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDetail, Def 
 // MARK: VizEncode: order
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingOrder {
-    enum OrderChannel { case order }
+    enum OrderChannel {
+        case order
+    }
+
     typealias ChannelFieldType = Channel.RawValue.T1.T1 // OrderFieldDef
     typealias ChannelMultiFieldType = Channel.RawValue.T1.T2 // [OrderFieldDef]
     typealias ChannelValueType = Channel.RawValue.T2 // OrderValueDef
@@ -3866,7 +4073,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOrder, Def =
 // MARK: VizEncode: text
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingText {
-    enum TextChannel { case text }
+    enum TextChannel {
+        case text
+    }
+
     typealias ChannelFieldType = Channel.RawValue.RawValue.T1
     typealias ChannelDatumType = Channel.RawValue.RawValue.T2
     typealias ChannelValueType = Channel.RawValue.RawValue.T3
@@ -3983,7 +4193,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingText, Def ==
 // MARK: VizEncode: tooltip
 
 public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip {
-    enum TooltipChannel { case tooltip }
+    enum TooltipChannel {
+        case tooltip
+    }
+
     typealias ChannelNullType = Channel.RawValue.T1
     typealias ChannelFieldType = Channel.RawValue.T2.T1
     typealias ChannelValueType = Channel.RawValue.T2.T2

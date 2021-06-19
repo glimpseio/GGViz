@@ -47,12 +47,36 @@ public typealias Exprable<T> = OneOf2<T, ExprRef>
 // MARK: Layer Arrangement
 
 /// The arrangement of sublayers in this `VizSpec`.
-public enum LayerArrangement : String, CaseIterable, Codable, Hashable {
+public enum LayerArrangement : CaseIterable, Hashable {
     case overlay
     case hconcat
     case vconcat
     case concat
     case `repeat`
+}
+
+public extension LayerArrangement {
+    static var horizontal = Self.hconcat
+    static var vertical = Self.vconcat
+    static var wrap = Self.concat
+}
+
+public extension LayerArrangement {
+    /// The repeat form of this arrangement
+    var repeatRef: RepeatRef {
+        switch self {
+        case .overlay:
+            return RepeatRef(repeat: .layer)
+        case .hconcat:
+            return RepeatRef(repeat: .column)
+        case .vconcat:
+            return RepeatRef(repeat: .row)
+        case .concat:
+            return RepeatRef(repeat: .repeat)
+        case .repeat:
+            return RepeatRef(repeat: .repeat)
+        }
+    }
 }
 
 public extension VizSpec {

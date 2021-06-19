@@ -40,7 +40,8 @@ final class GGDSLTests: XCTestCase {
     func testVizTransform() throws {
         try check(viz: SimpleViz {
             VizTransform(.sample) {
-                VizMark(.square)
+                VizMark(.square) {
+                }
             }
         }, againstJSON: """
             {
@@ -74,7 +75,6 @@ final class GGDSLTests: XCTestCase {
         }, againstJSON: """
             { "encoding": { "x": { "field": "value" }, "y": { "field": "DENSE" } }, "mark": "square", "transform": [ { "as": [ "value", "DENSE" ], "density": "A" } ] }
             """)
-
     }
 
     func testVizDetailEncoding() throws {
@@ -367,22 +367,57 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-//    func testVizRepeat() throws {
-//        try check(viz: SimpleViz {
-//            VizRepeat(.horizontal, ["A", "B"]) { hfield in
+    func testVizRepeat() throws {
+        try check(viz: SimpleViz {
+            VizRepeat(.horizontal, fields: ["A", "B"]) { hfield in
 //                VizTransform(.aggregate, op: .mean, field: "Acceleration") { mean_acc in
-//                    VizRepeat(.vertical, ["C", "D"]) { vfield in
-//                        VizMark(.bar) {
-//                            VizEncode(.x, field: hfield)
-//                            VizEncode(.y, field: vfield)
+                    VizRepeat(.vertical, fields: ["C", "D"]) { vfield in
+                        VizMark(.bar) {
+                            VizEncode(.x, repeat: hfield)
+                            VizEncode(.y, repeat: vfield)
 //                            VizEncode(.color, field: mean_acc)
-//                        }
-//                    }
+                        }
+                    }
 //                }
-//            }
-//        }, againstJSON: """
-//        """)
-//    }
+            }
+        }, againstJSON: """
+        {
+          "repeat": {
+            "column": [
+              "A",
+              "B"
+            ]
+          },
+          "layer": [
+            {
+              "repeat": {
+                "row": [
+                  "C",
+                  "D"
+                ]
+              },
+              "layer": [
+                {
+                  "mark": "bar",
+                  "encoding": {
+                    "x": {
+                      "field": {
+                        "repeat": "column"
+                      }
+                    },
+                    "y": {
+                      "field": {
+                        "repeat": "row"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """)
+    }
 
     func testEncodingVariations() throws {
         _ = SimpleViz {
