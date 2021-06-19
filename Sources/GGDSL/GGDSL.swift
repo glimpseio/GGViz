@@ -1,42 +1,40 @@
 
 
 /// A type that can be used to create a field value
-public protocol SourceColumnRepresentable {
+public protocol FieldNameRepresentable {
     /// The `GGSpec.Field` form of this specification
-    var columnRepresentation: SourceColumnRef { get }
+    var fieldName: FieldName { get }
 }
 
-extension String : SourceColumnRepresentable {
-    public var columnRepresentation: SourceColumnRef { .init(FieldName(self)) }
+extension String : FieldNameRepresentable {
+    public var fieldName: FieldName { .init(self) }
 }
 
-extension FieldName : SourceColumnRepresentable {
-    public var columnRepresentation: SourceColumnRef { .init(self) }
+extension FieldName : FieldNameRepresentable {
+    public var fieldName: FieldName { self }
 }
 
-extension RepeatRef : SourceColumnRepresentable {
-    public var columnRepresentation: SourceColumnRef { .init(self) }
-}
+
 
 #if canImport(TabularData)
 import TabularData
 
 extension AnyColumnProtocol {
     /// Returns a `Field` form of this column
-    public var columnRepresentation: SourceColumnRef { .init(FieldName(name)) }
+    public var fieldName: FieldName { .init(FieldName(name)) }
 }
 
 extension ColumnProtocol {
     /// Returns a `Field` form of this column
-    public var columnRepresentation: SourceColumnRef { .init(FieldName(name)) }
+    public var fieldName: FieldName { .init(FieldName(name)) }
 }
 
-extension TabularData.AnyColumn : SourceColumnRepresentable { }
-extension TabularData.AnyColumnSlice : SourceColumnRepresentable { }
-extension TabularData.Column : SourceColumnRepresentable { }
-extension TabularData.ColumnSlice : SourceColumnRepresentable { }
-extension TabularData.DiscontiguousColumnSlice : SourceColumnRepresentable { }
-extension TabularData.FilledColumn : SourceColumnRepresentable { }
+extension TabularData.AnyColumn : FieldNameRepresentable { }
+extension TabularData.AnyColumnSlice : FieldNameRepresentable { }
+extension TabularData.Column : FieldNameRepresentable { }
+extension TabularData.ColumnSlice : FieldNameRepresentable { }
+extension TabularData.DiscontiguousColumnSlice : FieldNameRepresentable { }
+extension TabularData.FilledColumn : FieldNameRepresentable { }
 
 #endif
 
@@ -143,9 +141,13 @@ public struct VizProjection : VizSpecElementType, VizDSLType {
 @dynamicMemberLookup
 public struct VizTransform<Def : VizTransformDefType> : VizSpecElementType, VizDSLType {
     public var transformDef: Def
+    private let makeElements: () -> [VizLayerElementType]
 
     public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
         spec.transform[defaulting: []].append(transformDef.anyTransform)
+        for element in makeElements() {
+            element.add(to: &spec)
+        }
     }
 
     /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
@@ -162,11 +164,227 @@ extension SampleTransform : VizTransformDefType {
 
 public extension VizTransform where Def == SampleTransform {
     enum SampleLiteral { case sample }
-    init(_ sampleTransform: SampleLiteral, sample: Double = 999) {
+    init(_ sampleTransform: SampleLiteral, sample: Double = 999, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.transformDef = .init(sample: sample)
+        self.makeElements = makeElements
     }
 }
 
+extension AggregateTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == AggregateTransform {
+    enum AggregateLiteral { case aggregate }
+    init(_ aggregateTransform: AggregateLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init()
+        self.makeElements = makeElements
+    }
+}
+
+extension BinTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == BinTransform {
+    enum BinLiteral { case bin }
+    init(_ binTransform: BinLiteral, field: FieldNameRepresentable, params: BinParams?, output as: [FieldNameRepresentable], @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(as: .init(`as`.map(\.fieldName)), bin: params.map({ .init($0) }) ?? .init(true), field: field.fieldName)
+        self.makeElements = makeElements
+    }
+}
+
+extension CalculateTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == CalculateTransform {
+    enum CalculateLiteral { case calculate }
+    init(_ calculateTransform: CalculateLiteral, output as: FieldNameRepresentable, expression calculate: Expr, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(as: `as`.fieldName, calculate: calculate)
+        self.makeElements = makeElements
+    }
+}
+
+extension DensityTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == DensityTransform {
+    enum DensityLiteral { case density }
+    init(_ densityTransform: DensityLiteral, field density: FieldNameRepresentable, group groupby: [FieldNameRepresentable]? = nil, bandwidth: Double? = nil, counts: Bool? = nil, cumulative: Bool? = nil, extent: [DensityTransform.ExtentItem]? = nil, maxsteps: Double? = nil, minsteps: Double? = nil, steps: Double? = nil, sampleOutput: FieldNameRepresentable? = nil, densityOutput: FieldNameRepresentable? = nil, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ sampleValueOutput: FieldNameRepresentable, _ densityEstimateOutput: FieldNameRepresentable) -> [VizLayerElementType]) {
+        self.transformDef = .init(as: sampleOutput == nil && densityOutput == nil ? nil : [(sampleOutput ?? "value").fieldName, (densityOutput ?? "density").fieldName], bandwidth: bandwidth, counts: counts, cumulative: cumulative, density: density.fieldName, extent: extent, groupby: groupby?.map(\.fieldName), maxsteps: maxsteps, minsteps: minsteps, steps: steps)
+        // self.makeElements = { makeElements(self.transformDef.as?.first?.fieldName ?? "value", self.transformDef.as?.last?.fieldName ?? "density") }
+        self.makeElements = { makeElements(sampleOutput ?? "value", densityOutput ?? "density") }
+    }
+}
+
+extension FilterTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == FilterTransform {
+    enum FilterLiteral { case filter }
+    init(_ filterTransform: FilterLiteral, filter: PredicateComposition, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(filter: filter)
+        self.makeElements = makeElements
+    }
+}
+
+extension FlattenTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == FlattenTransform {
+    enum FlattenLiteral { case flatten }
+    init(_ flattenTransform: FlattenLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init()
+        self.makeElements = makeElements
+    }
+}
+
+extension FoldTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == FoldTransform {
+    enum FoldLiteral { case fold }
+    init(_ foldTransform: FoldLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init()
+        self.makeElements = makeElements
+    }
+}
+
+extension ImputeTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == ImputeTransform {
+    enum ImputeLiteral { case impute }
+    init(_ imputeTransform: ImputeLiteral, impute: FieldNameRepresentable, key: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(impute: impute.fieldName, key: key.fieldName)
+        self.makeElements = makeElements
+    }
+}
+
+extension JoinAggregateTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == JoinAggregateTransform {
+    enum JoinAggregateLiteral { case joinAggregate }
+    init(_ joinAggregateTransform: JoinAggregateLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init()
+        self.makeElements = makeElements
+    }
+}
+
+extension LoessTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == LoessTransform {
+    enum LoessLiteral { case loess }
+    init(_ loessTransform: LoessLiteral, field: FieldNameRepresentable, on: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(loess: field.fieldName, on: on.fieldName)
+        self.makeElements = makeElements
+    }
+}
+
+extension LookupTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == LookupTransform {
+    enum LookupLiteral { case lookup }
+    init(_ lookupTransform: LookupLiteral, field: FieldNameRepresentable, data: LookupData, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(from: .init(data), lookup: field.fieldName)
+        self.makeElements = makeElements
+    }
+
+    init(_ lookupTransform: LookupLiteral, field: FieldNameRepresentable, selection: LookupSelection, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(from: .init(selection), lookup: field.fieldName)
+        self.makeElements = makeElements
+    }
+}
+
+extension QuantileTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == QuantileTransform {
+    enum QuantileLiteral { case quantile }
+    init(_ quantileTransform: QuantileLiteral, field: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(quantile: field.fieldName)
+        self.makeElements = makeElements
+    }
+}
+
+extension RegressionTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == RegressionTransform {
+    enum RegressionLiteral { case regression }
+    init(_ regressionTransform: RegressionLiteral, field: FieldName, on: FieldName, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(on: on.fieldName, regression: field.fieldName)
+        self.makeElements = makeElements
+    }
+}
+
+extension TimeUnitTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == TimeUnitTransform {
+    enum TimeUnitLiteral { case timeUnit }
+    init(_ timeUnitTransform: TimeUnitLiteral, field: FieldNameRepresentable, timeUnit: TimeUnit, output as: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(as: `as`.fieldName, field: field.fieldName, timeUnit: .init(timeUnit))
+        self.makeElements = makeElements
+    }
+
+    init(_ timeUnitTransform: TimeUnitLiteral, field: FieldNameRepresentable, params: TimeUnitParams, output as: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(as: `as`.fieldName, field: field.fieldName, timeUnit: .init(params))
+        self.makeElements = makeElements
+    }
+
+}
+
+extension StackTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == StackTransform {
+    enum StackLiteral { case stack }
+    init(_ stackTransform: StackLiteral, field stack: FieldNameRepresentable, startField: FieldNameRepresentable, endField: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ startField: FieldNameRepresentable, _ endField: FieldNameRepresentable) -> [VizLayerElementType]) {
+        self.transformDef = .init(as: .init([startField.fieldName, endField.fieldName]), stack: stack.fieldName)
+        self.makeElements = { makeElements(startField, endField) }
+    }
+}
+
+extension WindowTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == WindowTransform {
+    enum WindowLiteral { case window }
+    init(_ windowTransform: WindowLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init()
+        self.makeElements = makeElements
+    }
+}
+
+extension PivotTransform : VizTransformDefType {
+    public var anyTransform: DataTransformation { .init(self) }
+}
+
+public extension VizTransform where Def == PivotTransform {
+    enum PivotLiteral { case pivot }
+    init(_ pivotTransform: PivotLiteral, pivot: FieldNameRepresentable, value: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.transformDef = .init(pivot: pivot.fieldName, value: value.fieldName)
+        self.makeElements = makeElements
+    }
+}
 
 
 // MARK: Marks
@@ -438,16 +656,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Ch
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ x: XChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ x: XChannel, field: SourceColumnRepresentable) {
+    init(_ x: XChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -569,16 +787,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Ch
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ y: YChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ y: YChannel, field: SourceColumnRepresentable) {
+    init(_ y: YChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -696,16 +914,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == C
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ x2: X2Channel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ x2: X2Channel, field: SourceColumnRepresentable) {
+    init(_ x2: X2Channel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -826,16 +1044,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == S
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ y2: Y2Channel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ y2: Y2Channel, field: SourceColumnRepresentable) {
+    init(_ y2: Y2Channel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -953,16 +1171,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def =
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ color: ColorChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ color: ColorChannel, field: SourceColumnRepresentable) {
+    init(_ color: ColorChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1086,16 +1304,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def ==
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ fill: FillChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ fill: FillChannel, field: SourceColumnRepresentable) {
+    init(_ fill: FillChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1223,16 +1441,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ stroke: StrokeChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ stroke: StrokeChannel, field: SourceColumnRepresentable) {
+    init(_ stroke: StrokeChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1353,16 +1571,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ size: SizeChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ size: SizeChannel, field: SourceColumnRepresentable) {
+    init(_ size: SizeChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1465,16 +1683,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ strokeWidth: StrokeWidthChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ strokeWidth: StrokeWidthChannel, field: SourceColumnRepresentable) {
+    init(_ strokeWidth: StrokeWidthChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1577,16 +1795,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ strokeOpacity: StrokeOpacityChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ strokeOpacity: StrokeOpacityChannel, field: SourceColumnRepresentable) {
+    init(_ strokeOpacity: StrokeOpacityChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1689,16 +1907,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ fillOpacity: FillOpacityChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ fillOpacity: FillOpacityChannel, field: SourceColumnRepresentable) {
+    init(_ fillOpacity: FillOpacityChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1801,16 +2019,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ opacity: OpacityChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ opacity: OpacityChannel, field: SourceColumnRepresentable) {
+    init(_ opacity: OpacityChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -1913,16 +2131,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ angle: AngleChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ angle: AngleChannel, field: SourceColumnRepresentable) {
+    init(_ angle: AngleChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2026,16 +2244,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDefBase { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ theta: ThetaChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ theta: ThetaChannel, field: SourceColumnRepresentable) {
+    init(_ theta: ThetaChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2152,16 +2370,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ theta2: Theta2Channel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ theta2: Theta2Channel, field: SourceColumnRepresentable) {
+    init(_ theta2: Theta2Channel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2278,16 +2496,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDefBase { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ radius: RadiusChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ radius: RadiusChannel, field: SourceColumnRepresentable) {
+    init(_ radius: RadiusChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2405,16 +2623,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ radius2: Radius2Channel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ radius2: Radius2Channel, field: SourceColumnRepresentable) {
+    init(_ radius2: Radius2Channel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2532,16 +2750,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError, Def 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ xError: XErrorChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
-    init(_ xError: XErrorChannel, field: SourceColumnRepresentable) {
+    init(_ xError: XErrorChannel, field: FieldNameRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.deriveChannel = { .init($0) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 }
 
@@ -2575,16 +2793,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError2, Def
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ xError2: XError2Channel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
-    init(_ xError2: XError2Channel, field: SourceColumnRepresentable) {
+    init(_ xError2: XError2Channel, field: FieldNameRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.deriveChannel = { .init($0) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 }
 
@@ -2617,16 +2835,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError, Def 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ yError: YErrorChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
-    init(_ yError: YErrorChannel, field: SourceColumnRepresentable) {
+    init(_ yError: YErrorChannel, field: FieldNameRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.deriveChannel = { .init($0) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 }
 
@@ -2658,16 +2876,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError2, Def
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ yError2: YError2Channel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
-    init(_ yError2: YError2Channel, field: SourceColumnRepresentable) {
+    init(_ yError2: YError2Channel, field: FieldNameRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.deriveChannel = { .init($0) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 }
 
@@ -2698,16 +2916,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColumn, Def 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> RowColumnEncodingFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ column: ColumnChannel) {
         self.deriveChannel = { .init($0) }
         self.def = .init()
     }
 
-    init(_ column: ColumnChannel, field: SourceColumnRepresentable) {
+    init(_ column: ColumnChannel, field: FieldNameRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.deriveChannel = { .init($0) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 }
 
@@ -2724,16 +2942,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRow, Def == 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> RowColumnEncodingFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ row: RowChannel) {
         self.deriveChannel = { .init($0) }
         self.def = .init()
     }
 
-    init(_ row: RowChannel, field: SourceColumnRepresentable) {
+    init(_ row: RowChannel, field: FieldNameRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.deriveChannel = { .init($0) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 }
 
@@ -2753,16 +2971,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFacet, Def =
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FacetEncodingFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ facet: FacetChannel) {
         self.deriveChannel = { .init($0) }
         self.def = .init()
     }
 
-    init(_ facet: FacetChannel, field: SourceColumnRepresentable) {
+    init(_ facet: FacetChannel, field: FieldNameRepresentable) {
         /// Creates this encoding with the value mapped to the given field name in the data.
         self.deriveChannel = { .init($0) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 }
 
@@ -2782,16 +3000,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, De
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> LatLongFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ latitude: LatitudeChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ latitude: LatitudeChannel, field: SourceColumnRepresentable) {
+    init(_ latitude: LatitudeChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2873,16 +3091,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, D
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> LatLongFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ longitude: LongitudeChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ longitude: LongitudeChannel, field: SourceColumnRepresentable) {
+    init(_ longitude: LongitudeChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -2966,16 +3184,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, D
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ latitude2: Latitude2Channel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ latitude2: Latitude2Channel, field: SourceColumnRepresentable) {
+    init(_ latitude2: Latitude2Channel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3058,16 +3276,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ longitude2: Longitude2Channel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ longitude2: Longitude2Channel, field: SourceColumnRepresentable) {
+    init(_ longitude2: Longitude2Channel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3149,16 +3367,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def ==
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ href: HrefChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ href: HrefChannel, field: SourceColumnRepresentable) {
+    init(_ href: HrefChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3209,16 +3427,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDescription,
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ description: DescriptionChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ description: DescriptionChannel, field: SourceColumnRepresentable) {
+    init(_ description: DescriptionChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3268,16 +3486,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ url: UrlChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ url: UrlChannel, field: SourceColumnRepresentable) {
+    init(_ url: UrlChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3330,16 +3548,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumberArray { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ strokeDash: StrokeDashChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ strokeDash: StrokeDashChannel, field: SourceColumnRepresentable) {
+    init(_ strokeDash: StrokeDashChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3436,16 +3654,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingKey, Def == 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> TypedFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ key: KeyChannel) {
         self.deriveChannel = { .init($0) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ key: KeyChannel, field: SourceColumnRepresentable) {
+    init(_ key: KeyChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init($0) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
@@ -3470,16 +3688,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def =
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefTypeForShapeStringNull { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ shape: ShapeChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ shape: ShapeChannel, field: SourceColumnRepresentable) {
+    init(_ shape: ShapeChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3573,16 +3791,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDetail, Def 
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> TypedFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ detail: DetailChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ detail: DetailChannel, field: SourceColumnRepresentable) {
+    init(_ detail: DetailChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3607,16 +3825,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOrder, Def =
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> OrderFieldDef { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ order: OrderChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ order: OrderChannel, field: SourceColumnRepresentable) {
+    init(_ order: OrderChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3659,16 +3877,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingText, Def ==
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefText { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ text: TextChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ text: TextChannel, field: SourceColumnRepresentable) {
+    init(_ text: TextChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3776,16 +3994,16 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip, Def
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> StringFieldDefWithCondition { def }
 
-    /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
+    /// Creates an empty instance of this encoding.
     init(_ tooltip: TooltipChannel) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init()
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ tooltip: TooltipChannel, field: SourceColumnRepresentable) {
+    init(_ tooltip: TooltipChannel, field: FieldNameRepresentable) {
         self.deriveChannel = { .init(.init($0)) }
-        self.def = .init(field: field.columnRepresentation)
+        self.def = .init(field: .init(field.fieldName))
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
@@ -3826,10 +4044,10 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip, Def
     private func toDef(_ def: Def) -> [StringFieldDef] { def }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ tooltip: TooltipChannel, fields: [SourceColumnRepresentable]) {
+    init(_ tooltip: TooltipChannel, fields: [FieldNameRepresentable]) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = fields.map {
-            StringFieldDef(field: $0.columnRepresentation)
+            StringFieldDef(field: .init($0.fieldName))
         }
     }
 }

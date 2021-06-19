@@ -39,8 +39,9 @@ final class GGDSLTests: XCTestCase {
 
     func testVizTransform() throws {
         try check(viz: SimpleViz {
-            VizTransform(.sample)
-            VizMark(.square)
+            VizTransform(.sample) {
+                VizMark(.square)
+            }
         }, againstJSON: """
             {
                 "mark":"square",
@@ -49,6 +50,31 @@ final class GGDSLTests: XCTestCase {
                 ]
             }
             """)
+
+        try check(viz: SimpleViz {
+            VizTransform(.loess, field: "A", on: "B") {
+                VizMark(.square)
+            }
+        }, againstJSON: """
+            {
+                "mark":"square",
+                "transform":[
+                    {"loess": "A", "on": "B"}
+                ]
+            }
+            """)
+
+        try check(viz: SimpleViz {
+            VizTransform(.density, field: "A", densityOutput: "DENSE") { sample, value in
+                VizMark(.square) {
+                    VizEncode(.x, field: sample)
+                    VizEncode(.y, field: value)
+                }
+            }
+        }, againstJSON: """
+            { "encoding": { "x": { "field": "value" }, "y": { "field": "DENSE" } }, "mark": "square", "transform": [ { "as": [ "value", "DENSE" ], "density": "A" } ] }
+            """)
+
     }
 
     func testVizDetailEncoding() throws {
