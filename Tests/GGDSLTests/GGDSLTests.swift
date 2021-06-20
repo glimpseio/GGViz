@@ -9,7 +9,16 @@ extension XCTestCase {
             throw XCTSkip("skip empty check for \(function)", file: file, line: line)
         }
 
-        let checkSpec = try VizSpec<M>.loadFromJSON(data: json.data(using: .utf8) ?? Data())
+        var checkSpec = try VizSpec<M>.loadFromJSON(data: json.data(using: .utf8) ?? Data())
+        checkSpec.schema = nil // schema property is optional
+
+        if viz.spec.data != nil {
+            return XCTFail("data not yet supported in spec")
+        } else {
+            checkSpec.data = nil // we don't yet support data in the DSL
+        }
+
+
         // first check if they both to serialize to the same JSON…
         XCTAssertEqual("\n" + viz.debugDescription + "\n", "\n" + checkSpec.jsonDebugDescription + "\n")
         if viz.debugDescription == checkSpec.jsonDebugDescription {
@@ -19,7 +28,15 @@ extension XCTestCase {
     }
 }
 
+
 final class GGDSLTests: XCTestCase {
+
+    func testLegends() {
+        let l1 = Legend(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))
+        let l2 = Legend(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))
+
+        XCTAssertEqual(l1, l2)
+    }
 
     func testVizMarkSimple() throws {
         try check(viz: SimpleViz {
@@ -244,7 +261,7 @@ final class GGDSLTests: XCTestCase {
         """)
 
         try check(viz: SimpleViz {
-            VizLayer(.vconcat)
+            VizLayer(.vertical)
         }, againstJSON: """
         {
             "vconcat": []
@@ -252,7 +269,7 @@ final class GGDSLTests: XCTestCase {
         """)
 
         try check(viz: SimpleViz {
-            VizLayer(.concat) {
+            VizLayer(.wrap) {
                 VizMark(.bar) {
                     VizEncode(.x)
                     VizEncode(.y)
@@ -265,7 +282,7 @@ final class GGDSLTests: XCTestCase {
 
     func testVizLayerMarkTypes() throws {
         try check(viz: SimpleViz {
-            VizLayer(.hconcat) {
+            VizLayer(.horizontal) {
                 VizEncode(.x, value: .width)
                 VizEncode(.y, value: .height)
 
@@ -318,9 +335,9 @@ final class GGDSLTests: XCTestCase {
 
     func testVizLayerNesting() throws {
         try check(viz: SimpleViz {
-            VizLayer(.hconcat) {
+            VizLayer(.horizontal) {
                 VizEncode(.x, value: .width)
-                VizLayer(.vconcat) {
+                VizLayer(.vertical) {
                     VizEncode(.y, value: .height)
                     VizMark(.bar) {
                         VizEncode(.size, value: 44)
@@ -394,6 +411,7 @@ final class GGDSLTests: XCTestCase {
             VizTheme()
                 .font(.init("serif"))
                 .title(.init(fontSize: .init(ExprRef(expr: Expr("width * 0.05")))))
+            
 
             VizMark(.arc)
             VizMark(.area)

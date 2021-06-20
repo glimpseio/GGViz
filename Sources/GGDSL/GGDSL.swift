@@ -94,24 +94,50 @@ public protocol VizTransformDefType : Pure {
     var anyTransform: DataTransformation { get }
 }
 
+/// A wrapper around a simple Viz type that passes keypaths through to mutating the associated property.
+public protocol VizWrapper : RawRepresentable {
+    var rawValue: Self.RawValue { get set }
+}
 
-@dynamicMemberLookup
-public struct VizTheme : VizSpecElementType, VizDSLType {
-    var config: GGSpec.ConfigTheme
-
-    public init(config: GGSpec.ConfigTheme = GGSpec.ConfigTheme()) {
-        self.config = config
-    }
-    
-    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
-        spec.config = config
-    }
-
+extension VizWrapper {
     /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
-    public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSpec.ConfigTheme, U>) -> (U) -> (Self) {
-        setting(path: (\Self.config).appending(path: keyPath))
+    public subscript<U>(dynamicMember keyPath: WritableKeyPath<RawValue, U>) -> (U) -> (Self) {
+        setting(path: keyPath)
+    }
+
+    /// Fluent-style API for setting a value on a reference type and returning the type
+    /// - Parameter keyPath: the path to assign
+    /// - Parameter value: the value to set
+    func setting<T>(path keyPath: WritableKeyPath<RawValue, T>) -> (_ value: T) -> Self {
+        { value in
+            var this = self
+            this.rawValue[keyPath: keyPath] = value
+            return this
+        }
     }
 }
+
+@dynamicMemberLookup
+public struct VizTheme : VizWrapper, VizSpecElementType {
+    public var rawValue: GGSpec.ConfigTheme
+    
+    public init(rawValue: RawValue = .init()) { self.rawValue = rawValue }
+
+    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+        spec.config = rawValue
+    }
+}
+
+//public struct VizAxis : VizWrapper, VizLayerElementType {
+//    public var rawValue: GGSpec.Axis
+//    init() { self.init(rawValue: .init()) }
+//
+//    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+//        spec.mark?.rawValue.v4.ax = projection
+//
+//    }
+//}
+
 
 @dynamicMemberLookup
 public struct VizProjection : VizSpecElementType, VizDSLType {

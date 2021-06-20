@@ -30,17 +30,6 @@ public enum LayerArrangement : CaseIterable, Hashable {
 }
 
 public extension LayerArrangement {
-    @available(*, renamed: "horizontal")
-    static let hconcat = Self.horizontal
-    @available(*, renamed: "vertical")
-    static let vconcat = Self.vertical
-    @available(*, renamed: "wrap")
-    static let concat = Self.wrap
-    @available(*, unavailable)
-    static let `repeat` = Self.overlay
-}
-
-public extension LayerArrangement {
     /// The repeat form of this arrangement
     var repeatRef: RepeatRef {
         switch self {

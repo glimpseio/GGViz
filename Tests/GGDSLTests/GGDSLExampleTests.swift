@@ -178,21 +178,20 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_pie_pyramid() throws {
-        throw XCTSkip("WIP")
-
         try check(viz: SimpleViz {
             VizMark(.arc) {
                 VizEncode(.theta, field: "value")
                     .type(.quantitative)
                     .stack(.init(.init(true)))
-                    .scale(.init(Scale()))
+                    .scale(.init(Scale(range: .init([.init(2.35619449), .init(8.639379797)]))))
                 VizEncode(.color, field: "category")
                     .type(.nominal)
                     .legend(.init(Legend(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))))
-                    .scale(.init(Scale()))
+                    .scale(.init(Scale(domain: .init([.init(.init("Sky")), .init(.init("Shady side of a pyramid")), .init(.init("Sunny side of a pyramid"))]), range: .init([.init("#416D9D"), .init("#674028"), .init("#DEAC58")]))))
                 VizEncode(.order, field: "order")
-            }.outerRadius(.init(3))
+            }.outerRadius(.init(80))
         }
+        .description("Reproducing http://robslink.com/SAS/democd91/pyramid_pie.htm")
         .view(ViewBackground(stroke: .init(.null))), againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",

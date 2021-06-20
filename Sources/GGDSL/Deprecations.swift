@@ -107,3 +107,15 @@ public typealias ErrorBar = ErrorBarLiteral
 
 @available(*, deprecated, renamed: "ErrorBandLiteral")
 public typealias ErrorBand = ErrorBandLiteral
+
+public extension LayerArrangement {
+    @available(*, deprecated, renamed: "horizontal")
+    static let hconcat = Self.horizontal
+    @available(*, deprecated, renamed: "vertical")
+    static let vconcat = Self.vertical
+    @available(*, deprecated, renamed: "wrap")
+    static let concat = Self.wrap
+    @available(*, deprecated, renamed: "overlay")
+    static let `repeat` = Self.overlay
+}
+
