@@ -178,8 +178,22 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_pie_pyramid() throws {
+        throw XCTSkip("WIP")
+
         try check(viz: SimpleViz {
-        }, againstJSON: """
+            VizMark(.arc) {
+                VizEncode(.theta, field: "value")
+                    .type(.quantitative)
+                    .stack(.init(.init(true)))
+                    .scale(.init(Scale()))
+                VizEncode(.color, field: "category")
+                    .type(.nominal)
+                    .legend(.init(Legend(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))))
+                    .scale(.init(Scale()))
+                VizEncode(.order, field: "order")
+            }.outerRadius(.init(3))
+        }
+        .view(ViewBackground(stroke: .init(.null))), againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "Reproducing http://robslink.com/SAS/democd91/pyramid_pie.htm",
@@ -2414,37 +2428,36 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_line() throws {
-        throw XCTSkip("WIP")
-
         try check(viz: SimpleViz {
-            VizLayer(.overlay) {
-                // background map
-                VizMark(.geoshape) {
-                    //VizData(.topojson, feature: "states", url: "data/us-10m.json")
-                    //VizProjection(.albersUsa)
-                }
-                .fill(.init(.init(ColorCode("#eee"))))
-                .stroke(.init(.init(ColorCode("white"))))
-
-                // circles over the map
-                VizMark(.circle) {
-                    //VizProjection(.albersUsa)
-                    VizEncode(.longitude, field: "longitude").type(.quantitative)
-                    VizEncode(.latitude, field: "latitude").type(.quantitative)
-                    VizEncode(.size, value: 5)
-                    VizEncode(.color, value: "gray")
-                }
-                
-                VizMark(.line) {
-                    VizEncode(.longitude, field: "longitude").type(.quantitative)
-                    VizEncode(.latitude, field: "latitude").type(.quantitative)
-                    VizEncode(.order, field: "order")
-                }
-            }
-        }
-        .description("Line drawn between airports in the U.S. simulating a flight itinerary")
-        .width(.init(800.0))
-        .height(.init(500.0)), againstJSON: """
+//            VizLayer(.overlay) {
+//                // background map
+//                VizMark(.geoshape) {
+//                    //VizData(.topojson, feature: "states", url: "data/us-10m.json")
+//                    //VizProjection(.albersUsa)
+//                }
+//                .fill(.init(.init(ColorCode("#eee"))))
+//                .stroke(.init(.init(ColorCode("white"))))
+//
+//                // circles over the map
+//                VizMark(.circle) {
+//                    //VizProjection(.albersUsa)
+//                    VizEncode(.longitude, field: "longitude").type(.quantitative)
+//                    VizEncode(.latitude, field: "latitude").type(.quantitative)
+//                    VizEncode(.size, value: 5)
+//                    VizEncode(.color, value: "gray")
+//                }
+//
+//                VizMark(.line) {
+//                    VizEncode(.longitude, field: "longitude").type(.quantitative)
+//                    VizEncode(.latitude, field: "latitude").type(.quantitative)
+//                    VizEncode(.order, field: "order")
+//                }
+//            }
+//        }
+//        .description("Line drawn between airports in the U.S. simulating a flight itinerary")
+//        .width(.init(800.0))
+//        .height(.init(500.0))
+        }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "Line drawn between airports in the U.S. simulating a flight itinerary",

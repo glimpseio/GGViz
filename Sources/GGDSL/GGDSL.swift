@@ -704,12 +704,9 @@ extension VizDSLType {
 
 
 
-
-
-
 // MARK: VizEncode: X
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingX {
+public extension VizEncode where Channel == EncodingChannelMap.XEncoding {
     enum XChannel {
         /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
         case x
@@ -721,7 +718,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingX {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingX, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDef { def }
 
@@ -746,7 +743,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingX, Def ==
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingX, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionDatumDef { def }
 
@@ -802,7 +799,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingX, Def ==
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingX, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -827,7 +824,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingX, Def ==
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ x: XChannel, expression: ExprRef) {
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -844,7 +841,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingX, Def ==
 
 // MARK: VizEncode: Y
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingY {
+public extension VizEncode where Channel == EncodingChannelMap.YEncoding {
     enum YChannel {
         /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
         case y
@@ -856,7 +853,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingY {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingY, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDef { def }
 
@@ -881,7 +878,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingY, Def ==
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingY, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionDatumDef { def }
 
@@ -937,7 +934,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingY, Def ==
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingY, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -962,7 +959,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingY, Def ==
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ y: YChannel, expression: ExprRef) {
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -975,7 +972,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingY, Def ==
 
 // MARK: VizEncode: x2
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingX2 {
+public extension VizEncode where Channel == EncodingChannelMap.X2Encoding {
     enum X2Channel {
         /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
         case x2
@@ -987,7 +984,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingX2 {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingX2, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -1012,7 +1009,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingX2, Def =
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingX2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -1068,7 +1065,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingX2, Def =
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingX2, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -1093,7 +1090,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingX2, Def =
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ x2: X2Channel, expression: ExprRef) {
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -1109,7 +1106,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingX2, Def =
 // MARK: VizEncode: y2
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingY2 {
+public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding {
     enum Y2Channel {
         /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
         case y2
@@ -1121,7 +1118,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingY2 {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingY2, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -1146,7 +1143,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingY2, Def =
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingY2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -1202,7 +1199,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingY2, Def =
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingY2, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -1227,7 +1224,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingY2, Def =
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ y2: Y2Channel, expression: ExprRef) {
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -1240,7 +1237,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingY2, Def =
 
 // MARK: VizEncode: Color
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingColor {
+public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding {
     enum ColorChannel {
         /// Color of the marks – either fill or stroke color based on the filled property of mark definition. By default, color represents fill color for "area", "bar", "tick", "text", "trail", "circle", and "square" / stroke color for "line" and "point".
         case color
@@ -1252,7 +1249,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingColor {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingColor, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
@@ -1277,7 +1274,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingColor, De
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingColor, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
 
@@ -1333,7 +1330,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingColor, De
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingColor, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
 
@@ -1377,7 +1374,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingColor, De
 
 // MARK: VizEncode: Fill
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingFill {
+public extension VizEncode where Channel == EncodingChannelMap.FillEncoding {
     enum FillChannel {
         /// Fill color of the marks. Default value: If undefined, the default color depends on mark config’s color property.
         case fill
@@ -1389,7 +1386,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFill {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingFill, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
@@ -1414,7 +1411,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFill, Def
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingFill, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
 
@@ -1470,7 +1467,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFill, Def
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingFill, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
 
@@ -1518,7 +1515,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFill, Def
 
 // MARK: VizEncode: Stroke
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding {
     enum StrokeChannel {
         /// Stroke color of the marks. Default value: If undefined, the default color depends on mark config’s color property.
         case stroke
@@ -1530,7 +1527,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
@@ -1555,7 +1552,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke, D
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
 
@@ -1611,7 +1608,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke, D
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
 
@@ -1652,7 +1649,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke, D
 
 // MARK: VizEncode: size
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingSize {
+public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding {
     enum SizeChannel {
         /// Size of the mark.
         ///
@@ -1670,7 +1667,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingSize {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingSize, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -1695,7 +1692,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingSize, Def
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingSize, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -1751,7 +1748,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingSize, Def
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingSize, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -1762,7 +1759,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingSize, Def
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ size: SizeChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -1774,7 +1771,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingSize, Def
 
 // MARK: VizEncode: strokeWidth
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWidth {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncoding {
     enum StrokeWidthChannel {
         /// Stroke width of the marks.
         ///
@@ -1788,7 +1785,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWid
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWidth, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -1813,7 +1810,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWid
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWidth, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -1869,7 +1866,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWid
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWidth, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -1880,7 +1877,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWid
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ strokeWidth: StrokeWidthChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -1892,7 +1889,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWid
 
 // MARK: VizEncode: strokeOpacity
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpacity {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEncoding {
     enum StrokeOpacityChannel {
         /// Stroke opacity of the marks.
         case strokeOpacity
@@ -1904,7 +1901,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpa
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpacity, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -1929,7 +1926,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpa
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpacity, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -1985,7 +1982,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpa
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpacity, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -1996,7 +1993,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpa
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ strokeOpacity: StrokeOpacityChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2008,7 +2005,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpa
 
 // MARK: VizEncode: fillOpacity
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpacity {
+public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncoding {
     enum FillOpacityChannel {
         /// Fill opacity of the marks.
         case fillOpacity
@@ -2020,7 +2017,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpaci
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpacity, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -2045,7 +2042,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpaci
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpacity, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -2101,7 +2098,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpaci
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpacity, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -2112,7 +2109,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpaci
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ fillOpacity: FillOpacityChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2124,7 +2121,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpaci
 
 // MARK: VizEncode: opacity
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity {
+public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding {
     enum OpacityChannel {
         /// Opacity of the marks.
         case opacity
@@ -2136,7 +2133,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -2161,7 +2158,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity, 
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -2217,7 +2214,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity, 
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -2228,7 +2225,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity, 
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ opacity: OpacityChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2240,7 +2237,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity, 
 
 // MARK: VizEncode: angle
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle {
+public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding {
     enum AngleChannel {
         /// Rotation angle of point and text marks.
         case angle
@@ -2252,7 +2249,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -2277,7 +2274,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle, De
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -2333,7 +2330,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle, De
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -2344,7 +2341,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle, De
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ angle: AngleChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2357,7 +2354,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle, De
 // MARK: VizEncode: theta
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta {
+public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding {
     enum ThetaChannel {
         /// For arc marks, the arc length in radians if theta2 is not specified, otherwise the start arc angle. (A value of 0 indicates up or “north”, increasing values proceed clockwise.)
         /// For text marks, polar coordinate angle in radians.
@@ -2370,7 +2367,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDefBase { def }
 
@@ -2395,7 +2392,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta, De
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionDatumDefBase { def }
 
@@ -2451,7 +2448,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta, De
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -2469,14 +2466,14 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta, De
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ theta: ThetaChannel, expr expression: LiteralHeight) {
         let value: Def.ValueChoice.T3 = expression
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ theta: ThetaChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2488,7 +2485,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta, De
 
 // MARK: VizEncode: theta2
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2 {
+public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding {
     enum Theta2Channel {
         /// The end angle of arc marks in radians. A value of 0 indicates up or “north”, increasing values proceed clockwise.
         case theta2
@@ -2500,7 +2497,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2 {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -2525,7 +2522,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2, D
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -2581,7 +2578,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2, D
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -2599,14 +2596,14 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2, D
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ theta2: Theta2Channel, expr expression: LiteralHeight) {
         let value: Def.ValueChoice.T3 = expression
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ theta2: Theta2Channel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2618,7 +2615,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2, D
 
 // MARK: VizEncode: radius
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius {
+public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding {
     enum RadiusChannel {
         /// The outer radius in pixels of arc marks.
         case radius
@@ -2630,7 +2627,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDefBase { def }
 
@@ -2655,7 +2652,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius, D
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionDatumDefBase { def }
 
@@ -2711,7 +2708,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius, D
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -2730,14 +2727,14 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius, D
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ radius: RadiusChannel, expr expression: LiteralHeight) {
         let value: Def.ValueChoice.T3 = expression
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ radius: RadiusChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2749,7 +2746,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius, D
 
 // MARK: VizEncode: radius2
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2 {
+public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding {
     enum Radius2Channel {
         /// The inner radius in pixels of arc marks.
         case radius2
@@ -2761,7 +2758,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2 {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -2786,7 +2783,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2, 
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -2842,7 +2839,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2, 
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -2861,14 +2858,14 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2, 
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ radius2: Radius2Channel, expr expression: LiteralHeight) {
         let value: Def.ValueChoice.T3 = expression
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(value: .init(value)) // ambiguous with the other expr init?
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ radius2: Radius2Channel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2880,7 +2877,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2, 
 
 // MARK: VizEncode: xError
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingXError {
+public extension VizEncode where Channel == EncodingChannelMap.XErrorEncoding {
     enum XErrorChannel {
         case xError
     }
@@ -2891,7 +2888,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingXError {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingXError, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.XErrorEncoding, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -2909,7 +2906,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingXError, D
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingXError, Def == ValueDefNumber {
+public extension VizEncode where Channel == EncodingChannelMap.XErrorEncoding, Def == ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumber { def }
 
@@ -2927,7 +2924,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingXError, D
 // MARK: VizEncode: xError2
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingXError2 {
+public extension VizEncode where Channel == EncodingChannelMap.XError2Encoding {
     enum XError2Channel {
         case xError2
     }
@@ -2937,7 +2934,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingXError2 {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingXError2, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.XError2Encoding, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -2955,7 +2952,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingXError2, 
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingXError2, Def == ValueDefNumber {
+public extension VizEncode where Channel == EncodingChannelMap.XError2Encoding, Def == ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumber { def }
 
@@ -2972,7 +2969,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingXError2, 
 // MARK: VizEncode: yError
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingYError {
+public extension VizEncode where Channel == EncodingChannelMap.YErrorEncoding {
     enum YErrorChannel {
         case yError
     }
@@ -2982,7 +2979,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingYError {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingYError, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.YErrorEncoding, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -3000,7 +2997,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingYError, D
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingYError, Def == ValueDefNumber {
+public extension VizEncode where Channel == EncodingChannelMap.YErrorEncoding, Def == ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumber { def }
 
@@ -3016,7 +3013,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingYError, D
 // MARK: VizEncode: yError2
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingYError2 {
+public extension VizEncode where Channel == EncodingChannelMap.YError2Encoding {
     enum YError2Channel {
         case yError2
     }
@@ -3026,7 +3023,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingYError2 {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingYError2, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.YError2Encoding, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -3044,7 +3041,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingYError2, 
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingYError2, Def == ValueDefNumber {
+public extension VizEncode where Channel == EncodingChannelMap.YError2Encoding, Def == ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumber { def }
 
@@ -3060,7 +3057,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingYError2, 
 // MARK: VizEncode: column
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingColumn {
+public extension VizEncode where Channel == EncodingChannelMap.ColumnEncoding {
     enum ColumnChannel {
         /// Facet, row and column are special encoding channels that facets single plots into trellis plots (or small multiples).
         case column
@@ -3070,7 +3067,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingColumn {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingColumn, Def == RowColumnEncodingFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.ColumnEncoding, Def == RowColumnEncodingFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> RowColumnEncodingFieldDef { def }
 
@@ -3090,7 +3087,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingColumn, D
 // MARK: VizEncode: row
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingRow {
+public extension VizEncode where Channel == EncodingChannelMap.RowEncoding {
     enum RowChannel {
         /// Facet, row and column are special encoding channels that facets single plots into trellis plots (or small multiples).
         case row
@@ -3100,7 +3097,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRow {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingRow, Def == RowColumnEncodingFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.RowEncoding, Def == RowColumnEncodingFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> RowColumnEncodingFieldDef { def }
 
@@ -3123,7 +3120,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingRow, Def 
 // MARK: VizEncode: facet
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingFacet {
+public extension VizEncode where Channel == EncodingChannelMap.FacetEncoding {
     enum FacetChannel {
         /// Facet, row and column are special encoding channels that facets single plots into trellis plots (or small multiples).
         case facet
@@ -3133,7 +3130,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFacet {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingFacet, Def == FacetEncodingFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.FacetEncoding, Def == FacetEncodingFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FacetEncodingFieldDef { def }
 
@@ -3153,7 +3150,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingFacet, De
 
 // MARK: VizEncode: latitude
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude {
+public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding {
     enum LatitudeChannel {
         /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
         case latitude
@@ -3166,7 +3163,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude 
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude, Def == LatLongFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding, Def == LatLongFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> LatLongFieldDef { def }
 
@@ -3191,7 +3188,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude,
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -3250,7 +3247,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude,
 // MARK: VizEncode: longitude
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude {
+public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding {
     enum LongitudeChannel {
         /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
         case longitude
@@ -3260,7 +3257,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> LatLongFieldDef { def }
 
@@ -3285,7 +3282,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -3345,7 +3342,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude
 // MARK: VizEncode: latitude2
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude2 {
+public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding {
     enum Latitude2Channel {
         /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
         case latitude2
@@ -3357,7 +3354,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude2
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude2, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -3382,7 +3379,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude2
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -3441,7 +3438,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude2
 // MARK: VizEncode: longitude2
 
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude2 {
+public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encoding {
     enum Longitude2Channel {
         /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
         case longitude2
@@ -3453,7 +3450,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude2, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encoding, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -3478,7 +3475,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -3537,7 +3534,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude
 
 // MARK: VizEncode: href
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingHref {
+public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding {
     enum HrefChannel {
         /// A URL to load upon mouse click.
         case href
@@ -3548,7 +3545,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingHref {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingHref, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
 
@@ -3572,7 +3569,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingHref, Def
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingHref, Def == StringValueDefWithCondition {
+public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding, Def == StringValueDefWithCondition {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefStringNull { def }
 
@@ -3590,7 +3587,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingHref, Def
         self.def = .init(value: .init(.init(value)))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ href: HrefChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -3601,7 +3598,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingHref, Def
 
 // MARK: VizEncode: description
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingDescription {
+public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncoding {
     enum DescriptionChannel {
         /// A text description of this mark for ARIA accessibility. For SVG output the "aria-label" attribute will be set to this description.
         case description
@@ -3612,7 +3609,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingDescripti
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingDescription, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncoding, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
 
@@ -3636,7 +3633,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingDescripti
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingDescription, Def == StringValueDefWithCondition {
+public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncoding, Def == StringValueDefWithCondition {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefStringNull { def }
 
@@ -3654,7 +3651,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingDescripti
         self.def = .init(value: .init(.init(value)))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ description: DescriptionChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -3664,7 +3661,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingDescripti
 
 // MARK: VizEncode: url
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingUrl {
+public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding {
     enum UrlChannel {
         case url
     }
@@ -3674,7 +3671,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingUrl {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingUrl, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
 
@@ -3698,7 +3695,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingUrl, Def 
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingUrl, Def == Channel.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding, Def == Channel.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> StringValueDefWithCondition { def }
 
@@ -3716,7 +3713,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingUrl, Def 
         self.def = .init(value: .init(.init(value)))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ url: UrlChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -3727,7 +3724,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingUrl, Def 
 
 // MARK: VizEncode: strokeDash
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDash {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncoding {
     enum StrokeDashChannel {
         /// Stroke dash of the marks.
         ///
@@ -3742,7 +3739,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDas
 
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumberArray { def }
 
@@ -3765,7 +3762,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDas
     }
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumberArray { def }
 
@@ -3820,7 +3817,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDas
     }
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumberArray { def }
 
@@ -3831,7 +3828,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDas
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ strokeDash: StrokeDashChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -3842,7 +3839,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDas
 
 // MARK: VizEncode: key
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingKey {
+public extension VizEncode where Channel == EncodingChannelMap.KeyEncoding {
     enum KeyChannel {
         case key
     }
@@ -3851,7 +3848,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingKey {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingKey, Def == Channel.RawValue {
+public extension VizEncode where Channel == EncodingChannelMap.KeyEncoding, Def == Channel.RawValue {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> TypedFieldDef { def }
 
@@ -3877,7 +3874,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingKey, Def 
 
 // MARK: VizEncode: shape
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingShape {
+public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding {
     enum ShapeChannel {
         /// Shape of the mark.
         ///
@@ -3894,7 +3891,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingShape {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingShape, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefTypeForShapeStringNull { def }
 
@@ -3919,7 +3916,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingShape, De
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingShape, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefStringNull { def }
 
@@ -3975,7 +3972,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingShape, De
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingShape, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefTypeForShapeStringNull { def }
 
@@ -3991,7 +3988,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingShape, De
 
 // MARK: VizEncode: detail
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingDetail {
+public extension VizEncode where Channel == EncodingChannelMap.DetailEncoding {
     enum DetailChannel {
         case detail
     }
@@ -4000,7 +3997,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingDetail {
     typealias ChannelMultiFieldType = Channel.RawValue.T2 // [TypedFieldDef]
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingDetail, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.DetailEncoding, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> TypedFieldDef { def }
 
@@ -4026,7 +4023,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingDetail, D
 
 // MARK: VizEncode: order
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingOrder {
+public extension VizEncode where Channel == EncodingChannelMap.OrderEncoding {
     enum OrderChannel {
         case order
     }
@@ -4037,7 +4034,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingOrder {
 
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingOrder, Def == Channel.RawValue.T1.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.OrderEncoding, Def == Channel.RawValue.T1.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> OrderFieldDef { def }
 
@@ -4060,7 +4057,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingOrder, De
     }
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingOrder, Def == Channel.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.OrderEncoding, Def == Channel.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> OrderValueDef { def }
 
@@ -4071,7 +4068,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingOrder, De
         self.def = .init(value: .init(value))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ order: OrderChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -4081,7 +4078,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingOrder, De
 
 // MARK: VizEncode: text
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingText {
+public extension VizEncode where Channel == EncodingChannelMap.TextEncoding {
     enum TextChannel {
         case text
     }
@@ -4092,7 +4089,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingText {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingText, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefText { def }
 
@@ -4117,7 +4114,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingText, Def
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingText, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringDatumDefText { def }
 
@@ -4173,7 +4170,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingText, Def
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.EncodingText, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionStringFieldDefText { def }
 
@@ -4189,7 +4186,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingText, Def
         self.def = .init(value: .init(.init(stringArray)))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ text: TextChannel, expression: ExprRef) {
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(value: .init(expression))
@@ -4201,7 +4198,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingText, Def
 
 // MARK: VizEncode: tooltip
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip {
+public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding {
     enum TooltipChannel {
         case tooltip
     }
@@ -4212,7 +4209,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip {
     typealias ChannelMultiFieldType = Channel.RawValue.T2.T3
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip, Def == Channel.RawValue.T2.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding, Def == Channel.RawValue.T2.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> StringFieldDefWithCondition { def }
 
@@ -4235,7 +4232,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip, 
     }
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip, Def == Channel.RawValue.T2.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding, Def == Channel.RawValue.T2.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> StringValueDefWithCondition { def }
 
@@ -4253,7 +4250,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip, 
         self.def = .init(value: .init(.init(value)))
     }
 
-    /// Creates this encoding with the given constant value.
+    /// Creates this encoding with a dynamic expression.
     init(_ tooltip: TooltipChannel, expr expression: ExprRef) {
         let value: Def.ValueChoice.T2.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -4261,7 +4258,7 @@ public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip, 
     }
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip, Def == Channel.RawValue.T2.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding, Def == Channel.RawValue.T2.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> [StringFieldDef] { def }
 
@@ -4337,7 +4334,7 @@ private func emptyConstructor(channel: EncodingChannel) -> VizEncodeType {
 // MARK: VizEncodingChannelType Multi-Field
 
 
-extension EncodingChannelMap.EncodingDetail : VizEncodingChannelType {
+extension EncodingChannelMap.DetailEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .detail
 
     public func addChannel(to encodings: inout EncodingChannelMap) {
@@ -4353,7 +4350,7 @@ extension EncodingChannelMap.EncodingDetail : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingOrder : VizEncodingChannelType {
+extension EncodingChannelMap.OrderEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .order
     public func addChannel(to encodings: inout EncodingChannelMap) {
         switch self.rawValue {
@@ -4377,7 +4374,7 @@ extension EncodingChannelMap.EncodingOrder : VizEncodingChannelType {
 }
 
 
-extension EncodingChannelMap.EncodingTooltip : VizEncodingChannelType {
+extension EncodingChannelMap.TooltipEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .tooltip
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.tooltip != nil {
@@ -4392,7 +4389,7 @@ extension EncodingChannelMap.EncodingTooltip : VizEncodingChannelType {
 
 // MARK: VizEncodingChannelType Single-Field
 
-extension EncodingChannelMap.EncodingText : VizEncodingChannelType {
+extension EncodingChannelMap.TextEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .text
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.text != nil {
@@ -4402,7 +4399,7 @@ extension EncodingChannelMap.EncodingText : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingAngle : VizEncodingChannelType {
+extension EncodingChannelMap.AngleEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .angle
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.angle != nil {
@@ -4412,7 +4409,7 @@ extension EncodingChannelMap.EncodingAngle : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingColor : VizEncodingChannelType {
+extension EncodingChannelMap.ColorEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .color
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.color != nil {
@@ -4422,7 +4419,7 @@ extension EncodingChannelMap.EncodingColor : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingDescription : VizEncodingChannelType {
+extension EncodingChannelMap.DescriptionEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .description
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.description != nil {
@@ -4432,7 +4429,7 @@ extension EncodingChannelMap.EncodingDescription : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingFill : VizEncodingChannelType {
+extension EncodingChannelMap.FillEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .fill
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.fill != nil {
@@ -4442,7 +4439,7 @@ extension EncodingChannelMap.EncodingFill : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingFillOpacity : VizEncodingChannelType {
+extension EncodingChannelMap.FillOpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .fillOpacity
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.fillOpacity != nil {
@@ -4452,7 +4449,7 @@ extension EncodingChannelMap.EncodingFillOpacity : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingHref : VizEncodingChannelType {
+extension EncodingChannelMap.HrefEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .href
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.href != nil {
@@ -4462,7 +4459,7 @@ extension EncodingChannelMap.EncodingHref : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingLatitude : VizEncodingChannelType {
+extension EncodingChannelMap.LatitudeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .latitude
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.latitude != nil {
@@ -4472,7 +4469,7 @@ extension EncodingChannelMap.EncodingLatitude : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingLatitude2 : VizEncodingChannelType {
+extension EncodingChannelMap.Latitude2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .latitude2
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.latitude2 != nil {
@@ -4482,7 +4479,7 @@ extension EncodingChannelMap.EncodingLatitude2 : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingLongitude : VizEncodingChannelType {
+extension EncodingChannelMap.LongitudeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .longitude
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.longitude != nil {
@@ -4492,7 +4489,7 @@ extension EncodingChannelMap.EncodingLongitude : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingLongitude2 : VizEncodingChannelType {
+extension EncodingChannelMap.Longitude2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .longitude2
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.longitude2 != nil {
@@ -4502,7 +4499,7 @@ extension EncodingChannelMap.EncodingLongitude2 : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingOpacity : VizEncodingChannelType {
+extension EncodingChannelMap.OpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .opacity
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.opacity != nil {
@@ -4513,7 +4510,7 @@ extension EncodingChannelMap.EncodingOpacity : VizEncodingChannelType {
 }
 
 
-extension EncodingChannelMap.EncodingRadius : VizEncodingChannelType {
+extension EncodingChannelMap.RadiusEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .radius
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.radius != nil {
@@ -4523,7 +4520,7 @@ extension EncodingChannelMap.EncodingRadius : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingRadius2 : VizEncodingChannelType {
+extension EncodingChannelMap.Radius2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .radius2
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.radius2 != nil {
@@ -4533,7 +4530,7 @@ extension EncodingChannelMap.EncodingRadius2 : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingShape : VizEncodingChannelType {
+extension EncodingChannelMap.ShapeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .shape
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.shape != nil {
@@ -4543,7 +4540,7 @@ extension EncodingChannelMap.EncodingShape : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingSize : VizEncodingChannelType {
+extension EncodingChannelMap.SizeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .size
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.size != nil {
@@ -4553,7 +4550,7 @@ extension EncodingChannelMap.EncodingSize : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingStroke : VizEncodingChannelType {
+extension EncodingChannelMap.StrokeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .stroke
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.stroke != nil {
@@ -4563,7 +4560,7 @@ extension EncodingChannelMap.EncodingStroke : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingStrokeDash : VizEncodingChannelType {
+extension EncodingChannelMap.StrokeDashEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeDash
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.strokeDash != nil {
@@ -4573,7 +4570,7 @@ extension EncodingChannelMap.EncodingStrokeDash : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingStrokeOpacity : VizEncodingChannelType {
+extension EncodingChannelMap.StrokeOpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeOpacity
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.strokeOpacity != nil {
@@ -4583,7 +4580,7 @@ extension EncodingChannelMap.EncodingStrokeOpacity : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingStrokeWidth : VizEncodingChannelType {
+extension EncodingChannelMap.StrokeWidthEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeWidth
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.strokeWidth != nil {
@@ -4593,7 +4590,7 @@ extension EncodingChannelMap.EncodingStrokeWidth : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingTheta : VizEncodingChannelType {
+extension EncodingChannelMap.ThetaEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .theta
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.theta != nil {
@@ -4603,7 +4600,7 @@ extension EncodingChannelMap.EncodingTheta : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingTheta2 : VizEncodingChannelType {
+extension EncodingChannelMap.Theta2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .theta2
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.theta2 != nil {
@@ -4614,7 +4611,7 @@ extension EncodingChannelMap.EncodingTheta2 : VizEncodingChannelType {
 }
 
 
-extension EncodingChannelMap.EncodingUrl : VizEncodingChannelType {
+extension EncodingChannelMap.UrlEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .url
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.url != nil {
@@ -4624,7 +4621,7 @@ extension EncodingChannelMap.EncodingUrl : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingX : VizEncodingChannelType {
+extension EncodingChannelMap.XEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .x
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.x != nil {
@@ -4634,7 +4631,7 @@ extension EncodingChannelMap.EncodingX : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingX2 : VizEncodingChannelType {
+extension EncodingChannelMap.X2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .x2
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.x2 != nil {
@@ -4644,7 +4641,7 @@ extension EncodingChannelMap.EncodingX2 : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingXError : VizEncodingChannelType {
+extension EncodingChannelMap.XErrorEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .xError
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.xError != nil {
@@ -4654,7 +4651,7 @@ extension EncodingChannelMap.EncodingXError : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingXError2 : VizEncodingChannelType {
+extension EncodingChannelMap.XError2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .xError2
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.xError2 != nil {
@@ -4664,7 +4661,7 @@ extension EncodingChannelMap.EncodingXError2 : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingY : VizEncodingChannelType {
+extension EncodingChannelMap.YEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .y
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.y != nil {
@@ -4674,7 +4671,7 @@ extension EncodingChannelMap.EncodingY : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingY2 : VizEncodingChannelType {
+extension EncodingChannelMap.Y2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .y2
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.y2 != nil {
@@ -4684,7 +4681,7 @@ extension EncodingChannelMap.EncodingY2 : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingYError : VizEncodingChannelType {
+extension EncodingChannelMap.YErrorEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .yError
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.yError != nil {
@@ -4694,7 +4691,7 @@ extension EncodingChannelMap.EncodingYError : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingYError2 : VizEncodingChannelType {
+extension EncodingChannelMap.YError2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .yError2
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.yError2 != nil {
@@ -4704,7 +4701,7 @@ extension EncodingChannelMap.EncodingYError2 : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingRow : VizEncodingChannelType {
+extension EncodingChannelMap.RowEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .row
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.row != nil {
@@ -4714,7 +4711,7 @@ extension EncodingChannelMap.EncodingRow : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingColumn : VizEncodingChannelType {
+extension EncodingChannelMap.ColumnEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .column
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.column != nil {
@@ -4724,7 +4721,7 @@ extension EncodingChannelMap.EncodingColumn : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingFacet : VizEncodingChannelType {
+extension EncodingChannelMap.FacetEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .facet
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.facet != nil {
@@ -4734,7 +4731,7 @@ extension EncodingChannelMap.EncodingFacet : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.EncodingKey : VizEncodingChannelType {
+extension EncodingChannelMap.KeyEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .key
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.key != nil {
