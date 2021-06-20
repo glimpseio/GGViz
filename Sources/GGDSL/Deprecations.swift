@@ -92,7 +92,7 @@ public typealias Field = SourceColumnRef
 public typealias Transform = DataTransformation
 
 /// The old alias for the `Config`
-@available(*, deprecated, renamed: "Config")
+@available(*, deprecated, renamed: "ConfigTheme")
 public typealias Config = ConfigTheme
 
 /// The old alias for the PrimitiveMarkType
