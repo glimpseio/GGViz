@@ -514,8 +514,10 @@ public protocol VizEncodeType : VizDSLType {
 //    init(string: String)
 //}
 
+
 public protocol VizEncodingChannelType : Pure, RawCodable {
     static var encodingChannel: EncodingChannel { get }
+
     func addChannel(to encodings: inout EncodingChannelMap)
 }
 
@@ -4352,6 +4354,7 @@ extension EncodingChannelMap.DetailEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.OrderEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .order
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         switch self.rawValue {
         case .v1(let oneOrManyFields):
@@ -4376,6 +4379,7 @@ extension EncodingChannelMap.OrderEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.TooltipEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .tooltip
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.tooltip != nil {
             // TODO: in theory, we could handle the special case of one tooltip with an array of fields being added to another tooltip with an array of fields…
@@ -4391,6 +4395,7 @@ extension EncodingChannelMap.TooltipEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.TextEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .text
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.text != nil {
             warnReplaceEncoding(self)
@@ -4401,6 +4406,7 @@ extension EncodingChannelMap.TextEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.AngleEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .angle
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.angle != nil {
             warnReplaceEncoding(self)
@@ -4411,6 +4417,7 @@ extension EncodingChannelMap.AngleEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.ColorEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .color
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.color != nil {
             warnReplaceEncoding(self)
@@ -4421,6 +4428,7 @@ extension EncodingChannelMap.ColorEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.DescriptionEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .description
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.description != nil {
             warnReplaceEncoding(self)
@@ -4431,6 +4439,7 @@ extension EncodingChannelMap.DescriptionEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.FillEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .fill
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.fill != nil {
             warnReplaceEncoding(self)
@@ -4441,6 +4450,7 @@ extension EncodingChannelMap.FillEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.FillOpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .fillOpacity
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.fillOpacity != nil {
             warnReplaceEncoding(self)
@@ -4451,6 +4461,7 @@ extension EncodingChannelMap.FillOpacityEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.HrefEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .href
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.href != nil {
             warnReplaceEncoding(self)
@@ -4461,6 +4472,7 @@ extension EncodingChannelMap.HrefEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.LatitudeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .latitude
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.latitude != nil {
             warnReplaceEncoding(self)
@@ -4471,6 +4483,7 @@ extension EncodingChannelMap.LatitudeEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.Latitude2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .latitude2
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.latitude2 != nil {
             warnReplaceEncoding(self)
@@ -4481,6 +4494,7 @@ extension EncodingChannelMap.Latitude2Encoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.LongitudeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .longitude
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.longitude != nil {
             warnReplaceEncoding(self)
@@ -4491,6 +4505,7 @@ extension EncodingChannelMap.LongitudeEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.Longitude2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .longitude2
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.longitude2 != nil {
             warnReplaceEncoding(self)
@@ -4501,6 +4516,7 @@ extension EncodingChannelMap.Longitude2Encoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.OpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .opacity
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.opacity != nil {
             warnReplaceEncoding(self)
@@ -4512,6 +4528,7 @@ extension EncodingChannelMap.OpacityEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.RadiusEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .radius
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.radius != nil {
             warnReplaceEncoding(self)
@@ -4522,6 +4539,7 @@ extension EncodingChannelMap.RadiusEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.Radius2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .radius2
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.radius2 != nil {
             warnReplaceEncoding(self)
@@ -4532,6 +4550,7 @@ extension EncodingChannelMap.Radius2Encoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.ShapeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .shape
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.shape != nil {
             warnReplaceEncoding(self)
@@ -4542,6 +4561,7 @@ extension EncodingChannelMap.ShapeEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.SizeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .size
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.size != nil {
             warnReplaceEncoding(self)
@@ -4552,6 +4572,7 @@ extension EncodingChannelMap.SizeEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.StrokeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .stroke
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.stroke != nil {
             warnReplaceEncoding(self)
@@ -4562,6 +4583,7 @@ extension EncodingChannelMap.StrokeEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.StrokeDashEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeDash
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.strokeDash != nil {
             warnReplaceEncoding(self)
@@ -4572,6 +4594,7 @@ extension EncodingChannelMap.StrokeDashEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.StrokeOpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeOpacity
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.strokeOpacity != nil {
             warnReplaceEncoding(self)
@@ -4582,6 +4605,7 @@ extension EncodingChannelMap.StrokeOpacityEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.StrokeWidthEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeWidth
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.strokeWidth != nil {
             warnReplaceEncoding(self)
@@ -4592,6 +4616,7 @@ extension EncodingChannelMap.StrokeWidthEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.ThetaEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .theta
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.theta != nil {
             warnReplaceEncoding(self)
@@ -4602,6 +4627,7 @@ extension EncodingChannelMap.ThetaEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.Theta2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .theta2
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.theta2 != nil {
             warnReplaceEncoding(self)
@@ -4613,6 +4639,7 @@ extension EncodingChannelMap.Theta2Encoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.UrlEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .url
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.url != nil {
             warnReplaceEncoding(self)
@@ -4623,6 +4650,7 @@ extension EncodingChannelMap.UrlEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.XEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .x
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.x != nil {
             warnReplaceEncoding(self)
@@ -4633,6 +4661,7 @@ extension EncodingChannelMap.XEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.X2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .x2
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.x2 != nil {
             warnReplaceEncoding(self)
@@ -4643,6 +4672,7 @@ extension EncodingChannelMap.X2Encoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.XErrorEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .xError
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.xError != nil {
             warnReplaceEncoding(self)
@@ -4653,6 +4683,7 @@ extension EncodingChannelMap.XErrorEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.XError2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .xError2
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.xError2 != nil {
             warnReplaceEncoding(self)
@@ -4663,6 +4694,7 @@ extension EncodingChannelMap.XError2Encoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.YEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .y
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.y != nil {
             warnReplaceEncoding(self)
@@ -4673,6 +4705,7 @@ extension EncodingChannelMap.YEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.Y2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .y2
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.y2 != nil {
             warnReplaceEncoding(self)
@@ -4683,6 +4716,7 @@ extension EncodingChannelMap.Y2Encoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.YErrorEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .yError
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.yError != nil {
             warnReplaceEncoding(self)
@@ -4693,6 +4727,7 @@ extension EncodingChannelMap.YErrorEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.YError2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .yError2
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.yError2 != nil {
             warnReplaceEncoding(self)
@@ -4703,6 +4738,7 @@ extension EncodingChannelMap.YError2Encoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.RowEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .row
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.row != nil {
             warnReplaceEncoding(self)
@@ -4713,6 +4749,7 @@ extension EncodingChannelMap.RowEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.ColumnEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .column
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.column != nil {
             warnReplaceEncoding(self)
@@ -4723,6 +4760,7 @@ extension EncodingChannelMap.ColumnEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.FacetEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .facet
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.facet != nil {
             warnReplaceEncoding(self)
@@ -4733,6 +4771,7 @@ extension EncodingChannelMap.FacetEncoding : VizEncodingChannelType {
 
 extension EncodingChannelMap.KeyEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .key
+
     public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.key != nil {
             warnReplaceEncoding(self)
