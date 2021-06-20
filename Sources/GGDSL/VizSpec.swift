@@ -16,8 +16,7 @@ public protocol TopLevelSpecType : SpecType {
 }
 
 /// A `ColorCode` or an `ExprRef`
-public typealias ColorExprable = Exprable<ColorCode>
-
+public typealias ColorExprable = Exprable<ColorLiteral>
 
 /// The different options for a `Param` definition
 public typealias ParamChoice = OneOf<VariableParameter>.Or<TopLevelSelectionParameter> // ConfigTheme.ParamsItemChoice
@@ -190,17 +189,17 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     /// A specification of the view that gets faceted.
     public var spec: Indirect<SubSpec>? // RepeatSpec
 
-    public var concat: [SubSpec]? // ConcatSpec
+    @usableFromInline var concat: [SubSpec]? // ConcatSpec
 
     /// Layer or single view specifications to be layered.
     /// __Note__: Specifications inside `layer` cannot use `row` and `column` channels as layering facet specifications is not allowed.
-    public var layer: [SubSpec]? // LayerSpec
+    @usableFromInline var layer: [SubSpec]? // LayerSpec
 
     /// A list of views that should be concatenated and put into a column.
-    public var vconcat: [SubSpec]? // VConcatSpec
+    @usableFromInline var vconcat: [SubSpec]? // VConcatSpec
 
     /// A list of views that should be concatenated and put into a row.
-    public var hconcat: [SubSpec]? // HConcatSpec
+    @usableFromInline var hconcat: [SubSpec]? // HConcatSpec
 
 
     public init(id: LayerId? = .none, schema: String? = .none, align: AlignChoice? = .none, autosize: AutosizeChoice? = .none, background: ColorExprable? = .none, bounds: LiteralFullOrFlush? = .none, center: CenterChoice? = .none, columns: Double? = .none, config: ConfigTheme? = .none, data: VizDataSource? = .none, datasets: Datasets? = .none, description: String? = .none, encoding: EncodingChannelMap? = .none, height: TopLevelUnitSpec.HeightChoice? = .none, mark: AnyMark? = .none, name: String? = .none, padding: Padding? = .none, projection: Projection? = .none, resolve: Resolve? = .none, spacing: SpacingChoice? = .none, title: TitleChoice? = .none, transform: [DataTransformation]? = .none, params: [ParamChoice]? = .none, usermeta: Meta? = .none, view: ViewBackground? = .none, width: TopLevelUnitSpec.WidthChoice? = .none,

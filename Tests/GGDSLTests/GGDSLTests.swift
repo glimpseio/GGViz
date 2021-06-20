@@ -28,8 +28,8 @@ extension XCTestCase {
 final class GGDSLTests: XCTestCase {
 
     func testLegends() {
-        let l1 = Legend(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))
-        let l2 = Legend(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))
+        let l1 = LegendDef(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))
+        let l2 = LegendDef(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))
 
         XCTAssertEqual(l1, l2)
     }
