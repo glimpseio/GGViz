@@ -142,7 +142,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
 
     /// A key-value mapping between encoding channels and definition of fields.
     /// This property can only be defined at the top-level of a specification.
-    public var encoding: FacetedEncoding? {
+    public var encoding: EncodingChannelMap? {
         get { _encoding?.wrappedValue }
         _modify {
             var cfg = _encoding?.wrappedValue
@@ -152,7 +152,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     }
 
     /// Storing `encoding` as an indirect reduces the potential memory layout size so it can load on background queues (with a 512KB stack limit)
-    private var _encoding: Indirect<FacetedEncoding>?
+    private var _encoding: Indirect<EncodingChannelMap>?
 
     public var width: TopLevelUnitSpec.WidthChoice?
     public var height: TopLevelUnitSpec.HeightChoice?
@@ -203,7 +203,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     public var hconcat: [SubSpec]? // HConcatSpec
 
 
-    public init(id: LayerId? = .none, schema: String? = .none, align: AlignChoice? = .none, autosize: AutosizeChoice? = .none, background: ColorExprable? = .none, bounds: LiteralFullOrFlush? = .none, center: CenterChoice? = .none, columns: Double? = .none, config: ConfigTheme? = .none, data: VizDataSource? = .none, datasets: Datasets? = .none, description: String? = .none, encoding: FacetedEncoding? = .none, height: TopLevelUnitSpec.HeightChoice? = .none, mark: AnyMark? = .none, name: String? = .none, padding: Padding? = .none, projection: Projection? = .none, resolve: Resolve? = .none, spacing: SpacingChoice? = .none, title: TitleChoice? = .none, transform: [DataTransformation]? = .none, params: [ParamChoice]? = .none, usermeta: Meta? = .none, view: ViewBackground? = .none, width: TopLevelUnitSpec.WidthChoice? = .none,
+    public init(id: LayerId? = .none, schema: String? = .none, align: AlignChoice? = .none, autosize: AutosizeChoice? = .none, background: ColorExprable? = .none, bounds: LiteralFullOrFlush? = .none, center: CenterChoice? = .none, columns: Double? = .none, config: ConfigTheme? = .none, data: VizDataSource? = .none, datasets: Datasets? = .none, description: String? = .none, encoding: EncodingChannelMap? = .none, height: TopLevelUnitSpec.HeightChoice? = .none, mark: AnyMark? = .none, name: String? = .none, padding: Padding? = .none, projection: Projection? = .none, resolve: Resolve? = .none, spacing: SpacingChoice? = .none, title: TitleChoice? = .none, transform: [DataTransformation]? = .none, params: [ParamChoice]? = .none, usermeta: Meta? = .none, view: ViewBackground? = .none, width: TopLevelUnitSpec.WidthChoice? = .none,
                 concat: [SubSpec]? = .none, facet: FacetChoice? = .none, layer: [SubSpec]? = .none, `repeat`: RepeatChoice? = .none, spec: SubSpec? = .none, vconcat: [SubSpec]? = .none, hconcat: [SubSpec]? = .none) {
         self.id = id
         self.schema = schema

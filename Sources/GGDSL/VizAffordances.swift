@@ -1,6 +1,89 @@
 import GGSpec
 
-/// The old alias for `Field` goes to `SourceColumnRef`
+/// The old alias for `FacetedEncoding` aliases to `EncodingChannelMap`
+@available(*, deprecated, renamed: "EncodingChannelMap")
+public typealias FacetedEncoding = EncodingChannelMap
+
+public extension EncodingChannelMap {
+    @available(*, deprecated, renamed: "AngleEncoding")
+    typealias EncodingAngle = AngleEncoding
+    @available(*, deprecated, renamed: "ColorEncoding")
+    typealias EncodingColor = ColorEncoding
+    @available(*, deprecated, renamed: "ColumnEncoding")
+    typealias EncodingColumn = ColumnEncoding
+    @available(*, deprecated, renamed: "DescriptionEncoding")
+    typealias EncodingDescription = DescriptionEncoding
+    @available(*, deprecated, renamed: "DetailEncoding")
+    typealias EncodingDetail = DetailEncoding
+    @available(*, deprecated, renamed: "FacetEncoding")
+    typealias EncodingFacet = FacetEncoding
+    @available(*, deprecated, renamed: "FillEncoding")
+    typealias EncodingFill = FillEncoding
+    @available(*, deprecated, renamed: "FillOpacityEncoding")
+    typealias EncodingFillOpacity = FillOpacityEncoding
+    @available(*, deprecated, renamed: "HrefEncoding")
+    typealias EncodingHref = HrefEncoding
+    @available(*, deprecated, renamed: "KeyEncoding")
+    typealias EncodingKey = KeyEncoding
+    @available(*, deprecated, renamed: "LatitudeEncoding")
+    typealias EncodingLatitude = LatitudeEncoding
+    @available(*, deprecated, renamed: "Latitude2Encoding")
+    typealias EncodingLatitude2 = Latitude2Encoding
+    @available(*, deprecated, renamed: "LongitudeEncoding")
+    typealias EncodingLongitude = LongitudeEncoding
+    @available(*, deprecated, renamed: "Longitude2Encoding")
+    typealias EncodingLongitude2 = Longitude2Encoding
+    @available(*, deprecated, renamed: "OpacityEncoding")
+    typealias EncodingOpacity = OpacityEncoding
+    @available(*, deprecated, renamed: "OrderEncoding")
+    typealias EncodingOrder = OrderEncoding
+    @available(*, deprecated, renamed: "RadiusEncoding")
+    typealias EncodingRadius = RadiusEncoding
+    @available(*, deprecated, renamed: "Radius2Encoding")
+    typealias EncodingRadius2 = Radius2Encoding
+    @available(*, deprecated, renamed: "RowEncoding")
+    typealias EncodingRow = RowEncoding
+    @available(*, deprecated, renamed: "ShapeEncoding")
+    typealias EncodingShape = ShapeEncoding
+    @available(*, deprecated, renamed: "SizeEncoding")
+    typealias EncodingSize = SizeEncoding
+    @available(*, deprecated, renamed: "StrokeEncoding")
+    typealias EncodingStroke = StrokeEncoding
+    @available(*, deprecated, renamed: "StrokeDashEncoding")
+    typealias EncodingStrokeDash = StrokeDashEncoding
+    @available(*, deprecated, renamed: "StrokeOpacityEncoding")
+    typealias EncodingStrokeOpacity = StrokeOpacityEncoding
+    @available(*, deprecated, renamed: "StrokeWidthEncoding")
+    typealias EncodingStrokeWidth = StrokeWidthEncoding
+    @available(*, deprecated, renamed: "TextEncoding")
+    typealias EncodingText = TextEncoding
+    @available(*, deprecated, renamed: "ThetaEncoding")
+    typealias EncodingTheta = ThetaEncoding
+    @available(*, deprecated, renamed: "Theta2Encoding")
+    typealias EncodingTheta2 = Theta2Encoding
+    @available(*, deprecated, renamed: "TooltipEncoding")
+    typealias EncodingTooltip = TooltipEncoding
+    @available(*, deprecated, renamed: "UrlEncoding")
+    typealias EncodingUrl = UrlEncoding
+    @available(*, deprecated, renamed: "XEncoding")
+    typealias EncodingX = XEncoding
+    @available(*, deprecated, renamed: "X2Encoding")
+    typealias EncodingX2 = X2Encoding
+    @available(*, deprecated, renamed: "XErrorEncoding")
+    typealias EncodingXError = XErrorEncoding
+    @available(*, deprecated, renamed: "XError2Encoding")
+    typealias EncodingXError2 = XError2Encoding
+    @available(*, deprecated, renamed: "YEncoding")
+    typealias EncodingY = YEncoding
+    @available(*, deprecated, renamed: "Y2Encoding")
+    typealias EncodingY2 = Y2Encoding
+    @available(*, deprecated, renamed: "YErrorEncoding")
+    typealias EncodingYError = YErrorEncoding
+    @available(*, deprecated, renamed: "YError2Encoding")
+    typealias EncodingYError2 = YError2Encoding
+}
+
+/// The old alias for `Field` aliases to `SourceColumnRef`
 @available(*, deprecated, renamed: "SourceColumnRef")
 public typealias Field = SourceColumnRef
 
@@ -29,7 +112,7 @@ public typealias ErrorBand = ErrorBandLiteral
 public typealias RepeatFacet = RepeatRef.LiteralRowOrColumnOrRepeatOrLayer
 
 /// The type of ancoding channel; x, y, shape, color, etc…
-public typealias EncodingChannel = FacetedEncoding.CodingKeys
+public typealias EncodingChannel = EncodingChannelMap.CodingKeys
 
 /// A VizSpec that stores its metadata as an unstructured JSON object.
 public typealias SimpleVizSpec = VizSpec<Bric.ObjType>

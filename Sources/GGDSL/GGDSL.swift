@@ -66,7 +66,7 @@ public protocol VizSpecElementType : VizLayerElementType {
 
 
 public protocol VizMarkType : VizSpecElementType {
-    var encodings: FacetedEncoding { get }
+    var encodings: EncodingChannelMap { get }
 }
 
 public protocol VizMarkDefType : Pure {
@@ -421,7 +421,7 @@ extension Viz : CustomDebugStringConvertible {
 @dynamicMemberLookup
 public struct VizMark<Def : VizMarkDefType> : VizMarkType, VizDSLType {
     public var markDef: Def
-    public var encodings: FacetedEncoding = FacetedEncoding()
+    public var encodings: EncodingChannelMap = EncodingChannelMap()
 
     /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
     public subscript<U>(dynamicMember keyPath: WritableKeyPath<Def, U>) -> (U) -> (Self) {
@@ -495,8 +495,8 @@ public extension VizMark where Def == ErrorBandDef {
 }
 
 public protocol VizEncodeType : VizDSLType {
-    /// Adds this encoding information to the given `FacetedEncoding`
-    func addEncoding(to encodings: inout FacetedEncoding)
+    /// Adds this encoding information to the given `EncodingChannelMap`
+    func addEncoding(to encodings: inout EncodingChannelMap)
 }
 
 //protocol VizEncodingFieldInitializable {
@@ -516,7 +516,7 @@ public protocol VizEncodeType : VizDSLType {
 
 public protocol VizEncodingChannelType : Pure, RawCodable {
     static var encodingChannel: EncodingChannel { get }
-    func addChannel(to encodings: inout FacetedEncoding)
+    func addChannel(to encodings: inout EncodingChannelMap)
 }
 
 @dynamicMemberLookup
@@ -537,7 +537,7 @@ extension VizEncode : VizLayerElementType {
 }
 
 extension VizEncode : VizEncodeType {
-    public func addEncoding(to encodings: inout FacetedEncoding) {
+    public func addEncoding(to encodings: inout EncodingChannelMap) {
         deriveChannel(def).addChannel(to: &encodings)
     }
 }
@@ -626,6 +626,29 @@ public struct VizLayer : VizSpecElementType, VizLayerType {
 //    }
 }
 
+public extension VizSpec {
+    /// Set the given specification a repeat along a single dimension.
+    ///
+    /// - Parameters:
+    ///   - repeatSpec: the specification to repeat
+    ///   - fields: the fields to apply to the repeat fields
+    ///   - repeatArrangement: the arrangement of the repeat (`.horizontal`, `.vertical`, `.wrap`, `.overlay`)
+    mutating func setRepeating(spec repeatSpec: Self, fields: [FieldName], arrangement repeatArrangement: LayerArrangement) {
+        self.arrangement = nil // .repeat
+        self.spec = .init(repeatSpec) // add it as the `repeat spec`
+        switch repeatArrangement {
+        case .overlay:
+            self.repeat = .init(LayerRepeatMapping(layer: fields))
+        case .horizontal:
+            self.repeat = .init(RepeatMapping(column: fields))
+        case .vertical:
+            self.repeat = .init(RepeatMapping(row: fields))
+        case .wrap:
+            self.repeat = .init(fields)
+        }
+    }
+}
+
 public struct VizRepeat : VizSpecElementType, VizLayerType {
     var repeatArrangement: LayerArrangement
     let repeatFields: [FieldNameRepresentable]
@@ -638,24 +661,12 @@ public struct VizRepeat : VizSpecElementType, VizLayerType {
     }
 
     public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
-        spec.arrangement = nil // .repeat
-        switch repeatArrangement {
-        case .overlay:
-            spec.repeat = .init(LayerRepeatMapping(layer: repeatFields.map(\.fieldName)))
-        case .horizontal:
-            spec.repeat = .init(RepeatMapping(column: repeatFields.map(\.fieldName)))
-        case .vertical:
-            spec.repeat = .init(RepeatMapping(row: repeatFields.map(\.fieldName)))
-        case .wrap:
-            spec.repeat = .init(repeatFields.map(\.fieldName))
-        }
-
         for element in makeElements() {
             // marks and layers create their own child specs; all others (e.g., encodings) are set directly in the parent
             if element is VizMarkType || element is VizLayerType {
                 var child = VizSpec<M>()
                 element.add(to: &child)
-                spec.sublayers.append(child)
+                spec.setRepeating(spec: child, fields: repeatFields.map(\.fieldName), arrangement: repeatArrangement)
             } else {
                 element.add(to: &spec)
             }
@@ -698,7 +709,7 @@ extension VizDSLType {
 
 // MARK: VizEncode: X
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingX {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingX {
     enum XChannel {
         /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
         case x
@@ -710,7 +721,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingX, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDef { def }
 
@@ -735,7 +746,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Ch
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingX, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionDatumDef { def }
 
@@ -791,7 +802,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Ch
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingX, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -833,7 +844,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX, Def == Ch
 
 // MARK: VizEncode: Y
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingY {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingY {
     enum YChannel {
         /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
         case y
@@ -845,7 +856,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingY, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDef { def }
 
@@ -870,7 +881,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Ch
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingY, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionDatumDef { def }
 
@@ -926,7 +937,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Ch
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingY, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -964,7 +975,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY, Def == Ch
 
 // MARK: VizEncode: x2
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingX2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingX2 {
     enum X2Channel {
         /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
         case x2
@@ -976,7 +987,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2 {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingX2, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -1001,7 +1012,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == C
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingX2, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -1057,7 +1068,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == C
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingX2, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -1098,7 +1109,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingX2, Def == C
 // MARK: VizEncode: y2
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingY2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingY2 {
     enum Y2Channel {
         /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
         case y2
@@ -1110,7 +1121,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2 {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingY2, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -1135,7 +1146,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == S
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingY2, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -1191,7 +1202,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == C
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingY2, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -1229,7 +1240,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingY2, Def == C
 
 // MARK: VizEncode: Color
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingColor {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingColor {
     enum ColorChannel {
         /// Color of the marks – either fill or stroke color based on the filled property of mark definition. By default, color represents fill color for "area", "bar", "tick", "text", "trail", "circle", and "square" / stroke color for "line" and "point".
         case color
@@ -1241,7 +1252,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColor {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingColor, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
@@ -1266,7 +1277,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def =
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingColor, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
 
@@ -1322,7 +1333,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def =
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingColor, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
 
@@ -1366,7 +1377,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColor, Def =
 
 // MARK: VizEncode: Fill
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingFill {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingFill {
     enum FillChannel {
         /// Fill color of the marks. Default value: If undefined, the default color depends on mark config’s color property.
         case fill
@@ -1378,7 +1389,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFill {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingFill, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
@@ -1403,7 +1414,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def ==
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingFill, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
 
@@ -1459,7 +1470,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def ==
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingFill, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
 
@@ -1507,7 +1518,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFill, Def ==
 
 // MARK: VizEncode: Stroke
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingStroke {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke {
     enum StrokeChannel {
         /// Stroke color of the marks. Default value: If undefined, the default color depends on mark config’s color property.
         case stroke
@@ -1519,7 +1530,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStroke {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
@@ -1544,7 +1555,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def 
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
 
@@ -1600,7 +1611,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def 
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStroke, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
 
@@ -1641,7 +1652,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStroke, Def 
 
 // MARK: VizEncode: size
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingSize {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingSize {
     enum SizeChannel {
         /// Size of the mark.
         ///
@@ -1659,7 +1670,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingSize, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -1684,7 +1695,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingSize, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -1740,7 +1751,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingSize, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -1763,7 +1774,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingSize, Def ==
 
 // MARK: VizEncode: strokeWidth
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWidth {
     enum StrokeWidthChannel {
         /// Stroke width of the marks.
         ///
@@ -1777,7 +1788,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth 
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWidth, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -1802,7 +1813,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWidth, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -1858,7 +1869,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeWidth, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -1881,7 +1892,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeWidth,
 
 // MARK: VizEncode: strokeOpacity
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacity {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpacity {
     enum StrokeOpacityChannel {
         /// Stroke opacity of the marks.
         case strokeOpacity
@@ -1893,7 +1904,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacity, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpacity, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -1918,7 +1929,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacity, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpacity, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -1974,7 +1985,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacity, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeOpacity, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -1997,7 +2008,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeOpacit
 
 // MARK: VizEncode: fillOpacity
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpacity {
     enum FillOpacityChannel {
         /// Fill opacity of the marks.
         case fillOpacity
@@ -2009,7 +2020,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity 
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpacity, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -2034,7 +2045,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpacity, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -2090,7 +2101,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingFillOpacity, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -2113,7 +2124,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFillOpacity,
 
 // MARK: VizEncode: opacity
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity {
     enum OpacityChannel {
         /// Opacity of the marks.
         case opacity
@@ -2125,7 +2136,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -2150,7 +2161,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -2206,7 +2217,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingOpacity, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -2229,7 +2240,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOpacity, Def
 
 // MARK: VizEncode: angle
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingAngle {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle {
     enum AngleChannel {
         /// Rotation angle of point and text marks.
         case angle
@@ -2241,7 +2252,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
@@ -2266,7 +2277,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
 
@@ -2322,7 +2333,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingAngle, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
@@ -2346,7 +2357,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingAngle, Def =
 // MARK: VizEncode: theta
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingTheta {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta {
     enum ThetaChannel {
         /// For arc marks, the arc length in radians if theta2 is not specified, otherwise the start arc angle. (A value of 0 indicates up or “north”, increasing values proceed clockwise.)
         /// For text marks, polar coordinate angle in radians.
@@ -2359,7 +2370,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDefBase { def }
 
@@ -2384,7 +2395,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionDatumDefBase { def }
 
@@ -2440,7 +2451,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -2477,7 +2488,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta, Def =
 
 // MARK: VizEncode: theta2
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2 {
     enum Theta2Channel {
         /// The end angle of arc marks in radians. A value of 0 indicates up or “north”, increasing values proceed clockwise.
         case theta2
@@ -2489,7 +2500,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2 {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -2514,7 +2525,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -2570,7 +2581,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTheta2, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -2607,7 +2618,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTheta2, Def 
 
 // MARK: VizEncode: radius
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingRadius {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius {
     enum RadiusChannel {
         /// The outer radius in pixels of arc marks.
         case radius
@@ -2619,7 +2630,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionFieldDefBase { def }
 
@@ -2644,7 +2655,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> PositionDatumDefBase { def }
 
@@ -2700,7 +2711,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -2738,7 +2749,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius, Def 
 
 // MARK: VizEncode: radius2
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2 {
     enum Radius2Channel {
         /// The inner radius in pixels of arc marks.
         case radius2
@@ -2750,7 +2761,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2 {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -2775,7 +2786,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -2831,7 +2842,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingRadius2, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
 
@@ -2869,7 +2880,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRadius2, Def
 
 // MARK: VizEncode: xError
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingXError {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingXError {
     enum XErrorChannel {
         case xError
     }
@@ -2880,7 +2891,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingXError, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingXError, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -2898,7 +2909,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError, Def 
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingXError, Def == ValueDefNumber {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingXError, Def == ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumber { def }
 
@@ -2916,7 +2927,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError, Def 
 // MARK: VizEncode: xError2
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingXError2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingXError2 {
     enum XError2Channel {
         case xError2
     }
@@ -2926,7 +2937,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError2 {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingXError2, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingXError2, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -2944,7 +2955,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError2, Def
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingXError2, Def == ValueDefNumber {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingXError2, Def == ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumber { def }
 
@@ -2961,7 +2972,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingXError2, Def
 // MARK: VizEncode: yError
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingYError {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingYError {
     enum YErrorChannel {
         case yError
     }
@@ -2971,7 +2982,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingYError, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingYError, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -2989,7 +3000,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError, Def 
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingYError, Def == ValueDefNumber {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingYError, Def == ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumber { def }
 
@@ -3005,7 +3016,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError, Def 
 // MARK: VizEncode: yError2
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingYError2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingYError2 {
     enum YError2Channel {
         case yError2
     }
@@ -3015,7 +3026,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError2 {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingYError2, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingYError2, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -3033,7 +3044,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError2, Def
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingYError2, Def == ValueDefNumber {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingYError2, Def == ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefNumber { def }
 
@@ -3049,7 +3060,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingYError2, Def
 // MARK: VizEncode: column
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingColumn {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingColumn {
     enum ColumnChannel {
         /// Facet, row and column are special encoding channels that facets single plots into trellis plots (or small multiples).
         case column
@@ -3059,7 +3070,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColumn {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingColumn, Def == RowColumnEncodingFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingColumn, Def == RowColumnEncodingFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> RowColumnEncodingFieldDef { def }
 
@@ -3079,7 +3090,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingColumn, Def 
 // MARK: VizEncode: row
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingRow {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingRow {
     enum RowChannel {
         /// Facet, row and column are special encoding channels that facets single plots into trellis plots (or small multiples).
         case row
@@ -3089,7 +3100,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRow {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingRow, Def == RowColumnEncodingFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingRow, Def == RowColumnEncodingFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> RowColumnEncodingFieldDef { def }
 
@@ -3112,7 +3123,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingRow, Def == 
 // MARK: VizEncode: facet
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingFacet {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingFacet {
     enum FacetChannel {
         /// Facet, row and column are special encoding channels that facets single plots into trellis plots (or small multiples).
         case facet
@@ -3122,7 +3133,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFacet {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingFacet, Def == FacetEncodingFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingFacet, Def == FacetEncodingFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FacetEncodingFieldDef { def }
 
@@ -3142,7 +3153,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingFacet, Def =
 
 // MARK: VizEncode: latitude
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude {
     enum LatitudeChannel {
         /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
         case latitude
@@ -3155,7 +3166,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, Def == LatLongFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude, Def == LatLongFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> LatLongFieldDef { def }
 
@@ -3180,7 +3191,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, De
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -3239,7 +3250,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude, De
 // MARK: VizEncode: longitude
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude {
     enum LongitudeChannel {
         /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
         case longitude
@@ -3249,7 +3260,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> LatLongFieldDef { def }
 
@@ -3274,7 +3285,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, D
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -3334,7 +3345,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude, D
 // MARK: VizEncode: latitude2
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude2 {
     enum Latitude2Channel {
         /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
         case latitude2
@@ -3346,7 +3357,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2 {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude2, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -3371,7 +3382,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, D
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLatitude2, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -3430,7 +3441,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLatitude2, D
 // MARK: VizEncode: longitude2
 
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude2 {
     enum Longitude2Channel {
         /// Longitude and latitude channels can be used to encode geographic coordinate data via a projection. In addition, longitude2 and latitude2 can specify the span of geographically projected ranged area, bar, rect, and rule.
         case longitude2
@@ -3442,7 +3453,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2 {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude2, Def == SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> SecondaryFieldDef { def }
 
@@ -3467,7 +3478,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, 
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingLongitude2, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> DatumDef { def }
 
@@ -3526,7 +3537,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingLongitude2, 
 
 // MARK: VizEncode: href
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingHref {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingHref {
     enum HrefChannel {
         /// A URL to load upon mouse click.
         case href
@@ -3537,7 +3548,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingHref {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingHref, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
 
@@ -3561,7 +3572,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def ==
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def == StringValueDefWithCondition {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingHref, Def == StringValueDefWithCondition {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefStringNull { def }
 
@@ -3590,7 +3601,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingHref, Def ==
 
 // MARK: VizEncode: description
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingDescription {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingDescription {
     enum DescriptionChannel {
         /// A text description of this mark for ARIA accessibility. For SVG output the "aria-label" attribute will be set to this description.
         case description
@@ -3601,7 +3612,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDescription 
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingDescription, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingDescription, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
 
@@ -3625,7 +3636,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDescription,
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingDescription, Def == StringValueDefWithCondition {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingDescription, Def == StringValueDefWithCondition {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefStringNull { def }
 
@@ -3653,7 +3664,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDescription,
 
 // MARK: VizEncode: url
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingUrl {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingUrl {
     enum UrlChannel {
         case url
     }
@@ -3663,7 +3674,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingUrl {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingUrl, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
 
@@ -3687,7 +3698,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == 
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == Channel.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingUrl, Def == Channel.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> StringValueDefWithCondition { def }
 
@@ -3716,7 +3727,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingUrl, Def == 
 
 // MARK: VizEncode: strokeDash
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDash {
     enum StrokeDashChannel {
         /// Stroke dash of the marks.
         ///
@@ -3731,7 +3742,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash {
 
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumberArray { def }
 
@@ -3754,7 +3765,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, 
     }
 }
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumberArray { def }
 
@@ -3809,7 +3820,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, 
     }
 }
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingStrokeDash, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumberArray { def }
 
@@ -3831,7 +3842,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingStrokeDash, 
 
 // MARK: VizEncode: key
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingKey {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingKey {
     enum KeyChannel {
         case key
     }
@@ -3840,7 +3851,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingKey {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingKey, Def == Channel.RawValue {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingKey, Def == Channel.RawValue {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> TypedFieldDef { def }
 
@@ -3866,7 +3877,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingKey, Def == 
 
 // MARK: VizEncode: shape
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingShape {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingShape {
     enum ShapeChannel {
         /// Shape of the mark.
         ///
@@ -3883,7 +3894,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingShape, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefTypeForShapeStringNull { def }
 
@@ -3908,7 +3919,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def =
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingShape, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefStringNull { def }
 
@@ -3964,7 +3975,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def =
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingShape, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefTypeForShapeStringNull { def }
 
@@ -3980,7 +3991,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingShape, Def =
 
 // MARK: VizEncode: detail
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingDetail {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingDetail {
     enum DetailChannel {
         case detail
     }
@@ -3989,7 +4000,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDetail {
     typealias ChannelMultiFieldType = Channel.RawValue.T2 // [TypedFieldDef]
 }
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingDetail, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingDetail, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> TypedFieldDef { def }
 
@@ -4015,7 +4026,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingDetail, Def 
 
 // MARK: VizEncode: order
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingOrder {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingOrder {
     enum OrderChannel {
         case order
     }
@@ -4026,7 +4037,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOrder {
 
 }
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingOrder, Def == Channel.RawValue.T1.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingOrder, Def == Channel.RawValue.T1.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> OrderFieldDef { def }
 
@@ -4049,7 +4060,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOrder, Def =
     }
 }
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingOrder, Def == Channel.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingOrder, Def == Channel.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> OrderValueDef { def }
 
@@ -4070,7 +4081,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingOrder, Def =
 
 // MARK: VizEncode: text
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingText {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingText {
     enum TextChannel {
         case text
     }
@@ -4081,7 +4092,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingText {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingText, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingText, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefText { def }
 
@@ -4106,7 +4117,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingText, Def ==
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingText, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingText, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringDatumDefText { def }
 
@@ -4162,7 +4173,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingText, Def ==
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == FacetedEncoding.EncodingText, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingText, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> ValueDefWithConditionStringFieldDefText { def }
 
@@ -4190,7 +4201,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingText, Def ==
 
 // MARK: VizEncode: tooltip
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip {
     enum TooltipChannel {
         case tooltip
     }
@@ -4201,7 +4212,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip {
     typealias ChannelMultiFieldType = Channel.RawValue.T2.T3
 }
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip, Def == Channel.RawValue.T2.T1 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip, Def == Channel.RawValue.T2.T1 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> StringFieldDefWithCondition { def }
 
@@ -4224,7 +4235,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip, Def
     }
 }
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip, Def == Channel.RawValue.T2.T2 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip, Def == Channel.RawValue.T2.T2 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> StringValueDefWithCondition { def }
 
@@ -4250,7 +4261,7 @@ public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip, Def
     }
 }
 
-public extension VizEncode where Channel == FacetedEncoding.EncodingTooltip, Def == Channel.RawValue.T2.T3 {
+public extension VizEncode where Channel == EncodingChannelMap.EncodingTooltip, Def == Channel.RawValue.T2.T3 {
     /// Validate the type name to guard against future re-aliasing
     private func toDef(_ def: Def) -> [StringFieldDef] { def }
 
@@ -4326,10 +4337,10 @@ private func emptyConstructor(channel: EncodingChannel) -> VizEncodeType {
 // MARK: VizEncodingChannelType Multi-Field
 
 
-extension FacetedEncoding.EncodingDetail : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingDetail : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .detail
 
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         // when adding to an encodings that already has a detail field, we append the new encoding to the existing one
         let defs = (encodings.detail?.rawValue.array ?? []) + self.rawValue.array
 
@@ -4342,9 +4353,9 @@ extension FacetedEncoding.EncodingDetail : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingOrder : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingOrder : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .order
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         switch self.rawValue {
         case .v1(let oneOrManyFields):
             // merge multiple order fields into a single encoding
@@ -4366,9 +4377,9 @@ extension FacetedEncoding.EncodingOrder : VizEncodingChannelType {
 }
 
 
-extension FacetedEncoding.EncodingTooltip : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingTooltip : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .tooltip
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.tooltip != nil {
             // TODO: in theory, we could handle the special case of one tooltip with an array of fields being added to another tooltip with an array of fields…
             warnReplaceEncoding(self)
@@ -4381,9 +4392,9 @@ extension FacetedEncoding.EncodingTooltip : VizEncodingChannelType {
 
 // MARK: VizEncodingChannelType Single-Field
 
-extension FacetedEncoding.EncodingText : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingText : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .text
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.text != nil {
             warnReplaceEncoding(self)
         }
@@ -4391,9 +4402,9 @@ extension FacetedEncoding.EncodingText : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingAngle : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingAngle : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .angle
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.angle != nil {
             warnReplaceEncoding(self)
         }
@@ -4401,9 +4412,9 @@ extension FacetedEncoding.EncodingAngle : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingColor : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingColor : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .color
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.color != nil {
             warnReplaceEncoding(self)
         }
@@ -4411,9 +4422,9 @@ extension FacetedEncoding.EncodingColor : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingDescription : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingDescription : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .description
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.description != nil {
             warnReplaceEncoding(self)
         }
@@ -4421,9 +4432,9 @@ extension FacetedEncoding.EncodingDescription : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingFill : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingFill : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .fill
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.fill != nil {
             warnReplaceEncoding(self)
         }
@@ -4431,9 +4442,9 @@ extension FacetedEncoding.EncodingFill : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingFillOpacity : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingFillOpacity : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .fillOpacity
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.fillOpacity != nil {
             warnReplaceEncoding(self)
         }
@@ -4441,9 +4452,9 @@ extension FacetedEncoding.EncodingFillOpacity : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingHref : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingHref : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .href
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.href != nil {
             warnReplaceEncoding(self)
         }
@@ -4451,9 +4462,9 @@ extension FacetedEncoding.EncodingHref : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingLatitude : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingLatitude : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .latitude
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.latitude != nil {
             warnReplaceEncoding(self)
         }
@@ -4461,9 +4472,9 @@ extension FacetedEncoding.EncodingLatitude : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingLatitude2 : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingLatitude2 : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .latitude2
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.latitude2 != nil {
             warnReplaceEncoding(self)
         }
@@ -4471,9 +4482,9 @@ extension FacetedEncoding.EncodingLatitude2 : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingLongitude : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingLongitude : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .longitude
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.longitude != nil {
             warnReplaceEncoding(self)
         }
@@ -4481,9 +4492,9 @@ extension FacetedEncoding.EncodingLongitude : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingLongitude2 : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingLongitude2 : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .longitude2
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.longitude2 != nil {
             warnReplaceEncoding(self)
         }
@@ -4491,9 +4502,9 @@ extension FacetedEncoding.EncodingLongitude2 : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingOpacity : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingOpacity : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .opacity
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.opacity != nil {
             warnReplaceEncoding(self)
         }
@@ -4502,9 +4513,9 @@ extension FacetedEncoding.EncodingOpacity : VizEncodingChannelType {
 }
 
 
-extension FacetedEncoding.EncodingRadius : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingRadius : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .radius
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.radius != nil {
             warnReplaceEncoding(self)
         }
@@ -4512,9 +4523,9 @@ extension FacetedEncoding.EncodingRadius : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingRadius2 : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingRadius2 : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .radius2
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.radius2 != nil {
             warnReplaceEncoding(self)
         }
@@ -4522,9 +4533,9 @@ extension FacetedEncoding.EncodingRadius2 : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingShape : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingShape : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .shape
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.shape != nil {
             warnReplaceEncoding(self)
         }
@@ -4532,9 +4543,9 @@ extension FacetedEncoding.EncodingShape : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingSize : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingSize : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .size
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.size != nil {
             warnReplaceEncoding(self)
         }
@@ -4542,9 +4553,9 @@ extension FacetedEncoding.EncodingSize : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingStroke : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingStroke : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .stroke
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.stroke != nil {
             warnReplaceEncoding(self)
         }
@@ -4552,9 +4563,9 @@ extension FacetedEncoding.EncodingStroke : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingStrokeDash : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingStrokeDash : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeDash
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.strokeDash != nil {
             warnReplaceEncoding(self)
         }
@@ -4562,9 +4573,9 @@ extension FacetedEncoding.EncodingStrokeDash : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingStrokeOpacity : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingStrokeOpacity : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeOpacity
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.strokeOpacity != nil {
             warnReplaceEncoding(self)
         }
@@ -4572,9 +4583,9 @@ extension FacetedEncoding.EncodingStrokeOpacity : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingStrokeWidth : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingStrokeWidth : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeWidth
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.strokeWidth != nil {
             warnReplaceEncoding(self)
         }
@@ -4582,9 +4593,9 @@ extension FacetedEncoding.EncodingStrokeWidth : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingTheta : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingTheta : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .theta
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.theta != nil {
             warnReplaceEncoding(self)
         }
@@ -4592,9 +4603,9 @@ extension FacetedEncoding.EncodingTheta : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingTheta2 : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingTheta2 : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .theta2
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.theta2 != nil {
             warnReplaceEncoding(self)
         }
@@ -4603,9 +4614,9 @@ extension FacetedEncoding.EncodingTheta2 : VizEncodingChannelType {
 }
 
 
-extension FacetedEncoding.EncodingUrl : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingUrl : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .url
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.url != nil {
             warnReplaceEncoding(self)
         }
@@ -4613,9 +4624,9 @@ extension FacetedEncoding.EncodingUrl : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingX : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingX : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .x
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.x != nil {
             warnReplaceEncoding(self)
         }
@@ -4623,9 +4634,9 @@ extension FacetedEncoding.EncodingX : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingX2 : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingX2 : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .x2
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.x2 != nil {
             warnReplaceEncoding(self)
         }
@@ -4633,9 +4644,9 @@ extension FacetedEncoding.EncodingX2 : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingXError : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingXError : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .xError
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.xError != nil {
             warnReplaceEncoding(self)
         }
@@ -4643,9 +4654,9 @@ extension FacetedEncoding.EncodingXError : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingXError2 : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingXError2 : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .xError2
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.xError2 != nil {
             warnReplaceEncoding(self)
         }
@@ -4653,9 +4664,9 @@ extension FacetedEncoding.EncodingXError2 : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingY : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingY : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .y
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.y != nil {
             warnReplaceEncoding(self)
         }
@@ -4663,9 +4674,9 @@ extension FacetedEncoding.EncodingY : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingY2 : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingY2 : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .y2
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.y2 != nil {
             warnReplaceEncoding(self)
         }
@@ -4673,9 +4684,9 @@ extension FacetedEncoding.EncodingY2 : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingYError : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingYError : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .yError
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.yError != nil {
             warnReplaceEncoding(self)
         }
@@ -4683,9 +4694,9 @@ extension FacetedEncoding.EncodingYError : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingYError2 : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingYError2 : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .yError2
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.yError2 != nil {
             warnReplaceEncoding(self)
         }
@@ -4693,9 +4704,9 @@ extension FacetedEncoding.EncodingYError2 : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingRow : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingRow : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .row
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.row != nil {
             warnReplaceEncoding(self)
         }
@@ -4703,9 +4714,9 @@ extension FacetedEncoding.EncodingRow : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingColumn : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingColumn : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .column
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.column != nil {
             warnReplaceEncoding(self)
         }
@@ -4713,9 +4724,9 @@ extension FacetedEncoding.EncodingColumn : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingFacet : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingFacet : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .facet
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.facet != nil {
             warnReplaceEncoding(self)
         }
@@ -4723,9 +4734,9 @@ extension FacetedEncoding.EncodingFacet : VizEncodingChannelType {
     }
 }
 
-extension FacetedEncoding.EncodingKey : VizEncodingChannelType {
+extension EncodingChannelMap.EncodingKey : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .key
-    public func addChannel(to encodings: inout FacetedEncoding) {
+    public func addChannel(to encodings: inout EncodingChannelMap) {
         if encodings.key != nil {
             warnReplaceEncoding(self)
         }

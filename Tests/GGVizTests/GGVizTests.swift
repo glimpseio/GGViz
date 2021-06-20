@@ -72,8 +72,8 @@ final class GGVizTests: XCTestCase {
         spec.title = .init(.init("Hello GGViz!"))
 
         spec.encoding = .init(
-            x: .init(FacetedEncoding.X(PositionFieldDef(field: .init(FieldName("A")), title: .init(.init("Alpha"))))),
-            y: .init(FacetedEncoding.Y(PositionFieldDef(field: .init(FieldName("B")), title: .init(.init("Bravo")), type: .quantitative))))
+            x: .init(EncodingChannelMap.X(PositionFieldDef(field: .init(FieldName("A")), title: .init(.init("Alpha"))))),
+            y: .init(EncodingChannelMap.Y(PositionFieldDef(field: .init(FieldName("B")), title: .init(.init("Bravo")), type: .quantitative))))
 
         return spec
     }

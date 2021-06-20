@@ -370,51 +370,21 @@ final class GGDSLTests: XCTestCase {
     func testVizRepeat() throws {
         try check(viz: SimpleViz {
             VizRepeat(.horizontal, fields: ["A", "B"]) { hfield in
-//                VizTransform(.aggregate, op: .mean, field: "Acceleration") { mean_acc in
-                    VizRepeat(.vertical, fields: ["C", "D"]) { vfield in
-                        VizMark(.bar) {
-                            VizEncode(.x, repeat: hfield)
-                            VizEncode(.y, repeat: vfield)
-//                            VizEncode(.color, field: mean_acc)
-                        }
+                VizRepeat(.vertical, fields: ["C", "D"]) { vfield in
+                    VizMark(.bar) {
+                        VizEncode(.x, repeat: hfield)
+                        VizEncode(.y, repeat: vfield)
                     }
-//                }
+                }
             }
         }, againstJSON: """
         {
-          "repeat": {
-            "column": [
-              "A",
-              "B"
-            ]
-          },
-          "layer": [
-            {
-              "repeat": {
-                "row": [
-                  "C",
-                  "D"
-                ]
-              },
-              "layer": [
-                {
-                  "mark": "bar",
-                  "encoding": {
-                    "x": {
-                      "field": {
-                        "repeat": "column"
-                      }
-                    },
-                    "y": {
-                      "field": {
-                        "repeat": "row"
-                      }
-                    }
-                  }
+            "repeat": { "column": ["A","B"] }, "spec": {
+                "repeat": {"row": ["C","D"] }, "spec": {
+                    "mark": "bar",
+                    "encoding": { "x": { "field": { "repeat": "column" } }, "y": { "field": { "repeat": "row" } } }
                 }
-              ]
             }
-          ]
         }
         """)
     }
