@@ -49,16 +49,20 @@ public typealias Exprable<T> = OneOf2<T, ExprRef>
 /// The arrangement of sublayers in this `VizSpec`.
 public enum LayerArrangement : CaseIterable, Hashable {
     case overlay
-    case hconcat
-    case vconcat
-    case concat
-    case `repeat`
+    case horizontal
+    case vertical
+    case wrap
 }
 
 public extension LayerArrangement {
-    static var horizontal = Self.hconcat
-    static var vertical = Self.vconcat
-    static var wrap = Self.concat
+    @available(*, renamed: "horizontal")
+    static let hconcat = Self.horizontal
+    @available(*, renamed: "vertical")
+    static let vconcat = Self.vertical
+    @available(*, renamed: "wrap")
+    static let concat = Self.wrap
+    @available(*, unavailable)
+    static let `repeat` = Self.overlay
 }
 
 public extension LayerArrangement {
@@ -67,13 +71,11 @@ public extension LayerArrangement {
         switch self {
         case .overlay:
             return RepeatRef(repeat: .layer)
-        case .hconcat:
+        case .horizontal:
             return RepeatRef(repeat: .column)
-        case .vconcat:
+        case .vertical:
             return RepeatRef(repeat: .row)
-        case .concat:
-            return RepeatRef(repeat: .repeat)
-        case .repeat:
+        case .wrap:
             return RepeatRef(repeat: .repeat)
         }
     }
@@ -84,10 +86,9 @@ public extension VizSpec {
     @inlinable var arrangements: [LayerArrangement] {
         [
             self.layer != nil ? LayerArrangement.overlay : nil,
-            self.concat != nil ? LayerArrangement.concat : nil,
-            self.hconcat != nil ? LayerArrangement.hconcat : nil,
-            self.vconcat != nil ? LayerArrangement.vconcat : nil,
-            self.spec != nil ? LayerArrangement.repeat : nil,
+            self.concat != nil ? LayerArrangement.wrap : nil,
+            self.hconcat != nil ? LayerArrangement.horizontal : nil,
+            self.vconcat != nil ? LayerArrangement.vertical : nil,
         ]
         .compactMap({ $0 })
     }
@@ -99,7 +100,7 @@ public extension VizSpec {
     ///
     /// This property is derived solely from whether the properties
     /// `layer`, `hconcat`, `vconcat`, `concat`, and `spec` are set or not.
-    @inlinable var arrangement: LayerArrangement {
+    @inlinable var arrangement: LayerArrangement? {
         get {
             self.arrangements.first ?? .overlay // fallback to the overlay default
         }
@@ -108,14 +109,16 @@ public extension VizSpec {
             let subs = self.sublayers
             // make sure all other layers are cleared before assigning; both because it is invalid to have
             // more than one sublayer field, but also because this is how we calculate the `arrangement` field.
-            (self.layer, self.concat, self.hconcat, self.vconcat, self.spec) = (nil, nil, nil, nil, nil)
+            (self.layer, self.concat, self.hconcat, self.vconcat) = (nil, nil, nil, nil)
 
             switch newValue {
             case .overlay: self.layer = subs
-            case .hconcat: self.hconcat = subs
-            case .vconcat: self.vconcat = subs
-            case .concat: self.concat = subs
-            case .repeat: self.spec = subs.first.flatMap({ .init($0) }) // we drop all but the first element here
+            case .horizontal: self.hconcat = subs
+            case .vertical: self.vconcat = subs
+            case .wrap: self.concat = subs
+            case .none: break; // no change
+
+            //case .repeat: self.spec = subs.first.flatMap({ .init($0) }) // we drop all but the first element here
             }
         }
     }
@@ -153,14 +156,15 @@ public extension VizSpec {
             let arrangement = self.arrangement
             // make sure all other layers are cleared before assigning; both because it is invalid to have
             // more than one sublayer field, but also because this is how we calculate the `arrangement` field.
-            (self.layer, self.concat, self.hconcat, self.vconcat, self.spec) = (nil, nil, nil, nil, nil)
+            (self.layer, self.concat, self.hconcat, self.vconcat) = (nil, nil, nil, nil)
             if subs.isEmpty { return } // clear out all sublayers
             switch arrangement {
             case .overlay: self.layer = subs
-            case .concat: self.concat = subs
-            case .hconcat: self.hconcat = subs
-            case .vconcat: self.vconcat = subs
-            case .repeat: self.spec = subs.first.flatMap({ .init($0) }) // repeat can only be a single element
+            case .wrap: self.concat = subs
+            case .horizontal: self.hconcat = subs
+            case .vertical: self.vconcat = subs
+            case .none: break
+            //case .repeat: self.spec = subs.first.flatMap({ .init($0) }) // repeat can only be a single element
             }
         }
     }
@@ -185,11 +189,11 @@ public extension VizSpec {
             return 0
         } else {
             switch arrangement {
+            case .none: return 1
             case .overlay: return nil
-            case .hconcat: return nil
-            case .vconcat: return nil
-            case .concat: return nil
-            case .repeat: return 1
+            case .horizontal: return nil
+            case .vertical: return nil
+            case .wrap: return nil
             }
         }
     }

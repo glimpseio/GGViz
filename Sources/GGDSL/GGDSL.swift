@@ -631,24 +631,22 @@ public struct VizRepeat : VizSpecElementType, VizLayerType {
     let repeatFields: [FieldNameRepresentable]
     let makeElements: () -> [VizLayerElementType]
 
-    public init(_ repeatArrangement: LayerArrangement = .overlay, fields repeatFields: [FieldNameRepresentable], @VizLayerElementArrayBuilder _ makeElements: @escaping (_ ref: RepeatRef) -> [VizLayerElementType]) {
+    public init(_ repeatArrangement: LayerArrangement, fields repeatFields: [FieldNameRepresentable], @VizLayerElementArrayBuilder _ makeElements: @escaping (_ ref: RepeatRef) -> [VizLayerElementType]) {
         self.repeatArrangement = repeatArrangement
         self.repeatFields = repeatFields
         self.makeElements = { makeElements(repeatArrangement.repeatRef) }
     }
 
     public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
-        spec.arrangement = .repeat
+        spec.arrangement = nil // .repeat
         switch repeatArrangement {
         case .overlay:
             spec.repeat = .init(LayerRepeatMapping(layer: repeatFields.map(\.fieldName)))
-        case .hconcat:
+        case .horizontal:
             spec.repeat = .init(RepeatMapping(column: repeatFields.map(\.fieldName)))
-        case .vconcat:
+        case .vertical:
             spec.repeat = .init(RepeatMapping(row: repeatFields.map(\.fieldName)))
-        case .concat:
-            spec.repeat = .init(repeatFields.map(\.fieldName))
-        case .repeat: // ???
+        case .wrap:
             spec.repeat = .init(repeatFields.map(\.fieldName))
         }
 
