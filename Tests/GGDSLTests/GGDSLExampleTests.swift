@@ -178,6 +178,12 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_pie_pyramid() throws {
+
+//        VizScale()
+//            .scale(domain: "Sky", range: "#416D9D")
+//            .scale(domain: "Shady side of a pyramid", range: "#674028")
+//            .scale(domain: "Sunny side of a pyramid", range: "#DEAC58")
+
         try check(viz: SimpleViz {
             VizMark(.arc) {
                 VizEncode(.theta, field: "value")
@@ -191,6 +197,11 @@ final class GGDSLExampleTests: XCTestCase {
                 VizEncode(.order, field: "order")
             }.outerRadius(.init(80))
         }
+        .data(.init(DataProvider(.init(DataSource(.init(InlineData(values: InlineDataset(.init([
+            ["category": "Sky", "value": 75, "order": 3],
+            ["category": "Shady side of a pyramid", "value": 10, "order": 1],
+            ["category": "Sunny side of a pyramid", "value": 15, "order": 2],
+        ])))))))))
         .description("Reproducing http://robslink.com/SAS/democd91/pyramid_pie.htm")
         .view(ViewBackground(stroke: .init(.null))), againstJSON: """
 {

@@ -4,6 +4,9 @@ import GGDSL
 typealias SimpleViz = Viz<Bric.ObjType>
 
 extension XCTestCase {
+    /// Checks that the given viz builder matches the JSON spec.
+    ///
+    /// - Note: Empty specs are skipped by throwing `XCTSkip`
     func check<M: Pure>(viz: Viz<M>, againstJSON json: String, file: StaticString = #file, line: UInt = #line, function: StaticString = #function) throws {
         if viz.spec == Viz({ }).spec {
             throw XCTSkip("skip empty check for \(function)", file: file, line: line)
@@ -11,13 +14,6 @@ extension XCTestCase {
 
         var checkSpec = try VizSpec<M>.loadFromJSON(data: json.data(using: .utf8) ?? Data())
         checkSpec.schema = nil // schema property is optional
-
-        if viz.spec.data != nil {
-            return XCTFail("data not yet supported in spec")
-        } else {
-            checkSpec.data = nil // we don't yet support data in the DSL
-        }
-
 
         // first check if they both to serialize to the same JSON…
         XCTAssertEqual("\n" + viz.debugDescription + "\n", "\n" + checkSpec.jsonDebugDescription + "\n")

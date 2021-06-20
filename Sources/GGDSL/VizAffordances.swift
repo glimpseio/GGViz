@@ -15,8 +15,8 @@ public typealias VizSpecMeta = Pure
 /// A source of data for a layer
 public typealias VizDataSource = Nullable<DataProvider> // e.g., TopLevelUnitSpec.DataChoice
 
-/// A type that either be a static value (typically a number or string) or the result of a dynamic [expression](https://vega.github.io/vega/docs/expressions/)
-public typealias Exprable<T> = OneOf2<T, ExprRef>
+/// A type that either be a static value (typically a number or string) or the result of a dynamic [expression](https://vega.github.io/vega/docs/expressions/).
+public typealias Exprable<T> = OneOf<T>.Or<ExprRef>
 
 
 // MARK: Layer Arrangement
