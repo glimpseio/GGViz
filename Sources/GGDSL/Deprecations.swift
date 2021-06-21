@@ -1,5 +1,30 @@
 import GGSpec
 
+///// The old alias for the PrimitiveMarkType
+//@available(*, deprecated, renamed: "PrimitiveMarkType")
+//public typealias Mark = PrimitiveMarkType
+//
+///// The old alias for the AxisDef
+//@available(*, deprecated, renamed: "AxisDef")
+//public typealias Axis = AxisDef
+//
+///// The old alias for the LegendDef
+//@available(*, deprecated, renamed: "LegendDef")
+//public typealias Legend = LegendDef
+//
+///// The old alias for the HeaderDef
+//@available(*, deprecated, renamed: "HeaderDef")
+//public typealias Header = HeaderDef
+//
+///// The old alias for the ScaleDef
+//@available(*, deprecated, renamed: "ScaleDef")
+//public typealias Scale = ScaleDef
+//
+///// The old alias for `Transform`
+//@available(*, deprecated, renamed: "DataTransformation")
+//public typealias Transform = DataTransformation
+
+
 /// The old alias for `FacetedEncoding` aliases to `EncodingChannelMap`
 @available(*, deprecated, renamed: "EncodingChannelMap")
 public typealias FacetedEncoding = EncodingChannelMap
@@ -87,33 +112,9 @@ public extension EncodingChannelMap {
 @available(*, deprecated, renamed: "SourceColumnRef")
 public typealias Field = SourceColumnRef
 
-/// The old alias for `Transform`
-@available(*, deprecated, renamed: "DataTransformation")
-public typealias Transform = DataTransformation
-
 /// The old alias for the `Config`
 @available(*, deprecated, renamed: "ConfigTheme")
 public typealias Config = ConfigTheme
-
-///// The old alias for the PrimitiveMarkType
-//@available(*, deprecated, renamed: "PrimitiveMarkType")
-//public typealias Mark = PrimitiveMarkType
-//
-///// The old alias for the AxisDef
-//@available(*, deprecated, renamed: "AxisDef")
-//public typealias Axis = AxisDef
-//
-///// The old alias for the LegendDef
-//@available(*, deprecated, renamed: "LegendDef")
-//public typealias Legend = LegendDef
-//
-///// The old alias for the HeaderDef
-//@available(*, deprecated, renamed: "HeaderDef")
-//public typealias Header = HeaderDef
-//
-///// The old alias for the ScaleDef
-//@available(*, deprecated, renamed: "ScaleDef")
-//public typealias Scale = ScaleDef
 
 /// The old alias for the TemporalUnit
 @available(*, deprecated, renamed: "TemporalUnit")

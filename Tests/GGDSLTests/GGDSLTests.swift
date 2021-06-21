@@ -8,7 +8,7 @@ extension XCTestCase {
     ///
     /// - Note: Empty specs are skipped by throwing `XCTSkip`
     func check<M: Pure>(viz: Viz<M>, againstJSON json: String, file: StaticString = #file, line: UInt = #line, function: StaticString = #function) throws {
-        if viz.spec == Viz({ }).spec {
+        if viz.rawValue == Viz().rawValue {
             throw XCTSkip("skip empty check for \(function)", file: file, line: line)
         }
 
@@ -19,33 +19,16 @@ extension XCTestCase {
         XCTAssertEqual("\n" + viz.debugDescription + "\n", "\n" + checkSpec.jsonDebugDescription + "\n")
         if viz.debugDescription == checkSpec.jsonDebugDescription {
             // … then check for actual equality of thw structure
-            XCTAssertEqual(viz.spec, checkSpec)
+            XCTAssertEqual(viz.rawValue, checkSpec)
         }
     }
 }
 
 final class GGDSLTests: XCTestCase {
 
-    func testLegends() {
-        let l1 = LegendDef(
-            columns: .init(1),
-            legendX: .init(200),
-            legendY: .init(80)
-//            orient: .init(.none)
-//            title: .init(.null)
-        )
 
-        let l2 = VizLegend()
-            .columns(1)
-            .legendX(200)
-            .legendY(80)
-//            .orient(.none)
-//            .title(.null)
-
-        XCTAssertEqual(l1, l2.rawValue)
-    }
-
-    func testScales() {
+    func testScales() throws {
+        throw XCTSkip()
 
 //        VizScale()
 //            .scale(domain: "Sky", range: "#416D9D")
@@ -54,19 +37,59 @@ final class GGDSLTests: XCTestCase {
 
     }
 
-    func testAxes() {
-
+    func testLegends() throws {
+        throw XCTSkip()
     }
 
-    func testVizMarkSimple() throws {
+    func testAxes() throws {
         try check(viz: SimpleViz {
-            VizMark(.square)
+            Mark(.rect) {
+                Encode(.x, field: "A") {
+                    Guide(.axis)
+                        .title(.init("A Axis"))
+                }
+            }
+        }, againstJSON: """
+        {
+            "mark": "rect",
+            "encoding": {
+                "x": {
+                    "field": "A"
+                }
+            }
+        }
+        """)
+    }
+
+    /// Verify that the raw legend is created by the builder DSL
+    func testLegendValues() {
+        let l1 = LegendDef(
+            columns: .init(1),
+            legendX: .init(200),
+            legendY: .init(80),
+            orient: .init(.none),
+            title: .init(.null)
+        )
+
+        let l2 = VizGuide(.legend)
+            .columns(1)
+            .legendX(200)
+            .legendY(80)
+            .orient(LegendOrient.none)
+            .title(.null)
+
+        XCTAssertEqual(l1, l2.rawValue)
+    }
+
+    func testMarkSimple() throws {
+        try check(viz: SimpleViz {
+            Mark(.square)
         }, againstJSON: """
             {"mark":"square"}
         """)
     }
 
-    func testVizMarkCompound() throws {
+    func testMarkCompound() throws {
         try check(viz: SimpleViz {
             VizMark(.boxplot)
         }, againstJSON: """
@@ -74,10 +97,10 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizTransform() throws {
+    func testTransform() throws {
         try check(viz: SimpleViz {
-            VizTransform(.sample) {
-                VizMark(.square) {
+            Transform(.sample) {
+                Mark(.square) {
                 }
             }
         }, againstJSON: """
@@ -90,8 +113,8 @@ final class GGDSLTests: XCTestCase {
             """)
 
         try check(viz: SimpleViz {
-            VizTransform(.loess, field: "A", on: "B") {
-                VizMark(.square)
+            Transform(.loess, field: "A", on: "B") {
+                Mark(.square)
             }
         }, againstJSON: """
             {
@@ -103,10 +126,12 @@ final class GGDSLTests: XCTestCase {
             """)
 
         try check(viz: SimpleViz {
-            VizTransform(.density, field: "A", densityOutput: "DENSE") { sample, value in
-                VizMark(.square) {
-                    VizEncode(.x, field: sample)
-                    VizEncode(.y, field: value)
+            Transform(.density, field: "A", densityOutput: "DENSE") { sample, value in
+                Mark(.square) {
+                    Encode(.x, field: sample) {
+                        Guide(.axis)
+                    }
+                    Encode(.y, field: value)
                 }
             }
         }, againstJSON: """
@@ -114,20 +139,20 @@ final class GGDSLTests: XCTestCase {
             """)
     }
 
-    func testVizDetailEncoding() throws {
+    func testDetailEncoding() throws {
         try check(viz: SimpleViz {
-            VizMark(.circle) {
-                VizEncode(.color, field: "C")
+            Mark(.circle) {
+                Encode(.color, field: "C")
                     .aggregate(.min)
                     .sort(Sort(.init(SortByEncoding(encoding: .color, order: .init(.descending)))))
 
-                VizEncode(.color, field: "D").aggregate(.max) // single-encoding override
+                Encode(.color, field: "D").aggregate(.max) // single-encoding override
 
-                VizEncode(.detail, field: "X").aggregate(.min)
-                VizEncode(.detail, field: FieldName("Y")) // multi-encoding
-                VizEncode(.detail).aggregate(.count) // multi-encoding
+                Encode(.detail, field: "X").aggregate(.min)
+                Encode(.detail, field: FieldName("Y")) // multi-encoding
+                Encode(.detail).aggregate(.count) // multi-encoding
             }
-            .opacity(.init(0.80))
+            .opacity(0.8)
         }, againstJSON: """
         {
             "mark": { "opacity": 0.80000000000000004, "type": "circle" },
@@ -145,9 +170,9 @@ final class GGDSLTests: XCTestCase {
 
     func testVizOrderEncoding() throws {
         try check(viz: SimpleViz {
-            VizMark(.point) {
-                VizEncode(.order, field: "A").sort(.ascending)
-                VizEncode(.order, field: "B").sort(.descending)
+            Mark(.point) {
+                Encode(.order, field: "A").sort(.ascending)
+                Encode(.order, field: "B").sort(.descending)
             }
         }, againstJSON: """
         {
@@ -162,12 +187,12 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizFacets() throws {
+    func testFacets() throws {
         try check(viz: SimpleViz {
-            VizMark(.rect) {
-                VizEncode(.row, field: "ROW_FIELD")
-                VizEncode(.column, field: "COLUMN_FIELD")
-                VizEncode(.facet, field: "FACET_FIELD")
+            Mark(.rect) {
+                Encode(.row, field: "ROW_FIELD")
+                Encode(.column, field: "COLUMN_FIELD")
+                Encode(.facet, field: "FACET_FIELD")
             }
         }, againstJSON: """
         {
@@ -187,10 +212,10 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizStrokeDash() throws {
+    func testStrokeDash() throws {
         try check(viz: SimpleViz {
-            VizMark(.line) {
-                VizEncode(.strokeDash, value: [1, 2, 3])
+            Mark(.line) {
+                Encode(.strokeDash, value: [1, 2, 3])
             }
         }, againstJSON: """
         {
@@ -206,8 +231,8 @@ final class GGDSLTests: XCTestCase {
 
     func testVizText() throws {
         try check(viz: SimpleViz {
-            VizMark(.text) {
-                VizEncode(.text, values: ["Hello", "There!"])
+            Mark(.text) {
+                Encode(.text, values: ["Hello", "There!"])
             }
         }, againstJSON: """
         {
@@ -223,8 +248,8 @@ final class GGDSLTests: XCTestCase {
 
     func testVizTooltip() throws {
         try check(viz: SimpleViz {
-            VizMark(.rect) {
-                VizEncode(.tooltip, fields: ["A", "B"])
+            Mark(.rect) {
+                Encode(.tooltip, fields: ["A", "B"])
             }
         }, againstJSON: """
         {
@@ -241,8 +266,8 @@ final class GGDSLTests: XCTestCase {
 
     func testVizShapes() throws {
         try check(viz: SimpleViz {
-            VizMark(.point) {
-                VizEncode(.shape, value: .circle)
+            Mark(.point) {
+                Encode(.shape, value: .circle)
             }
         }, againstJSON: """
         {
@@ -256,8 +281,8 @@ final class GGDSLTests: XCTestCase {
         """)
 
         try check(viz: SimpleViz {
-            VizMark(.point) {
-                VizEncode(.shape, value: .path("M0,0 L1,1"))
+            Mark(.point) {
+                Encode(.shape, value: .path("M0,0 L1,1"))
             }
         }, againstJSON: """
         {
@@ -289,10 +314,10 @@ final class GGDSLTests: XCTestCase {
         """)
 
         try check(viz: SimpleViz {
-            VizLayer(.wrap) {
-                VizMark(.bar) {
-                    VizEncode(.x)
-                    VizEncode(.y)
+            Layer(.wrap) {
+                Mark(.bar) {
+                    Encode(.x)
+                    Encode(.y)
                 }
             }
         }, againstJSON: """
@@ -302,27 +327,27 @@ final class GGDSLTests: XCTestCase {
 
     func testVizLayerMarkTypes() throws {
         try check(viz: SimpleViz {
-            VizLayer(.horizontal) {
-                VizEncode(.x, value: .width)
-                VizEncode(.y, value: .height)
+            Layer(.horizontal) {
+                Encode(.x, value: .width)
+                Encode(.y, value: .height)
 
-                VizMark(.arc)
-                VizMark(.area)
-                VizMark(.bar)
-                VizMark(.boxplot)
-                VizMark(.circle)
-                VizMark(.errorband)
-                VizMark(.errorbar)
-                VizMark(.geoshape)
-                VizMark(.image)
-                VizMark(.line)
-                VizMark(.point)
-                VizMark(.rect)
-                VizMark(.rule)
-                VizMark(.square)
-                VizMark(.text)
-                VizMark(.tick)
-                VizMark(.trail)
+                Mark(.arc)
+                Mark(.area)
+                Mark(.bar)
+                Mark(.boxplot)
+                Mark(.circle)
+                Mark(.errorband)
+                Mark(.errorbar)
+                Mark(.geoshape)
+                Mark(.image)
+                Mark(.line)
+                Mark(.point)
+                Mark(.rect)
+                Mark(.rule)
+                Mark(.square)
+                Mark(.text)
+                Mark(.tick)
+                Mark(.trail)
             }
         }, againstJSON: """
         {
@@ -355,12 +380,12 @@ final class GGDSLTests: XCTestCase {
 
     func testVizLayerNesting() throws {
         try check(viz: SimpleViz {
-            VizLayer(.horizontal) {
-                VizEncode(.x, value: .width)
-                VizLayer(.vertical) {
-                    VizEncode(.y, value: .height)
-                    VizMark(.bar) {
-                        VizEncode(.size, value: 44)
+            Layer(.horizontal) {
+                Encode(.x, value: .width)
+                Layer(.vertical) {
+                    Encode(.y, value: .height)
+                    Mark(.bar) {
+                        Encode(.size, value: 44)
                     }
                 }
             }
@@ -393,7 +418,7 @@ final class GGDSLTests: XCTestCase {
 
         try check(viz: SimpleViz {
             VizProjection(.albersUsa)
-                .precision(.init(0.1))
+                .precision(0.1)
         }, againstJSON: """
         {
             "projection": {
@@ -406,11 +431,11 @@ final class GGDSLTests: XCTestCase {
 
     func testVizRepeat() throws {
         try check(viz: SimpleViz {
-            VizRepeat(.horizontal, fields: ["A", "B"]) { hfield in
-                VizRepeat(.vertical, fields: ["C", "D"]) { vfield in
-                    VizMark(.bar) {
-                        VizEncode(.x, repeat: hfield)
-                        VizEncode(.y, repeat: vfield)
+            Repeat(.horizontal, fields: ["A", "B"]) { hfield in
+                Repeat(.vertical, fields: ["C", "D"]) { vfield in
+                    Mark(.bar) {
+                        Encode(.x, repeat: hfield)
+                        Encode(.y, repeat: vfield)
                     }
                 }
             }
@@ -429,252 +454,252 @@ final class GGDSLTests: XCTestCase {
     func testEncodingVariations() throws {
         _ = SimpleViz {
             VizTheme()
-                .font(.init("serif"))
+                .font("serif")
                 .title(.init(fontSize: .init(ExprRef(expr: Expr("width * 0.05")))))
             
 
-            VizMark(.arc)
-            VizMark(.area)
-            VizMark(.geoshape)
-            VizMark(.text)
-            VizMark(.boxplot)
+            Mark(.arc)
+            Mark(.area)
+            Mark(.geoshape)
+            Mark(.text)
+            Mark(.boxplot)
 
-            VizMark(.bar) {
+            Mark(.bar) {
                 do {
-                    VizEncode(.x)
+                    Encode(.x)
 
-                    VizEncode(.x).aggregate(Aggregate(NonArgAggregateOp.average))
+                    Encode(.x).aggregate(Aggregate(NonArgAggregateOp.average))
 
-                    VizEncode(.x, field: "a")
-                    VizEncode(.x, value: .width)
-                    VizEncode(.x, value: 22)
-                    VizEncode(.x, datum: 22)
-                    VizEncode(.x, expression: "1+2")
-                    VizEncode(.x, repeat: RepeatRef(repeat: .column))
+                    Encode(.x, field: "a")
+                    Encode(.x, value: .width)
+                    Encode(.x, value: 22)
+                    Encode(.x, datum: 22)
+                    Encode(.x, expression: "1+2")
+                    Encode(.x, repeat: RepeatRef(repeat: .column))
                 }
 
                 do {
-                    VizEncode(.y)
-                    VizEncode(.y, field: "b")
-                    VizEncode(.y, value: .height)
-                    VizEncode(.y, value: 22)
-                    VizEncode(.y, datum: 22)
-                    VizEncode(.y, expression: "1+2")
-                    VizEncode(.y, repeat: RepeatRef(repeat: .row))
+                    Encode(.y)
+                    Encode(.y, field: "b")
+                    Encode(.y, value: .height)
+                    Encode(.y, value: 22)
+                    Encode(.y, datum: 22)
+                    Encode(.y, expression: "1+2")
+                    Encode(.y, repeat: RepeatRef(repeat: .row))
                 }
 
                 do {
-                    VizEncode(.row)
-                    VizEncode(.row, field: "FIELD")
+                    Encode(.row)
+                    Encode(.row, field: "FIELD")
                 }
 
                 do {
-                    VizEncode(.column)
-                    VizEncode(.column, field: "FIELD")
+                    Encode(.column)
+                    Encode(.column, field: "FIELD")
                 }
 
                 do {
-                    VizEncode(.facet)
-                    VizEncode(.facet, field: "FIELD")
+                    Encode(.facet)
+                    Encode(.facet, field: "FIELD")
                 }
 
                 do {
-                    VizEncode(.x2)
-                    VizEncode(.x2, field: "FIELD")
+                    Encode(.x2)
+                    Encode(.x2, field: "FIELD")
                 }
 
                 do {
-                    VizEncode(.y2)
-                    VizEncode(.y2, field: "FIELD")
+                    Encode(.y2)
+                    Encode(.y2, field: "FIELD")
                 }
 
                 do {
-                    VizEncode(.latitude)
-                    VizEncode(.latitude, field: FieldName("FIELD"))
-                    VizEncode(.latitude, datum: nil)
-                    VizEncode(.latitude, datum: "X")
-                    VizEncode(.latitude, datum: 1)
+                    Encode(.latitude)
+                    Encode(.latitude, field: FieldName("FIELD"))
+                    Encode(.latitude, datum: nil)
+                    Encode(.latitude, datum: "X")
+                    Encode(.latitude, datum: 1)
                 }
 
                 do {
-                    VizEncode(.latitude2)
-                    VizEncode(.latitude2, field: FieldName("FIELD"))
-                    VizEncode(.latitude2, datum: nil)
-                    VizEncode(.latitude2, datum: "X")
-                    VizEncode(.latitude2, datum: 1)
+                    Encode(.latitude2)
+                    Encode(.latitude2, field: FieldName("FIELD"))
+                    Encode(.latitude2, datum: nil)
+                    Encode(.latitude2, datum: "X")
+                    Encode(.latitude2, datum: 1)
                 }
 
                 do {
-                    VizEncode(.longitude)
-                    VizEncode(.longitude, field: FieldName("FIELD"))
-                    VizEncode(.longitude, datum: nil)
-                    VizEncode(.longitude, datum: "X")
-                    VizEncode(.longitude, datum: 1)
+                    Encode(.longitude)
+                    Encode(.longitude, field: FieldName("FIELD"))
+                    Encode(.longitude, datum: nil)
+                    Encode(.longitude, datum: "X")
+                    Encode(.longitude, datum: 1)
                 }
 
                 do {
-                    VizEncode(.longitude2)
-                    VizEncode(.longitude2, field: FieldName("FIELD"))
-                    VizEncode(.longitude2, datum: nil)
-                    VizEncode(.longitude2, datum: "X")
-                    VizEncode(.longitude2, datum: 1)
+                    Encode(.longitude2)
+                    Encode(.longitude2, field: FieldName("FIELD"))
+                    Encode(.longitude2, datum: nil)
+                    Encode(.longitude2, datum: "X")
+                    Encode(.longitude2, datum: 1)
                 }
 
                 do {
-                    VizEncode(.href)
-                    VizEncode(.href, field: FieldName("FIELD"))
-                    VizEncode(.href, value: nil)
-                    VizEncode(.href, value: .null)
-                    VizEncode(.href, value: "https://www.example.org")
-                    VizEncode(.href, expr: .init(expr: Expr("'https://' + 'whatever.net'")))
+                    Encode(.href)
+                    Encode(.href, field: FieldName("FIELD"))
+                    Encode(.href, value: nil)
+                    Encode(.href, value: .null)
+                    Encode(.href, value: "https://www.example.org")
+                    Encode(.href, expr: .init(expr: Expr("'https://' + 'whatever.net'")))
                 }
 
                 do {
-                    VizEncode(.url)
-                    VizEncode(.url, field: FieldName("FIELD"))
-                    VizEncode(.url, value: nil)
-                    VizEncode(.url, value: .null)
-                    VizEncode(.url, value: "https://www.example.org")
-                    VizEncode(.url, expr: .init(expr: Expr("'https://' + 'whatever.net'")))
+                    Encode(.url)
+                    Encode(.url, field: FieldName("FIELD"))
+                    Encode(.url, value: nil)
+                    Encode(.url, value: .null)
+                    Encode(.url, value: "https://www.example.org")
+                    Encode(.url, expr: .init(expr: Expr("'https://' + 'whatever.net'")))
                 }
 
                 do {
-                    VizEncode(.description)
-                    VizEncode(.description, field: FieldName("FIELD"))
-                    VizEncode(.description, value: nil)
-                    VizEncode(.description, value: .null) // same
-                    VizEncode(.description, value: "Description")
-                    VizEncode(.description, expr: .init(expr: Expr("'Desc' + 'ription'")))
+                    Encode(.description)
+                    Encode(.description, field: FieldName("FIELD"))
+                    Encode(.description, value: nil)
+                    Encode(.description, value: .null) // same
+                    Encode(.description, value: "Description")
+                    Encode(.description, expr: .init(expr: Expr("'Desc' + 'ription'")))
                 }
 
                 do {
-                    VizEncode(.strokeDash)
-                    VizEncode(.strokeDash, field: FieldName("FIELD"))
-                    VizEncode(.strokeDash, value: [1, 2, 3])
+                    Encode(.strokeDash)
+                    Encode(.strokeDash, field: FieldName("FIELD"))
+                    Encode(.strokeDash, value: [1, 2, 3])
                 }
 
                 do {
-                    VizEncode(.description)
-                    VizEncode(.description, field: FieldName("FIELD"))
-                    VizEncode(.description, value: nil)
-                    VizEncode(.description, value: .null)
-                    VizEncode(.description, value: "Accessible Description")
+                    Encode(.description)
+                    Encode(.description, field: FieldName("FIELD"))
+                    Encode(.description, value: nil)
+                    Encode(.description, value: .null)
+                    Encode(.description, value: "Accessible Description")
                 }
 
                 do {
-                    VizEncode(.url)
-                    VizEncode(.url, field: FieldName("FIELD"))
-                    VizEncode(.url, value: nil)
-                    VizEncode(.url, value: .null)
-                    VizEncode(.url, value: "https://www.example.org/image.png")
+                    Encode(.url)
+                    Encode(.url, field: FieldName("FIELD"))
+                    Encode(.url, value: nil)
+                    Encode(.url, value: .null)
+                    Encode(.url, value: "https://www.example.org/image.png")
                 }
 
                 do {
-                    VizEncode(.key)
-                    VizEncode(.key, field: FieldName("FIELD")) // key only permits field encodings
+                    Encode(.key)
+                    Encode(.key, field: FieldName("FIELD")) // key only permits field encodings
                 }
 
                 do {
-                    VizEncode(.shape)
-                    VizEncode(.shape, field: FieldName("FIELD"))
-                    VizEncode(.shape, value: nil)
-                    VizEncode(.shape, value: SymbolShape.circle)
+                    Encode(.shape)
+                    Encode(.shape, field: FieldName("FIELD"))
+                    Encode(.shape, value: nil)
+                    Encode(.shape, value: SymbolShape.circle)
                 }
 
                 do {
-                    VizEncode(.detail)
-                    VizEncode(.detail, field: "ABC")
+                    Encode(.detail)
+                    Encode(.detail, field: "ABC")
                 }
 
 
                 do {
-                    VizEncode(.order)
-                    VizEncode(.order, value: 1)
-                    VizEncode(.order, field: "ORDER_FIELD")
+                    Encode(.order)
+                    Encode(.order, value: 1)
+                    Encode(.order, field: "ORDER_FIELD")
                         .sort(.ascending)
                 }
 
                 do {
-                    VizEncode(.text)
-                    VizEncode(.text, value: "text value")
-                    VizEncode(.text, field: "TEXT_FIELD")
-                    VizEncode(.text, values: ["text", "value"])
-                    VizEncode(.text, expression: "'a' + 'b'")
+                    Encode(.text)
+                    Encode(.text, value: "text value")
+                    Encode(.text, field: "TEXT_FIELD")
+                    Encode(.text, values: ["text", "value"])
+                    Encode(.text, expression: "'a' + 'b'")
                 }
 
                 do {
-                    VizEncode(.tooltip)
-                    VizEncode(.tooltip, value: "tip value")
-                    VizEncode(.tooltip, field: "TIP_FIELD")
-                    VizEncode(.tooltip, fields: ["TIP_FIELD1", "TIP_FIELD2"])
+                    Encode(.tooltip)
+                    Encode(.tooltip, value: "tip value")
+                    Encode(.tooltip, field: "TIP_FIELD")
+                    Encode(.tooltip, fields: ["TIP_FIELD1", "TIP_FIELD2"])
                 }
 
                 do {
-                    VizEncode(.color)
-                    VizEncode(.color, field: FieldName("c"))
+                    Encode(.color)
+                    Encode(.color, field: FieldName("c"))
+                        .legend(nil)
+                        .title(.init("Colorful"))
+                    Encode(.color, value: .null)
+                    Encode(.color, value: "red")
+                    //Encode(.color, value: .init(.init(.steelblue)))
+                }
+
+                do {
+                    Encode(.size)
+                    Encode(.size, field: FieldName("dc"))
                         .legend(.init(nil))
-                        .title(.init(.init("Colorful")))
-                    VizEncode(.color, value: .null)
-                    VizEncode(.color, value: "red")
-                    //VizEncode(.color, value: .init(.init(.steelblue)))
+                        .title(.init("Colorful"))
+                    Encode(.size, value: 33)
                 }
 
-                do {
-                    VizEncode(.size)
-                    VizEncode(.size, field: FieldName("dc"))
-                        .legend(.init(nil))
-                        .title(.init(.init("Colorful")))
-                    VizEncode(.size, value: 33)
-                }
-
-                VizEncode(.x, field: FieldName("a"))
+                Encode(.x, field: FieldName("a"))
                     .type(.nominal)
                     .aggregate(.sum)
-                    .axis(.init(nil))
+                    .axis(nil)
 
-                VizEncode(.y)
+                Encode(.y)
                     .field(SourceColumnRef(FieldName("b")))
                     .type(.quantitative)
                     .bandPosition(11)
 
-                VizEncode(.color, field: FieldName("c"))
-                    .legend(.init(nil))
+                Encode(.color, field: FieldName("c"))
+                    .legend(nil)
                     .type(.ordinal)
 
-                VizEncode(.size, datum: 44)
+                Encode(.size, datum: 44)
 
             }
-            .cornerRadius(.init(10))
+            .cornerRadius(10)
         }
-        .title(.init(.init("Bar Chart")))
+        .title(.init("Bar Chart"))
         .description("A simple bar chart with embedded data.")
     }
 
     func testExpressions() throws {
         let viz = SimpleViz {
             VizTheme()
-                .font(.init("serif"))
+                .font("serif")
                 .title(.init(fontSize: .init(ExprRef(expr: Expr("width * 0.05")))))
 
-            VizMark(.bar) {
-                VizEncode(.x, field: FieldName("a"))
+            Mark(.bar) {
+                Encode(.x, field: FieldName("a"))
                     .type(.nominal)
                     .aggregate(.sum)
-                    .axis(.init(nil))
+                    .axis(nil)
 
-                VizEncode(.y, field: FieldName("b"))
+                Encode(.y, field: FieldName("b"))
                     .type(.quantitative)
                     .bandPosition(11)
 
-                VizEncode(.color, field: FieldName("c"))
-                    .legend(.init(nil))
+                Encode(.color, field: FieldName("c"))
+                    .legend(nil)
                     .type(.ordinal)
 
-                VizEncode(.size, datum: 44)
+                Encode(.size, datum: 44)
             }
-            .cornerRadius(.init(10))
+            .cornerRadius(10)
         }
-        .title(.init(.init("Bar Chart")))
+        .title(.init("Bar Chart"))
         .description("A simple bar chart with embedded data.")
 
         try check(viz: viz, againstJSON: """

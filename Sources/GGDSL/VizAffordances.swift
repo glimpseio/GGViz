@@ -18,6 +18,12 @@ public typealias VizDataSource = Nullable<DataProvider> // e.g., TopLevelUnitSpe
 /// A type that either be a static value (typically a number or string) or the result of a dynamic [expression](https://vega.github.io/vega/docs/expressions/).
 public typealias Exprable<T> = OneOf<T>.Or<ExprRef>
 
+public extension ExprRef {
+    /// Construct this expression reference from a string
+    init(_ expression: String) {
+        self = .init(expr: Expr(expression))
+    }
+}
 
 // MARK: Layer Arrangement
 
@@ -545,3 +551,33 @@ public extension UtcMultiTimeUnit {
         }
     }
 }
+
+
+
+
+
+
+#if canImport(TabularData)
+import TabularData
+
+extension AnyColumnProtocol {
+    /// Returns a `Field` form of this column
+    public var fieldName: FieldName { .init(FieldName(name)) }
+}
+
+extension ColumnProtocol {
+    /// Returns a `Field` form of this column
+    public var fieldName: FieldName { .init(FieldName(name)) }
+}
+
+extension TabularData.AnyColumn : FieldNameRepresentable { }
+extension TabularData.AnyColumnSlice : FieldNameRepresentable { }
+extension TabularData.Column : FieldNameRepresentable { }
+extension TabularData.ColumnSlice : FieldNameRepresentable { }
+extension TabularData.DiscontiguousColumnSlice : FieldNameRepresentable { }
+extension TabularData.FilledColumn : FieldNameRepresentable { }
+
+#endif
+
+
+
