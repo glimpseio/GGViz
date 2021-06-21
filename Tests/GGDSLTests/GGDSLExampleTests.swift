@@ -179,16 +179,16 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_pie_pyramid() throws {
         try check(viz: SimpleViz {
-            VizMark(.arc) {
-                VizEncode(.theta, field: "value")
+            Mark(.arc) {
+                Encode(.theta, field: "value")
                     .type(.quantitative)
                     .stack(.init(.init(true)))
                     .scale(.init(ScaleDef(range: .init([.init(2.35619449), .init(8.639379797)]))))
-                VizEncode(.color, field: "category")
+                Encode(.color, field: "category")
                     .type(.nominal)
                     .legend(.init(LegendDef(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))))
                     .scale(.init(ScaleDef(domain: .init([.init(.init("Sky")), .init(.init("Shady side of a pyramid")), .init(.init("Sunny side of a pyramid"))]), range: .init([.init("#416D9D"), .init("#674028"), .init("#DEAC58")]))))
-                VizEncode(.order, field: "order")
+                Encode(.order, field: "order")
             }.outerRadius(.init(80))
         }
         .data(.init(DataProvider(.init(DataSource(.init(InlineData(values: InlineDataset(.init([
