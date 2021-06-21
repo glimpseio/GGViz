@@ -178,12 +178,6 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_pie_pyramid() throws {
-
-//        VizScale()
-//            .scale(domain: "Sky", range: "#416D9D")
-//            .scale(domain: "Shady side of a pyramid", range: "#674028")
-//            .scale(domain: "Sunny side of a pyramid", range: "#DEAC58")
-
         try check(viz: SimpleViz {
             VizMark(.arc) {
                 VizEncode(.theta, field: "value")

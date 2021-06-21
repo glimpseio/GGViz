@@ -1,4 +1,22 @@
 
+// A DSL for constructing a data visualization in Swift.
+
+
+/// Experimental typealiases for nicer DSL
+public typealias Axis = VizAxis
+/// Experimental typealiases for nicer DSL
+public typealias Legend = VizLegend
+/// Experimental typealiases for nicer DSL
+public typealias Mark = VizMark
+/// Experimental typealiases for nicer DSL
+public typealias Layer = VizLayer
+/// Experimental typealiases for nicer DSL
+public typealias Header = VizHeader
+/// Experimental typealiases for nicer DSL
+public typealias Scale = VizScale
+
+
+
 
 /// A type that can be used to create a field value
 public protocol FieldNameRepresentable {
@@ -64,6 +82,10 @@ public protocol VizLayerElementType : VizSpecBuilderType {
 public protocol VizSpecElementType : VizLayerElementType {
 }
 
+/// An element that can be added to a `VizEncode`, sich as `VizAxis`, `VizLegend`, and `VizScale`
+public protocol VizEncodingElementType : VizSpecBuilderType {
+    func add<E: VizEncodeType>(to encoding: inout E)
+}
 
 public protocol VizMarkType : VizSpecElementType {
     var encodings: EncodingChannelMap { get }
@@ -128,15 +150,83 @@ public struct VizTheme : VizWrapper, VizSpecElementType {
     }
 }
 
-//public struct VizAxis : VizWrapper, VizLayerElementType {
-//    public var rawValue: GGSpec.Axis
-//    init() { self.init(rawValue: .init()) }
-//
-//    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
-//        spec.mark?.rawValue.v4.ax = projection
-//
-//    }
-//}
+
+@dynamicMemberLookup
+public struct VizLegend : VizWrapper, VizEncodingElementType {
+    public var rawValue: GGSpec.LegendDef
+
+    public init(rawValue: LegendDef = LegendDef()) {
+        self.rawValue = rawValue
+    }
+
+    //public func columns(_ columnCount: Int) -> Self { setting(path: \.columns, .init(.init(columnCount))) }
+
+    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+        //spec.mark?.rawValue.v4.ax = projection
+    }
+
+    public func add<E>(to encoding: inout E) where E : VizEncodeType {
+        fatalError(wip("IMPLEMENT"))
+    }
+}
+
+public extension VizLegend {
+    func columns(_ columns: Int) -> Self { setting(path: \.columns)(.init(.init(columns))) }
+    func legendX(_ legendX: Double) -> Self { setting(path: \.legendX)(.init(.init(legendX))) }
+    func legendY(_ legendY: Double) -> Self { setting(path: \.legendY)(.init(.init(legendY))) }
+    func orient(_ orient: LegendOrient?) -> Self { setting(path: \.orient)(orient) }
+    func title(_ title: LegendDef.TitleChoice?) -> Self { setting(path: \.title)(title) }
+}
+
+public struct VizAxis : VizWrapper, VizEncodingElementType {
+    public var rawValue: GGSpec.AxisDef
+
+    public init(rawValue: AxisDef = AxisDef()) {
+        self.rawValue = rawValue
+    }
+
+    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+        //spec.mark?.rawValue.v4.ax = projection
+    }
+
+    public func add<E>(to encoding: inout E) where E : VizEncodeType {
+        fatalError(wip("IMPLEMENT"))
+    }
+}
+
+
+public struct VizScale : VizWrapper, VizEncodingElementType {
+    public var rawValue: GGSpec.ScaleDef
+
+    public init(rawValue: ScaleDef = ScaleDef()) {
+        self.rawValue = rawValue
+    }
+
+    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+        //spec.mark?.rawValue.v4.ax = projection
+    }
+
+    public func add<E>(to encoding: inout E) where E : VizEncodeType {
+        fatalError(wip("IMPLEMENT"))
+    }
+}
+
+public struct VizHeader : VizWrapper, VizEncodingElementType {
+    public var rawValue: GGSpec.HeaderDef
+
+    public init(rawValue: HeaderDef = HeaderDef()) {
+        self.rawValue = rawValue
+    }
+
+    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+        //spec.mark?.rawValue.v4.ax = projection
+    }
+
+    public func add<E>(to encoding: inout E) where E : VizEncodeType {
+        fatalError(wip("IMPLEMENT"))
+    }
+}
+
 
 
 @dynamicMemberLookup

@@ -95,25 +95,25 @@ public typealias Transform = DataTransformation
 @available(*, deprecated, renamed: "ConfigTheme")
 public typealias Config = ConfigTheme
 
-/// The old alias for the PrimitiveMarkType
-@available(*, deprecated, renamed: "PrimitiveMarkType")
-public typealias Mark = PrimitiveMarkType
-
-/// The old alias for the AxisDef
-@available(*, deprecated, renamed: "AxisDef")
-public typealias Axis = AxisDef
-
-/// The old alias for the LegendDef
-@available(*, deprecated, renamed: "LegendDef")
-public typealias Legend = LegendDef
-
-/// The old alias for the HeaderDef
-@available(*, deprecated, renamed: "HeaderDef")
-public typealias Header = HeaderDef
-
-/// The old alias for the ScaleDef
-@available(*, deprecated, renamed: "ScaleDef")
-public typealias Scale = ScaleDef
+///// The old alias for the PrimitiveMarkType
+//@available(*, deprecated, renamed: "PrimitiveMarkType")
+//public typealias Mark = PrimitiveMarkType
+//
+///// The old alias for the AxisDef
+//@available(*, deprecated, renamed: "AxisDef")
+//public typealias Axis = AxisDef
+//
+///// The old alias for the LegendDef
+//@available(*, deprecated, renamed: "LegendDef")
+//public typealias Legend = LegendDef
+//
+///// The old alias for the HeaderDef
+//@available(*, deprecated, renamed: "HeaderDef")
+//public typealias Header = HeaderDef
+//
+///// The old alias for the ScaleDef
+//@available(*, deprecated, renamed: "ScaleDef")
+//public typealias Scale = ScaleDef
 
 /// The old alias for the TemporalUnit
 @available(*, deprecated, renamed: "TemporalUnit")

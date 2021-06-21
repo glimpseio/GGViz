@@ -24,14 +24,38 @@ extension XCTestCase {
     }
 }
 
-
 final class GGDSLTests: XCTestCase {
 
     func testLegends() {
-        let l1 = LegendDef(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))
-        let l2 = LegendDef(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))
+        let l1 = LegendDef(
+            columns: .init(1),
+            legendX: .init(200),
+            legendY: .init(80)
+//            orient: .init(.none)
+//            title: .init(.null)
+        )
 
-        XCTAssertEqual(l1, l2)
+        let l2 = VizLegend()
+            .columns(1)
+            .legendX(200)
+            .legendY(80)
+//            .orient(.none)
+//            .title(.null)
+
+        XCTAssertEqual(l1, l2.rawValue)
+    }
+
+    func testScales() {
+
+//        VizScale()
+//            .scale(domain: "Sky", range: "#416D9D")
+//            .scale(domain: "Shady side of a pyramid", range: "#674028")
+//            .scale(domain: "Sunny side of a pyramid", range: "#DEAC58")
+
+    }
+
+    func testAxes() {
+
     }
 
     func testVizMarkSimple() throws {
