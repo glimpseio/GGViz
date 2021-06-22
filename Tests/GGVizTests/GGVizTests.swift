@@ -1,7 +1,6 @@
 import XCTest
 
 import GGViz
-import GGSpec
 import Judo
 import MiscKit
 import BricBrac
@@ -55,7 +54,7 @@ final class GGVizTests: XCTestCase {
     }
 
     /// A very simple spec for testing rendering and compiling
-    func simpleSampleSpec(mark: PrimitiveMarkType = .bar, count: Int, width: Double = 900, height: Double = 600) -> SimpleVizSpec {
+    func simpleSampleSpec(mark: GG.PrimitiveMarkType = .bar, count: Int, width: Double = 900, height: Double = 600) -> SimpleVizSpec {
 
         var rows: [Bric] = []
         for i in 0..<count {
@@ -64,17 +63,17 @@ final class GGVizTests: XCTestCase {
                 "B" : Bric.num(Double(i + 1) / 10.0),
             ])
         }
-        let dataSet = InlineDataset(rows)
+        let dataSet = GG.InlineDataset(rows)
 
-        var spec = SimpleVizSpec(data: .init(.init(.init(InlineData(values: dataSet)))))
+        var spec = SimpleVizSpec(data: .init(.init(.init(GG.InlineData(values: dataSet)))))
         (spec.width, spec.height) = (.init(width), .init(height))
         spec.mark = .init(mark)
 
         spec.title = .init(.init("Hello GGViz!"))
 
         spec.encoding = .init(
-            x: .init(EncodingChannelMap.X(PositionFieldDef(field: .init(FieldName("A")), title: .init(.init("Alpha"))))),
-            y: .init(EncodingChannelMap.Y(PositionFieldDef(field: .init(FieldName("B")), title: .init(.init("Bravo")), type: .quantitative))))
+            x: .init(GG.EncodingChannelMap.X(GG.PositionFieldDef(field: .init(GG.FieldName("A")), title: .init(.init("Alpha"))))),
+            y: .init(GG.EncodingChannelMap.Y(GG.PositionFieldDef(field: .init(GG.FieldName("B")), title: .init(.init("Bravo")), type: .quantitative))))
 
         return spec
     }

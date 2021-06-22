@@ -1,10 +1,10 @@
 import GGSpec
 
 /// The direction of a repeating field
-public typealias RepeatFacet = RepeatRef.LiteralRowOrColumnOrRepeatOrLayer
+public typealias RepeatFacet = GG.RepeatRef.LiteralRowOrColumnOrRepeatOrLayer
 
 /// The type of ancoding channel; x, y, shape, color, etc…
-public typealias EncodingChannel = EncodingChannelMap.CodingKeys
+public typealias EncodingChannel = GG.EncodingChannelMap.CodingKeys
 
 /// A VizSpec that stores its metadata as an unstructured JSON object.
 public typealias SimpleVizSpec = VizSpec<Bric.ObjType>
@@ -13,10 +13,10 @@ public typealias SimpleVizSpec = VizSpec<Bric.ObjType>
 public typealias VizSpecMeta = Pure
 
 /// A source of data for a layer
-public typealias VizDataSource = Nullable<DataProvider> // e.g., TopLevelUnitSpec.DataChoice
+public typealias VizDataSource = Nullable<GG.DataProvider> // e.g., TopLevelUnitSpec.DataChoice
 
 /// A type that either be a static value (typically a number or string) or the result of a dynamic [expression](https://vega.github.io/vega/docs/expressions/).
-public typealias Exprable<T> = OneOf<T>.Or<ExprRef>
+public typealias Exprable<T> = OneOf<T>.Or<GG.ExprRef>
 
 
 extension Pure {
@@ -27,10 +27,10 @@ extension Pure {
     }
 }
 
-public extension ExprRef {
+public extension GG.ExprRef {
     /// Construct this expression reference from a string
     init(_ expression: String) {
-        self = .init(expr: Expr(expression))
+        self = .init(expr: GG.Expr(expression))
     }
 }
 
@@ -46,16 +46,16 @@ public enum LayerArrangement : CaseIterable, Hashable {
 
 public extension LayerArrangement {
     /// The repeat form of this arrangement
-    var repeatRef: RepeatRef {
+    var repeatRef: GG.RepeatRef {
         switch self {
         case .overlay:
-            return RepeatRef(repeat: .layer)
+            return GG.RepeatRef(repeat: .layer)
         case .horizontal:
-            return RepeatRef(repeat: .column)
+            return GG.RepeatRef(repeat: .column)
         case .vertical:
-            return RepeatRef(repeat: .row)
+            return GG.RepeatRef(repeat: .row)
         case .wrap:
-            return RepeatRef(repeat: .repeat)
+            return GG.RepeatRef(repeat: .repeat)
         }
     }
 }
@@ -216,36 +216,36 @@ public protocol Compactable {
     var compactRepresentation: Self { get }
 }
 
-extension AnyMark : Compactable {
+extension GG.AnyMark : Compactable {
     /// Returns a simplified version of this mark, replacing an empty `MarkDef` with the symbolic constant for the mark. This can be useful when it is important to generate minimal versions of the spec.
     ///
     /// For example, this will convert `{ "mark": { "type": "line" } }` into `{ "mark": "line" }`.
-    public var compactRepresentation: AnyMark {
+    public var compactRepresentation: GG.AnyMark {
         switch rawValue {
         case .v1, .v3: // already tidy
             return self
         case .v2(let def):
             switch def.type.rawValue {
             case .v1(let type):
-                return def == CompositeMarkDef(.init(type: type)) ? .init(def.type) : self
+                return def == GG.CompositeMarkDef(.init(type: type)) ? .init(def.type) : self
             case .v2(let type):
-                return def == CompositeMarkDef(.init(type: type)) ? .init(def.type) : self
+                return def == GG.CompositeMarkDef(.init(type: type)) ? .init(def.type) : self
             case .v3(let type):
-                return def == CompositeMarkDef(.init(type: type)) ? .init(def.type) : self
+                return def == GG.CompositeMarkDef(.init(type: type)) ? .init(def.type) : self
             }
         case .v4(let def):
-            return def == MarkDef(type: def.type) ? .init(def.type) : self
+            return def == GG.MarkDef(type: def.type) ? .init(def.type) : self
         }
     }
 }
 
 /// Internal choice for a differnet mark type; used internally by `MarkType`
-public typealias MarkChoice = OneOf<PrimitiveMarkType>.Or<CompositeMark>
+public typealias MarkChoice = OneOf<GG.PrimitiveMarkType>.Or<GG.CompositeMark>
 
 /// An `AnyMarkDef` is a compound enumeration of the different mark types
 /// This is the complex enum part of:
 /// `AnyMark = OneOf4<CompositeMark, CompositeMarkDef, Mark, MarkDef>`
-public typealias AnyMarkDef = OneOf<MarkDef>.Or<CompositeMarkDef>
+public typealias AnyMarkDef = OneOf<GG.MarkDef>.Or<GG.CompositeMarkDef>
 
 extension AnyMarkDef {
     public var markChoice: MarkChoice {
@@ -256,9 +256,9 @@ extension AnyMarkDef {
     }
 }
 
-public extension CompositeMarkDef {
+public extension GG.CompositeMarkDef {
     /// Returns the `CompositeMark` type of this mark type
-    var type: CompositeMark {
+    var type: GG.CompositeMark {
         switch rawValue {
         case .v1(let x): return .init(.init(x.type))
         case .v2(let x): return .init(.init(x.type))
@@ -267,7 +267,7 @@ public extension CompositeMarkDef {
     }
 }
 
-public extension MarkDef {
+public extension GG.MarkDef {
     var markChoice: MarkChoice {
         return .init(self.type)
     }
@@ -316,7 +316,7 @@ extension MarkType {
     }
 }
 
-public extension PrimitiveMarkType {
+public extension GG.PrimitiveMarkType {
     var markType: MarkType {
         switch self {
         case .arc: return .arc
@@ -344,7 +344,7 @@ public extension MarkChoice {
     }
 }
 
-public extension CompositeMark { // i.e., OneOf3<BoxPlot, ErrorBar, ErrorBand>
+public extension GG.CompositeMark { // i.e., OneOf3<BoxPlot, ErrorBar, ErrorBand>
     static let boxplot = Self(.init(.boxplot))
     static let errorbar = Self(.init(.errorbar))
     static let errorband = Self(.init(.errorband))
@@ -355,25 +355,25 @@ public extension CompositeMark { // i.e., OneOf3<BoxPlot, ErrorBar, ErrorBand>
             value
         }
         switch self.rawValue {
-        case .v1(let x): return check(arg: x, is: BoxPlotLiteral.self, value: .boxplot)
-        case .v2(let x): return check(arg: x, is: ErrorBarLiteral.self, value: .errorbar)
-        case .v3(let x): return check(arg: x, is: ErrorBandLiteral.self, value: .errorband)
+        case .v1(let x): return check(arg: x, is: GG.BoxPlotLiteral.self, value: .boxplot)
+        case .v2(let x): return check(arg: x, is: GG.ErrorBarLiteral.self, value: .errorbar)
+        case .v3(let x): return check(arg: x, is: GG.ErrorBandLiteral.self, value: .errorband)
         }
     }
 }
 
-public extension Aggregate.RawValue { // i.e., OneOf3<GGSpec.NonArgAggregateOp, GGSpec.ArgmaxDef, GGSpec.ArgminDef>
+public extension GG.Aggregate.RawValue { // i.e., OneOf3<GGSpec.NonArgAggregateOp, GGSpec.ArgmaxDef, GGSpec.ArgminDef>
 
     /// Deprecated for clarity
     @available(*, deprecated, renamed: "simpleAggregate")
     var v1: T1? { simpleAggregate }
 
     /// The simple no-argument aggregate choice
-    var simpleAggregate: NonArgAggregateOp? { infer() }
+    var simpleAggregate: GG.NonArgAggregateOp? { infer() }
 }
 
 /// Standard shapes: https://vega.github.io/vega-lite/docs/point#properties
-public extension SymbolShape {
+public extension GG.SymbolShape {
     static let circle = Self("circle")
     static let square = Self("square")
     static let cross = Self("cross")
@@ -396,7 +396,7 @@ public extension SymbolShape {
     }
 }
 
-public extension NonArgAggregateOp {
+public extension GG.NonArgAggregateOp {
     /// Additive-based aggregation operations. These can be applied to stack.
     static let summativeOps = Set<Self>(countingAggregateOps + [.sum])
     var isSummativeOp: Bool { Self.summativeOps.contains(self) }
@@ -411,68 +411,68 @@ public extension NonArgAggregateOp {
     var isMinMaxOp: Bool { Self.minMaxOps.contains(self) }
 }
 
-public extension Aggregate {
+public extension GG.Aggregate {
     var isSummativeOp: Bool { self.rawValue.simpleAggregate?.isSummativeOp == true }
     var isCountingAggregateOp: Bool { self.rawValue.simpleAggregate?.isCountingAggregateOp == true }
     var isSharedDomainOp: Bool { self.rawValue.simpleAggregate?.isSharedDomainOp == true }
     var isMinMaxOp: Bool { self.rawValue.simpleAggregate?.isMinMaxOp == true }
 
-    init(_ op: NonArgAggregateOp) {
+    init(_ op: GG.NonArgAggregateOp) {
         self = Self(rawValue: oneOf(op))
     }
 
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let distinct = Self(NonArgAggregateOp.distinct)
+    static let distinct = Self(GG.NonArgAggregateOp.distinct)
 
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let count = Self(NonArgAggregateOp.count)
+    static let count = Self(GG.NonArgAggregateOp.count)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let valid = Self(NonArgAggregateOp.valid)
+    static let valid = Self(GG.NonArgAggregateOp.valid)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let missing = Self(NonArgAggregateOp.missing)
+    static let missing = Self(GG.NonArgAggregateOp.missing)
 
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let min = Self(NonArgAggregateOp.min)
+    static let min = Self(GG.NonArgAggregateOp.min)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let max = Self(NonArgAggregateOp.max)
+    static let max = Self(GG.NonArgAggregateOp.max)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let mean = Self(NonArgAggregateOp.mean)
+    static let mean = Self(GG.NonArgAggregateOp.mean)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let sum = Self(NonArgAggregateOp.sum)
+    static let sum = Self(GG.NonArgAggregateOp.sum)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let average = Self(NonArgAggregateOp.average)
+    static let average = Self(GG.NonArgAggregateOp.average)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let median = Self(NonArgAggregateOp.median)
+    static let median = Self(GG.NonArgAggregateOp.median)
 
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let stdev = Self(NonArgAggregateOp.stdev)
+    static let stdev = Self(GG.NonArgAggregateOp.stdev)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let stdevp = Self(NonArgAggregateOp.stdevp)
+    static let stdevp = Self(GG.NonArgAggregateOp.stdevp)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let variance = Self(NonArgAggregateOp.variance)
+    static let variance = Self(GG.NonArgAggregateOp.variance)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let variancep = Self(NonArgAggregateOp.variancep)
+    static let variancep = Self(GG.NonArgAggregateOp.variancep)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let stderr = Self(NonArgAggregateOp.stderr)
+    static let stderr = Self(GG.NonArgAggregateOp.stderr)
 
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let q1 = Self(NonArgAggregateOp.q1)
+    static let q1 = Self(GG.NonArgAggregateOp.q1)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let q3 = Self(NonArgAggregateOp.q3)
+    static let q3 = Self(GG.NonArgAggregateOp.q3)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let ci0 = Self(NonArgAggregateOp.ci0)
+    static let ci0 = Self(GG.NonArgAggregateOp.ci0)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let ci1 = Self(NonArgAggregateOp.ci1)
+    static let ci1 = Self(GG.NonArgAggregateOp.ci1)
 
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let values = Self(NonArgAggregateOp.values)
+    static let values = Self(GG.NonArgAggregateOp.values)
     /// Pass-through for `NonArgAggregateOp.distinct`
-    static let product = Self(NonArgAggregateOp.product)
+    static let product = Self(GG.NonArgAggregateOp.product)
 }
 
-public extension UtcSingleTimeUnit {
+public extension GG.UtcSingleTimeUnit {
     /// Returns the local version of this UTC time unit
-    var localSingleTimeUnit: LocalSingleTimeUnit {
+    var localSingleTimeUnit: GG.LocalSingleTimeUnit {
         switch self {
         case .utcyear: return .year
         case .utcquarter: return .quarter
@@ -489,8 +489,8 @@ public extension UtcSingleTimeUnit {
     }
 }
 
-public extension LocalMultiTimeUnit {
-    var singleTimeUnits: [LocalSingleTimeUnit] {
+public extension GG.LocalMultiTimeUnit {
+    var singleTimeUnits: [GG.LocalSingleTimeUnit] {
         switch self {
         case .yearquarter: return [.year, .quarter]
         case .yearquartermonth: return [.year, .quarter, .month]
@@ -525,8 +525,8 @@ public extension LocalMultiTimeUnit {
     }
 }
 
-public extension UtcMultiTimeUnit {
-    var singleTimeUnits: [UtcSingleTimeUnit] {
+public extension GG.UtcMultiTimeUnit {
+    var singleTimeUnits: [GG.UtcSingleTimeUnit] {
         switch self {
         case .utcyearquarter: return [.utcyear, .utcquarter]
         case .utcyearquartermonth: return [.utcyear, .utcquarter, .utcmonth]

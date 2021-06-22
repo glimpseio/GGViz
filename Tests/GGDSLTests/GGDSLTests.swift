@@ -121,7 +121,7 @@ final class GGDSLTests: XCTestCase {
 
     /// Verify that the raw legend is created by the builder DSL
     func testLegendValues() {
-        let l1 = LegendDef(
+        let l1 = GG.LegendDef(
             columns: .init(1),
             legendX: .init(200),
             legendY: .init(80),
@@ -133,7 +133,7 @@ final class GGDSLTests: XCTestCase {
             .columns(1)
             .legendX(200)
             .legendY(80)
-            .orient(LegendOrient.none)
+            .orient(GG.LegendOrient.none)
             .title(.null)
 
         XCTAssertEqual(l1, l2.rawValue)
@@ -202,12 +202,12 @@ final class GGDSLTests: XCTestCase {
             Mark(.circle) {
                 Encode(.color, field: "C")
                     .aggregate(.min)
-                    .sort(Sort(.init(SortByEncoding(encoding: .color, order: .init(.descending)))))
+                    .sort(GG.Sort(.init(GG.SortByEncoding(encoding: .color, order: .init(.descending)))))
 
                 Encode(.color, field: "D").aggregate(.max) // single-encoding override
 
                 Encode(.detail, field: "X").aggregate(.min)
-                Encode(.detail, field: FieldName("Y")) // multi-encoding
+                Encode(.detail, field: GG.FieldName("Y")) // multi-encoding
                 Encode(.detail).aggregate(.count) // multi-encoding
             }
             .opacity(0.8)
@@ -513,7 +513,7 @@ final class GGDSLTests: XCTestCase {
         _ = Graphiq {
             VizTheme()
                 .font("serif")
-                .title(.init(fontSize: .init(ExprRef(expr: Expr("width * 0.05")))))
+                .title(.init(fontSize: .init(GG.ExprRef(expr: GG.Expr("width * 0.05")))))
             
 
             Mark(.arc)
@@ -526,14 +526,14 @@ final class GGDSLTests: XCTestCase {
                 do {
                     Encode(.x)
 
-                    Encode(.x).aggregate(Aggregate(NonArgAggregateOp.average))
+                    Encode(.x).aggregate(GG.Aggregate(GG.NonArgAggregateOp.average))
 
                     Encode(.x, field: "a")
                     Encode(.x, value: .width)
                     Encode(.x, value: 22)
                     Encode(.x, datum: 22)
                     Encode(.x, expression: "1+2")
-                    Encode(.x, repeat: RepeatRef(repeat: .column))
+                    Encode(.x, repeat: GG.RepeatRef(repeat: .column))
                 }
 
                 do {
@@ -543,7 +543,7 @@ final class GGDSLTests: XCTestCase {
                     Encode(.y, value: 22)
                     Encode(.y, datum: 22)
                     Encode(.y, expression: "1+2")
-                    Encode(.y, repeat: RepeatRef(repeat: .row))
+                    Encode(.y, repeat: GG.RepeatRef(repeat: .row))
                 }
 
                 do {
@@ -573,7 +573,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.latitude)
-                    Encode(.latitude, field: FieldName("FIELD"))
+                    Encode(.latitude, field: GG.FieldName("FIELD"))
                     Encode(.latitude, datum: nil)
                     Encode(.latitude, datum: "X")
                     Encode(.latitude, datum: 1)
@@ -581,7 +581,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.latitude2)
-                    Encode(.latitude2, field: FieldName("FIELD"))
+                    Encode(.latitude2, field: GG.FieldName("FIELD"))
                     Encode(.latitude2, datum: nil)
                     Encode(.latitude2, datum: "X")
                     Encode(.latitude2, datum: 1)
@@ -589,7 +589,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.longitude)
-                    Encode(.longitude, field: FieldName("FIELD"))
+                    Encode(.longitude, field: GG.FieldName("FIELD"))
                     Encode(.longitude, datum: nil)
                     Encode(.longitude, datum: "X")
                     Encode(.longitude, datum: 1)
@@ -597,7 +597,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.longitude2)
-                    Encode(.longitude2, field: FieldName("FIELD"))
+                    Encode(.longitude2, field: GG.FieldName("FIELD"))
                     Encode(.longitude2, datum: nil)
                     Encode(.longitude2, datum: "X")
                     Encode(.longitude2, datum: 1)
@@ -605,40 +605,40 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.href)
-                    Encode(.href, field: FieldName("FIELD"))
+                    Encode(.href, field: GG.FieldName("FIELD"))
                     Encode(.href, value: nil)
                     Encode(.href, value: .null)
                     Encode(.href, value: "https://www.example.org")
-                    Encode(.href, expr: .init(expr: Expr("'https://' + 'whatever.net'")))
+                    Encode(.href, expr: .init(expr: GG.Expr("'https://' + 'whatever.net'")))
                 }
 
                 do {
                     Encode(.url)
-                    Encode(.url, field: FieldName("FIELD"))
+                    Encode(.url, field: GG.FieldName("FIELD"))
                     Encode(.url, value: nil)
                     Encode(.url, value: .null)
                     Encode(.url, value: "https://www.example.org")
-                    Encode(.url, expr: .init(expr: Expr("'https://' + 'whatever.net'")))
+                    Encode(.url, expr: .init(expr: GG.Expr("'https://' + 'whatever.net'")))
                 }
 
                 do {
                     Encode(.description)
-                    Encode(.description, field: FieldName("FIELD"))
+                    Encode(.description, field: GG.FieldName("FIELD"))
                     Encode(.description, value: nil)
                     Encode(.description, value: .null) // same
                     Encode(.description, value: "Description")
-                    Encode(.description, expr: .init(expr: Expr("'Desc' + 'ription'")))
+                    Encode(.description, expr: .init(expr: GG.Expr("'Desc' + 'ription'")))
                 }
 
                 do {
                     Encode(.strokeDash)
-                    Encode(.strokeDash, field: FieldName("FIELD"))
+                    Encode(.strokeDash, field: GG.FieldName("FIELD"))
                     Encode(.strokeDash, value: [1, 2, 3])
                 }
 
                 do {
                     Encode(.description)
-                    Encode(.description, field: FieldName("FIELD"))
+                    Encode(.description, field: GG.FieldName("FIELD"))
                     Encode(.description, value: nil)
                     Encode(.description, value: .null)
                     Encode(.description, value: "Accessible Description")
@@ -646,7 +646,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.url)
-                    Encode(.url, field: FieldName("FIELD"))
+                    Encode(.url, field: GG.FieldName("FIELD"))
                     Encode(.url, value: nil)
                     Encode(.url, value: .null)
                     Encode(.url, value: "https://www.example.org/image.png")
@@ -654,14 +654,14 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.key)
-                    Encode(.key, field: FieldName("FIELD")) // key only permits field encodings
+                    Encode(.key, field: GG.FieldName("FIELD")) // key only permits field encodings
                 }
 
                 do {
                     Encode(.shape)
-                    Encode(.shape, field: FieldName("FIELD"))
+                    Encode(.shape, field: GG.FieldName("FIELD"))
                     Encode(.shape, value: nil)
-                    Encode(.shape, value: SymbolShape.circle)
+                    Encode(.shape, value: GG.SymbolShape.circle)
                 }
 
                 do {
@@ -694,7 +694,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.color)
-                    Encode(.color, field: FieldName("c"))
+                    Encode(.color, field: GG.FieldName("c"))
                         .legend(nil)
                         .title(.init("Colorful"))
                     Encode(.color, value: .null)
@@ -704,23 +704,23 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.size)
-                    Encode(.size, field: FieldName("dc"))
+                    Encode(.size, field: GG.FieldName("dc"))
                         .legend(.init(nil))
                         .title(.init("Colorful"))
                     Encode(.size, value: 33)
                 }
 
-                Encode(.x, field: FieldName("a"))
+                Encode(.x, field: GG.FieldName("a"))
                     .type(.nominal)
                     .aggregate(.sum)
                     .axis(nil)
 
                 Encode(.y)
-                    .field(SourceColumnRef(FieldName("b")))
+                    .field(GG.SourceColumnRef(GG.FieldName("b")))
                     .type(.quantitative)
                     .bandPosition(11)
 
-                Encode(.color, field: FieldName("c"))
+                Encode(.color, field: GG.FieldName("c"))
                     .legend(nil)
                     .type(.ordinal)
 
@@ -737,19 +737,19 @@ final class GGDSLTests: XCTestCase {
         let viz = Graphiq {
             VizTheme()
                 .font("serif")
-                .title(.init(fontSize: .init(ExprRef(expr: Expr("width * 0.05")))))
+                .title(.init(fontSize: .init(GG.ExprRef(expr: GG.Expr("width * 0.05")))))
 
             Mark(.bar) {
-                Encode(.x, field: FieldName("a"))
+                Encode(.x, field: GG.FieldName("a"))
                     .type(.nominal)
                     .aggregate(.sum)
                     .axis(nil)
 
-                Encode(.y, field: FieldName("b"))
+                Encode(.y, field: GG.FieldName("b"))
                     .type(.quantitative)
                     .bandPosition(11)
 
-                Encode(.color, field: FieldName("c"))
+                Encode(.color, field: GG.FieldName("c"))
                     .legend(nil)
                     .type(.ordinal)
 

@@ -1,2 +1,1 @@
-@_exported import BricBrac
-//@_exported import GGSpec
+@_exported import GGSpec

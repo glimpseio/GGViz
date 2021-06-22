@@ -25,15 +25,15 @@ public typealias Repeat = VizRepeat
 /// A type that can be used to create a field value
 public protocol FieldNameRepresentable {
     /// The `GGSpec.Field` form of this specification
-    var fieldName: FieldName { get }
+    var fieldName: GG.FieldName { get }
 }
 
 extension String : FieldNameRepresentable {
-    public var fieldName: FieldName { .init(self) }
+    public var fieldName: GG.FieldName { .init(self) }
 }
 
-extension FieldName : FieldNameRepresentable {
-    public var fieldName: FieldName { self }
+extension GG.FieldName : FieldNameRepresentable {
+    public var fieldName: GG.FieldName { self }
 }
 
 /// A type that converts the properties of an encapsulated instance into dynamic builder DSL types. For example, the following will be equivalent:
@@ -166,36 +166,36 @@ public protocol VizEncodingElementType : VizSpecBuilderType {
 }
 
 public protocol VizMarkType : VizSpecElementType {
-    var encodings: EncodingChannelMap { get }
+    var encodings: GG.EncodingChannelMap { get }
 }
 
 public protocol VizMarkDefType : Pure {
-    var anyMark: AnyMark { get }
+    var anyMark: GG.AnyMark { get }
 }
 
-extension MarkDef : VizMarkDefType {
-    public var anyMark: AnyMark { .init(self) }
+extension GG.MarkDef : VizMarkDefType {
+    public var anyMark: GG.AnyMark { .init(self) }
 }
 
-extension BoxPlotDef : VizMarkDefType {
-    public var anyMark: AnyMark { .init(.init(self)) }
+extension GG.BoxPlotDef : VizMarkDefType {
+    public var anyMark: GG.AnyMark { .init(.init(self)) }
 }
 
-extension ErrorBarDef : VizMarkDefType {
-    public var anyMark: AnyMark { .init(.init(self)) }
+extension GG.ErrorBarDef : VizMarkDefType {
+    public var anyMark: GG.AnyMark { .init(.init(self)) }
 }
 
-extension ErrorBandDef : VizMarkDefType {
-    public var anyMark: AnyMark { .init(.init(self)) }
+extension GG.ErrorBandDef : VizMarkDefType {
+    public var anyMark: GG.AnyMark { .init(.init(self)) }
 }
 
 public protocol VizTransformDefType : Pure {
-    var anyTransform: DataTransformation { get }
+    var anyTransform: GG.DataTransformation { get }
 }
 
 @dynamicMemberLookup
 public struct VizTheme : VizSpecElementType, EncapsulatedPropertyRouter {
-    public var rawValue: GGSpec.ConfigTheme
+    public var rawValue: GG.ConfigTheme
 
     public init(rawValue: RawValue = .init()) { self.rawValue = rawValue }
 
@@ -208,13 +208,13 @@ public struct VizTheme : VizSpecElementType, EncapsulatedPropertyRouter {
 
 @dynamicMemberLookup
 public struct VizProjection : VizSpecElementType, EncapsulatedPropertyRouter, VizDSLType {
-    public var rawValue: GGSpec.Projection
+    public var rawValue: GG.Projection
 
-    public init(rawValue projection: Projection) {
+    public init(rawValue projection: GG.Projection) {
         self.rawValue = projection
     }
 
-    public init(_ type: ProjectionType? = nil, projection: GGSpec.Projection = GGSpec.Projection()) {
+    public init(_ type: GG.ProjectionType? = nil, projection: GG.Projection = GG.Projection()) {
         self.rawValue = projection
         if let type = type {
             self.rawValue.type = .init(.init(type))
@@ -245,11 +245,11 @@ public struct VizTransform<Def : VizTransformDefType> : VizSpecElementType, VizD
 
 // MARK: DataTransform: Sample
 
-extension SampleTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.SampleTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == SampleTransform {
+public extension VizTransform where Def == GG.SampleTransform {
     enum SampleLiteral { case sample }
     init(_ sampleTransform: SampleLiteral, sample: Double = 999, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(sample: sample)
@@ -257,11 +257,11 @@ public extension VizTransform where Def == SampleTransform {
     }
 }
 
-extension AggregateTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.AggregateTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == AggregateTransform {
+public extension VizTransform where Def == GG.AggregateTransform {
     enum AggregateLiteral { case aggregate }
     init(_ aggregateTransform: AggregateLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init()
@@ -269,60 +269,60 @@ public extension VizTransform where Def == AggregateTransform {
     }
 }
 
-extension BinTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.BinTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == BinTransform {
+public extension VizTransform where Def == GG.BinTransform {
     enum BinLiteral { case bin }
-    init(_ binTransform: BinLiteral, field: FieldNameRepresentable, params: BinParams?, output as: [FieldNameRepresentable], @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+    init(_ binTransform: BinLiteral, field: FieldNameRepresentable, params: GG.BinParams?, output as: [FieldNameRepresentable], @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(as: .init(`as`.map(\.fieldName)), bin: params.map({ .init($0) }) ?? .init(true), field: field.fieldName)
         self.makeElements = makeElements
     }
 }
 
-extension CalculateTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.CalculateTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == CalculateTransform {
+public extension VizTransform where Def == GG.CalculateTransform {
     enum CalculateLiteral { case calculate }
-    init(_ calculateTransform: CalculateLiteral, output as: FieldNameRepresentable, expression calculate: Expr, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+    init(_ calculateTransform: CalculateLiteral, output as: FieldNameRepresentable, expression calculate: GG.Expr, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(as: `as`.fieldName, calculate: calculate)
         self.makeElements = makeElements
     }
 }
 
-extension DensityTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.DensityTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == DensityTransform {
+public extension VizTransform where Def == GG.DensityTransform {
     enum DensityLiteral { case density }
-    init(_ densityTransform: DensityLiteral, field density: FieldNameRepresentable, group groupby: [FieldNameRepresentable]? = nil, bandwidth: Double? = nil, counts: Bool? = nil, cumulative: Bool? = nil, extent: [DensityTransform.ExtentItem]? = nil, maxsteps: Double? = nil, minsteps: Double? = nil, steps: Double? = nil, sampleOutput: FieldNameRepresentable? = nil, densityOutput: FieldNameRepresentable? = nil, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ sampleValueOutput: FieldNameRepresentable, _ densityEstimateOutput: FieldNameRepresentable) -> [VizLayerElementType]) {
+    init(_ densityTransform: DensityLiteral, field density: FieldNameRepresentable, group groupby: [FieldNameRepresentable]? = nil, bandwidth: Double? = nil, counts: Bool? = nil, cumulative: Bool? = nil, extent: [GG.DensityTransform.ExtentItem]? = nil, maxsteps: Double? = nil, minsteps: Double? = nil, steps: Double? = nil, sampleOutput: FieldNameRepresentable? = nil, densityOutput: FieldNameRepresentable? = nil, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ sampleValueOutput: FieldNameRepresentable, _ densityEstimateOutput: FieldNameRepresentable) -> [VizLayerElementType]) {
         self.rawValue = .init(as: sampleOutput == nil && densityOutput == nil ? nil : [(sampleOutput ?? "value").fieldName, (densityOutput ?? "density").fieldName], bandwidth: bandwidth, counts: counts, cumulative: cumulative, density: density.fieldName, extent: extent, groupby: groupby?.map(\.fieldName), maxsteps: maxsteps, minsteps: minsteps, steps: steps)
         // self.makeElements = { makeElements(self.transformDef.as?.first?.fieldName ?? "value", self.transformDef.as?.last?.fieldName ?? "density") }
         self.makeElements = { makeElements(sampleOutput ?? "value", densityOutput ?? "density") }
     }
 }
 
-extension FilterTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.FilterTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == FilterTransform {
+public extension VizTransform where Def == GG.FilterTransform {
     enum FilterLiteral { case filter }
-    init(_ filterTransform: FilterLiteral, filter: PredicateComposition, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+    init(_ filterTransform: FilterLiteral, filter: GG.PredicateComposition, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(filter: filter)
         self.makeElements = makeElements
     }
 }
 
-extension FlattenTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.FlattenTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == FlattenTransform {
+public extension VizTransform where Def == GG.FlattenTransform {
     enum FlattenLiteral { case flatten }
     init(_ flattenTransform: FlattenLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init()
@@ -330,11 +330,11 @@ public extension VizTransform where Def == FlattenTransform {
     }
 }
 
-extension FoldTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.FoldTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == FoldTransform {
+public extension VizTransform where Def == GG.FoldTransform {
     enum FoldLiteral { case fold }
     init(_ foldTransform: FoldLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init()
@@ -342,11 +342,11 @@ public extension VizTransform where Def == FoldTransform {
     }
 }
 
-extension ImputeTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.ImputeTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == ImputeTransform {
+public extension VizTransform where Def == GG.ImputeTransform {
     enum ImputeLiteral { case impute }
     init(_ imputeTransform: ImputeLiteral, impute: FieldNameRepresentable, key: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(impute: impute.fieldName, key: key.fieldName)
@@ -354,11 +354,11 @@ public extension VizTransform where Def == ImputeTransform {
     }
 }
 
-extension JoinAggregateTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.JoinAggregateTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == JoinAggregateTransform {
+public extension VizTransform where Def == GG.JoinAggregateTransform {
     enum JoinAggregateLiteral { case joinAggregate }
     init(_ joinAggregateTransform: JoinAggregateLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init()
@@ -366,11 +366,11 @@ public extension VizTransform where Def == JoinAggregateTransform {
     }
 }
 
-extension LoessTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.LoessTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == LoessTransform {
+public extension VizTransform where Def == GG.LoessTransform {
     enum LoessLiteral { case loess }
     init(_ loessTransform: LoessLiteral, field: FieldNameRepresentable, on: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(loess: field.fieldName, on: on.fieldName)
@@ -378,28 +378,28 @@ public extension VizTransform where Def == LoessTransform {
     }
 }
 
-extension LookupTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.LookupTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == LookupTransform {
+public extension VizTransform where Def == GG.LookupTransform {
     enum LookupLiteral { case lookup }
-    init(_ lookupTransform: LookupLiteral, field: FieldNameRepresentable, data: LookupData, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+    init(_ lookupTransform: LookupLiteral, field: FieldNameRepresentable, data: GG.LookupData, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(from: .init(data), lookup: field.fieldName)
         self.makeElements = makeElements
     }
 
-    init(_ lookupTransform: LookupLiteral, field: FieldNameRepresentable, selection: LookupSelection, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+    init(_ lookupTransform: LookupLiteral, field: FieldNameRepresentable, selection: GG.LookupSelection, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(from: .init(selection), lookup: field.fieldName)
         self.makeElements = makeElements
     }
 }
 
-extension QuantileTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.QuantileTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == QuantileTransform {
+public extension VizTransform where Def == GG.QuantileTransform {
     enum QuantileLiteral { case quantile }
     init(_ quantileTransform: QuantileLiteral, field: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(quantile: field.fieldName)
@@ -407,41 +407,41 @@ public extension VizTransform where Def == QuantileTransform {
     }
 }
 
-extension RegressionTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.RegressionTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == RegressionTransform {
+public extension VizTransform where Def == GG.RegressionTransform {
     enum RegressionLiteral { case regression }
-    init(_ regressionTransform: RegressionLiteral, field: FieldName, on: FieldName, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+    init(_ regressionTransform: RegressionLiteral, field: GG.FieldName, on: GG.FieldName, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(on: on.fieldName, regression: field.fieldName)
         self.makeElements = makeElements
     }
 }
 
-extension TimeUnitTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.TimeUnitTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == TimeUnitTransform {
+public extension VizTransform where Def == GG.TimeUnitTransform {
     enum TimeUnitLiteral { case timeUnit }
-    init(_ timeUnitTransform: TimeUnitLiteral, field: FieldNameRepresentable, timeUnit: TimeUnit, output as: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+    init(_ timeUnitTransform: TimeUnitLiteral, field: FieldNameRepresentable, timeUnit: GG.TimeUnit, output as: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(as: `as`.fieldName, field: field.fieldName, timeUnit: .init(timeUnit))
         self.makeElements = makeElements
     }
 
-    init(_ timeUnitTransform: TimeUnitLiteral, field: FieldNameRepresentable, params: TimeUnitParams, output as: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+    init(_ timeUnitTransform: TimeUnitLiteral, field: FieldNameRepresentable, params: GG.TimeUnitParams, output as: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(as: `as`.fieldName, field: field.fieldName, timeUnit: .init(params))
         self.makeElements = makeElements
     }
 
 }
 
-extension StackTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.StackTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == StackTransform {
+public extension VizTransform where Def == GG.StackTransform {
     enum StackLiteral { case stack }
     init(_ stackTransform: StackLiteral, field stack: FieldNameRepresentable, startField: FieldNameRepresentable, endField: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ startField: FieldNameRepresentable, _ endField: FieldNameRepresentable) -> [VizLayerElementType]) {
         self.rawValue = .init(as: .init([startField.fieldName, endField.fieldName]), stack: stack.fieldName)
@@ -449,11 +449,11 @@ public extension VizTransform where Def == StackTransform {
     }
 }
 
-extension WindowTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.WindowTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == WindowTransform {
+public extension VizTransform where Def == GG.WindowTransform {
     enum WindowLiteral { case window }
     init(_ windowTransform: WindowLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init()
@@ -461,11 +461,11 @@ public extension VizTransform where Def == WindowTransform {
     }
 }
 
-extension PivotTransform : VizTransformDefType {
-    public var anyTransform: DataTransformation { .init(self) }
+extension GG.PivotTransform : VizTransformDefType {
+    public var anyTransform: GG.DataTransformation { .init(self) }
 }
 
-public extension VizTransform where Def == PivotTransform {
+public extension VizTransform where Def == GG.PivotTransform {
     enum PivotLiteral { case pivot }
     init(_ pivotTransform: PivotLiteral, pivot: FieldNameRepresentable, value: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(pivot: pivot.fieldName, value: value.fieldName)
@@ -507,7 +507,7 @@ extension Viz : CustomDebugStringConvertible {
 @dynamicMemberLookup
 public struct VizMark<Def : VizMarkDefType> : VizMarkType, VizDSLType, EncapsulatedPropertyRouter {
     public var markDef: Def
-    public var encodings: EncodingChannelMap = EncodingChannelMap()
+    public var encodings: GG.EncodingChannelMap = GG.EncodingChannelMap()
 
     public var rawValue: Def {
         get { markDef }
@@ -531,74 +531,74 @@ extension VizMark {
     }
 }
 
-public extension VizMark where Def == MarkDef {
-    init(_ primitiveMark: PrimitiveMarkType) {
+public extension VizMark where Def == GG.MarkDef {
+    init(_ primitiveMark: GG.PrimitiveMarkType) {
         self.init(primitiveMark) { }
     }
 
-    init(_ primitiveMark: PrimitiveMarkType, @VizMarkElementArrayBuilder makeEncodings: () -> [VizMarkElementType]) {
-        markDef = MarkDef(type: primitiveMark)
+    init(_ primitiveMark: GG.PrimitiveMarkType, @VizMarkElementArrayBuilder makeEncodings: () -> [VizMarkElementType]) {
+        markDef = GG.MarkDef(type: primitiveMark)
         addEncodings(makeEncodings())
     }
 }
 
-public extension VizMark where Def == BoxPlotDef {
-    init(_ boxPlot: BoxPlotLiteral) {
+public extension VizMark where Def == GG.BoxPlotDef {
+    init(_ boxPlot: GG.BoxPlotLiteral) {
         self.init(boxPlot) { }
     }
 
-    init(_ boxPlot: BoxPlotLiteral, @VizMarkElementArrayBuilder makeEncodings: () -> [VizMarkElementType]) {
-        markDef = BoxPlotDef(type: boxPlot)
+    init(_ boxPlot: GG.BoxPlotLiteral, @VizMarkElementArrayBuilder makeEncodings: () -> [VizMarkElementType]) {
+        markDef = GG.BoxPlotDef(type: boxPlot)
         addEncodings(makeEncodings())
     }
 }
 
-public extension VizMark where Def == ErrorBarDef {
-    init(_ errorBar: ErrorBarLiteral) {
+public extension VizMark where Def == GG.ErrorBarDef {
+    init(_ errorBar: GG.ErrorBarLiteral) {
         self.init(errorBar) { }
     }
 
-    init(_ errorBar: ErrorBarLiteral, @VizMarkElementArrayBuilder makeEncodings: () -> [VizMarkElementType]) {
-        markDef = ErrorBarDef(type: errorBar)
+    init(_ errorBar: GG.ErrorBarLiteral, @VizMarkElementArrayBuilder makeEncodings: () -> [VizMarkElementType]) {
+        markDef = GG.ErrorBarDef(type: errorBar)
         addEncodings(makeEncodings())
     }
 }
 
-public extension VizMark where Def == ErrorBandDef {
-    init(_ errorBand: ErrorBandLiteral) {
+public extension VizMark where Def == GG.ErrorBandDef {
+    init(_ errorBand: GG.ErrorBandLiteral) {
         self.init(errorBand) { }
     }
 
-    init(_ errorBand: ErrorBandLiteral, @VizMarkElementArrayBuilder makeEncodings: () -> [VizMarkElementType]) {
-        markDef = ErrorBandDef(type: errorBand)
+    init(_ errorBand: GG.ErrorBandLiteral, @VizMarkElementArrayBuilder makeEncodings: () -> [VizMarkElementType]) {
+        markDef = GG.ErrorBandDef(type: errorBand)
         addEncodings(makeEncodings())
     }
 }
 
 public protocol VizMarkElementType : VizDSLType {
     /// Adds this encoding information to the given `EncodingChannelMap`
-    func addEncoding(to encodings: inout EncodingChannelMap)
+    func addEncoding(to encodings: inout GG.EncodingChannelMap)
 }
 
 
 
 // MARK: Guides
 
-public typealias AnyGuide = OneOf<AxisDef>.Or<LegendDef>.Or<HeaderDef>
+public typealias AnyGuide = OneOf<GG.AxisDef>.Or<GG.LegendDef>.Or<GG.HeaderDef>
 
 public protocol VizGuideDefType : Pure {
     var anyGuide: AnyGuide { get }
 }
 
-extension AxisDef : VizGuideDefType {
+extension GG.AxisDef : VizGuideDefType {
     public var anyGuide: AnyGuide { .init(self) }
 }
 
-extension LegendDef : VizGuideDefType {
+extension GG.LegendDef : VizGuideDefType {
     public var anyGuide: AnyGuide { .init(self) }
 }
 
-extension HeaderDef : VizGuideDefType {
+extension GG.HeaderDef : VizGuideDefType {
     public var anyGuide: AnyGuide { .init(self) }
 }
 
@@ -619,27 +619,27 @@ public protocol VizGuidedEncodeElementType : VizEncodeElementType {
 
 /// A `VizEncodeElementType` that can contain an axis
 public protocol VizAxisEncodeElementType : VizGuidedEncodeElementType {
-    var rawValue: AxisDef { get }
+    var rawValue: GG.AxisDef { get }
 }
 
 /// A `VizEncodeElementType` that can contain a legend
 public protocol VizLegendEncodeElementType : VizGuidedEncodeElementType {
-    var rawValue: LegendDef { get }
+    var rawValue: GG.LegendDef { get }
 }
 
 /// A `VizEncodeElementType` that can contain a header
 public protocol VizHeaderEncodeElementType : VizGuidedEncodeElementType {
-    var rawValue: HeaderDef { get }
+    var rawValue: GG.HeaderDef { get }
 }
 
 public protocol VizScaleEncodeElementType : VizEncodeElementType {
-    var rawValue: ScaleDef { get }
+    var rawValue: GG.ScaleDef { get }
 }
 
 
 extension VizEncodeElementType {
     /// If this element has an axis, returns the axis def.
-    var axis: AxisDef? {
+    var axis: GG.AxisDef? {
         if let axisElement = self as? VizAxisEncodeElementType {
             return axisElement.rawValue
         } else {
@@ -648,7 +648,7 @@ extension VizEncodeElementType {
     }
 
     /// If this element has an legend, returns the legend def.
-    var legend: LegendDef? {
+    var legend: GG.LegendDef? {
         if let legendElement = self as? VizLegendEncodeElementType {
             return legendElement.rawValue
         } else {
@@ -657,7 +657,7 @@ extension VizEncodeElementType {
     }
 
     /// If this element has an header, returns the header def.
-    var header: HeaderDef? {
+    var header: GG.HeaderDef? {
         if let headerElement = self as? VizHeaderEncodeElementType {
             return headerElement.rawValue
         } else {
@@ -666,7 +666,7 @@ extension VizEncodeElementType {
     }
 
     /// If this element has an scale, returns the scale def.
-    var scale: ScaleDef? {
+    var scale: GG.ScaleDef? {
         if let scaleElement = self as? VizScaleEncodeElementType {
             return scaleElement.rawValue
         } else {
@@ -678,9 +678,9 @@ extension VizEncodeElementType {
 /// Scales map data values (numbers, dates, categories, etc.) to visual values (pixels, colors, sizes).
 @dynamicMemberLookup
 public struct VizScale<Def : VizGuideDefType> : VizScaleEncodeElementType, VizDSLType, EncapsulatedPropertyRouter {
-    public var rawValue: ScaleDef
+    public var rawValue: GG.ScaleDef
 
-    public init(rawValue scaleDef: ScaleDef = ScaleDef()) {
+    public init(rawValue scaleDef: GG.ScaleDef = GG.ScaleDef()) {
         self.rawValue = scaleDef
     }
 }
@@ -703,35 +703,35 @@ extension VizGuide : VizGuidedEncodeElementType {
 
 }
 
-extension VizGuide : VizLegendEncodeElementType where Def == LegendDef {
+extension VizGuide : VizLegendEncodeElementType where Def == GG.LegendDef {
     public enum LegendGuide {
         /// A legend is a guide that shows the values for non-positional visual scales such as color, size, or line dash patterns.
         case legend
     }
 
-    public init(_ legend: LegendGuide = .legend, guideDef: LegendDef = LegendDef()) {
+    public init(_ legend: LegendGuide = .legend, guideDef: GG.LegendDef = GG.LegendDef()) {
         self.rawValue = guideDef
     }
 }
 
-extension VizGuide : VizAxisEncodeElementType where Def == AxisDef {
+extension VizGuide : VizAxisEncodeElementType where Def == GG.AxisDef {
     public enum AxisGuide {
         /// An axis is a guide that for positional scales
         case axis
     }
 
-    public init(_ axis: AxisGuide = .axis, guideDef: AxisDef = AxisDef()) {
+    public init(_ axis: AxisGuide = .axis, guideDef: GG.AxisDef = GG.AxisDef()) {
         self.rawValue = guideDef
     }
 }
 
-extension VizGuide : VizHeaderEncodeElementType where Def == HeaderDef {
+extension VizGuide : VizHeaderEncodeElementType where Def == GG.HeaderDef {
     public enum HeaderGuide {
         /// An header is a guide that for headers
         case header
     }
 
-    public init(_ header: HeaderGuide = .header, guideDef: HeaderDef = HeaderDef()) {
+    public init(_ header: HeaderGuide = .header, guideDef: GG.HeaderDef = GG.HeaderDef()) {
         self.rawValue = guideDef
     }
 }
@@ -827,16 +827,16 @@ public extension VizSpec {
     ///   - repeatSpec: the specification to repeat
     ///   - fields: the fields to apply to the repeat fields
     ///   - repeatArrangement: the arrangement of the repeat (`.horizontal`, `.vertical`, `.wrap`, `.overlay`)
-    mutating func setRepeating(spec repeatSpec: Self, fields: [FieldName], arrangement repeatArrangement: LayerArrangement) {
+    mutating func setRepeating(spec repeatSpec: Self, fields: [GG.FieldName], arrangement repeatArrangement: LayerArrangement) {
         self.arrangement = nil // .repeat
         self.spec = .init(repeatSpec) // add it as the `repeat spec`
         switch repeatArrangement {
         case .overlay:
-            self.repeat = .init(LayerRepeatMapping(layer: fields))
+            self.repeat = .init(GG.LayerRepeatMapping(layer: fields))
         case .horizontal:
-            self.repeat = .init(RepeatMapping(column: fields))
+            self.repeat = .init(GG.RepeatMapping(column: fields))
         case .vertical:
-            self.repeat = .init(RepeatMapping(row: fields))
+            self.repeat = .init(GG.RepeatMapping(row: fields))
         case .wrap:
             self.repeat = .init(fields)
         }
@@ -848,7 +848,7 @@ public struct VizRepeat : VizSpecElementType, VizLayerType {
     let repeatFields: [FieldNameRepresentable]
     let makeElements: () -> [VizLayerElementType]
 
-    public init(_ repeatArrangement: LayerArrangement, fields repeatFields: [FieldNameRepresentable], @VizLayerElementArrayBuilder _ makeElements: @escaping (_ ref: RepeatRef) -> [VizLayerElementType]) {
+    public init(_ repeatArrangement: LayerArrangement, fields repeatFields: [FieldNameRepresentable], @VizLayerElementArrayBuilder _ makeElements: @escaping (_ ref: GG.RepeatRef) -> [VizLayerElementType]) {
         self.repeatArrangement = repeatArrangement
         self.repeatFields = repeatFields
         self.makeElements = { makeElements(repeatArrangement.repeatRef) }
@@ -905,7 +905,7 @@ extension VizDSLType {
 public protocol VizEncodingChannelType : Pure, RawCodable {
     static var encodingChannel: EncodingChannel { get }
 
-    func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType])
+    func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType])
 }
 
 @dynamicMemberLookup
@@ -927,7 +927,7 @@ extension VizEncode : VizLayerElementType {
 }
 
 extension VizEncode : VizMarkElementType {
-    public func addEncoding(to encodings: inout EncodingChannelMap) {
+    public func addEncoding(to encodings: inout GG.EncodingChannelMap) {
         deriveChannel(rawValue).addChannel(to: &encodings, elements: makeElements())
     }
 }
@@ -936,7 +936,7 @@ extension VizEncode : VizMarkElementType {
 
 // MARK: VizEncode: X
 
-public extension VizEncode where Channel == EncodingChannelMap.XEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.XEncoding {
     enum XChannel {
         /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
         case x
@@ -948,9 +948,9 @@ public extension VizEncode where Channel == EncodingChannelMap.XEncoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.XEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> PositionFieldDef { def }
+    private func toDef(_ def: Def) -> GG.PositionFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ x: XChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -967,7 +967,7 @@ public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def ==
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ x: XChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x: XChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -976,9 +976,9 @@ public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def ==
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.XEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> PositionDatumDef { def }
+    private func toDef(_ def: Def) -> GG.PositionDatumDef { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ x: XChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1013,7 +1013,7 @@ public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def ==
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ x: XChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x: XChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1030,7 +1030,7 @@ public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def ==
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ x: XChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x: XChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1039,9 +1039,9 @@ public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def ==
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.XEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumberWidthHeightExprRef { def }
 
     /// Creates this encoding with the given constant value.
     init(_ x: XChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1052,7 +1052,7 @@ public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def ==
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ x: XChannel, value constant: LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x: XChannel, value constant: GG.LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1060,7 +1060,7 @@ public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def ==
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ x: XChannel, value constant: LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x: XChannel, value constant: GG.LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T3 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1068,7 +1068,7 @@ public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def ==
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ x: XChannel, expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x: XChannel, expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -1085,7 +1085,7 @@ public extension VizEncode where Channel == EncodingChannelMap.XEncoding, Def ==
 
 // MARK: VizEncode: Y
 
-public extension VizEncode where Channel == EncodingChannelMap.YEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.YEncoding {
 
     enum YChannel {
         /// x and y position channels determine the position of the marks, or width/height of horizontal/vertical "area" and "bar". In addition, x2 and y2 can specify the span of ranged area, bar, rect, and rule.
@@ -1098,9 +1098,9 @@ public extension VizEncode where Channel == EncodingChannelMap.YEncoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.YEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> PositionFieldDef { def }
+    private func toDef(_ def: Def) -> GG.PositionFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ y: YChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1117,7 +1117,7 @@ public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def ==
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ y: YChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y: YChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -1126,9 +1126,9 @@ public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def ==
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.YEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> PositionDatumDef { def }
+    private func toDef(_ def: Def) -> GG.PositionDatumDef { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ y: YChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1163,7 +1163,7 @@ public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def ==
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ y: YChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y: YChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1180,7 +1180,7 @@ public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def ==
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ y: YChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y: YChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1189,9 +1189,9 @@ public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def ==
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.YEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumberWidthHeightExprRef { def }
 
     /// Creates this encoding with the given constant value.
     init(_ y: YChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1202,7 +1202,7 @@ public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def ==
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ y: YChannel, value constant: LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y: YChannel, value constant: GG.LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1210,7 +1210,7 @@ public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def ==
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ y: YChannel, value constant: LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y: YChannel, value constant: GG.LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T3 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1218,7 +1218,7 @@ public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def ==
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ y: YChannel, expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y: YChannel, expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -1231,7 +1231,7 @@ public extension VizEncode where Channel == EncodingChannelMap.YEncoding, Def ==
 
 // MARK: VizEncode: x2
 
-public extension VizEncode where Channel == EncodingChannelMap.X2Encoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.X2Encoding {
 
 
 
@@ -1246,9 +1246,9 @@ public extension VizEncode where Channel == EncodingChannelMap.X2Encoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.X2Encoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> SecondaryFieldDef { def }
+    private func toDef(_ def: Def) -> GG.SecondaryFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ x2: X2Channel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1265,7 +1265,7 @@ public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def =
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ x2: X2Channel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x2: X2Channel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -1274,9 +1274,9 @@ public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def =
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.X2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> DatumDef { def }
+    private func toDef(_ def: Def) -> GG.DatumDef { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ x2: X2Channel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1311,7 +1311,7 @@ public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def =
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ x2: X2Channel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x2: X2Channel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1328,7 +1328,7 @@ public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def =
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ x2: X2Channel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x2: X2Channel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1337,9 +1337,9 @@ public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def =
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.X2Encoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumberWidthHeightExprRef { def }
 
     /// Creates this encoding with the given constant value.
     init(_ x2: X2Channel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1350,7 +1350,7 @@ public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def =
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ x2: X2Channel, value constant: LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x2: X2Channel, value constant: GG.LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1358,7 +1358,7 @@ public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def =
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ x2: X2Channel, value constant: LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x2: X2Channel, value constant: GG.LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T3 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1366,7 +1366,7 @@ public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def =
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ x2: X2Channel, expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ x2: X2Channel, expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -1382,7 +1382,7 @@ public extension VizEncode where Channel == EncodingChannelMap.X2Encoding, Def =
 // MARK: VizEncode: y2
 
 
-public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Y2Encoding {
 
 
 
@@ -1397,9 +1397,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Y2Encoding, Def == GG.SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> SecondaryFieldDef { def }
+    private func toDef(_ def: Def) -> GG.SecondaryFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ y2: Y2Channel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1416,7 +1416,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def =
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ y2: Y2Channel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y2: Y2Channel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -1425,9 +1425,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def =
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Y2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> DatumDef { def }
+    private func toDef(_ def: Def) -> GG.DatumDef { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ y2: Y2Channel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1462,7 +1462,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def =
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ y2: Y2Channel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y2: Y2Channel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1479,7 +1479,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def =
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ y2: Y2Channel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y2: Y2Channel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1488,9 +1488,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def =
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Y2Encoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumberWidthHeightExprRef { def }
 
     /// Creates this encoding with the given constant value.
     init(_ y2: Y2Channel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1501,7 +1501,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def =
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ y2: Y2Channel, value constant: LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y2: Y2Channel, value constant: GG.LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1509,7 +1509,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def =
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ y2: Y2Channel, value constant: LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y2: Y2Channel, value constant: GG.LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T3 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1517,7 +1517,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def =
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ y2: Y2Channel, expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ y2: Y2Channel, expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -1530,7 +1530,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Y2Encoding, Def =
 
 // MARK: VizEncode: Color
 
-public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ColorEncoding {
 
 
 
@@ -1545,9 +1545,9 @@ public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ColorEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
     /// Creates an empty instance of this encoding.
     init(_ color: ColorChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1564,7 +1564,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, De
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ color: ColorChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ color: ColorChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -1573,9 +1573,9 @@ public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, De
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ColorEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ color: ColorChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1610,7 +1610,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, De
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ color: ColorChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ color: ColorChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1627,7 +1627,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, De
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ color: ColorChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ color: ColorChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1636,9 +1636,9 @@ public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, De
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ColorEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
 
     /// Creates this encoding with the given constant value.
     init(_ color: ColorChannel, value constant: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1649,12 +1649,12 @@ public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, De
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ color: ColorChannel, value constant: ColorGradientLinear, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ color: ColorChannel, value constant: GG.ColorGradientLinear, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.init(color, value: .init(.init(constant)), makeElements: makeElements)
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ color: ColorChannel, value constant: ColorGradientRadial, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ color: ColorChannel, value constant: GG.ColorGradientRadial, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.init(color, value: .init(.init(constant)), makeElements: makeElements)
     }
 
@@ -1664,11 +1664,11 @@ public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, De
     }
 
     /// Creates this encoding with the given constant color expression.
-    init(_ color: ColorChannel, expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ color: ColorChannel, expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.init(color, value: .init(expression), makeElements: makeElements)
     }
 
-    private init(_ color: ColorChannel, value constant: OneOf3<ColorGradient, String, ExprRef>, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    private init(_ color: ColorChannel, value constant: OneOf3<GG.ColorGradient, String, GG.ExprRef>, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1682,7 +1682,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ColorEncoding, De
 
 // MARK: VizEncode: Fill
 
-public extension VizEncode where Channel == EncodingChannelMap.FillEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.FillEncoding {
 
 
 
@@ -1697,9 +1697,9 @@ public extension VizEncode where Channel == EncodingChannelMap.FillEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.FillEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
     /// Creates an empty instance of this encoding.
     init(_ fill: FillChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1716,7 +1716,7 @@ public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ fill: FillChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ fill: FillChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -1725,9 +1725,9 @@ public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.FillEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ fill: FillChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1762,7 +1762,7 @@ public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ fill: FillChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ fill: FillChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1779,7 +1779,7 @@ public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ fill: FillChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ fill: FillChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1788,9 +1788,9 @@ public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.FillEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
 
     /// Creates this encoding with the given constant value.
     init(_ fill: FillChannel, value constant: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1801,12 +1801,12 @@ public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ fill: FillChannel, value constant: ColorGradientLinear, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ fill: FillChannel, value constant: GG.ColorGradientLinear, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.init(fill, value: .init(.init(constant)), makeElements: makeElements)
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ fill: FillChannel, value constant: ColorGradientRadial, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ fill: FillChannel, value constant: GG.ColorGradientRadial, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.init(fill, value: .init(.init(constant)), makeElements: makeElements)
     }
 
@@ -1823,11 +1823,11 @@ public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def
 //    }
 
     /// Creates this encoding with the given constant color expression.
-    init(_ fill: FillChannel, expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ fill: FillChannel, expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.init(fill, value: .init(expression), makeElements: makeElements)
     }
 
-    private init(_ fill: FillChannel, value constant: OneOf3<ColorGradient, String, ExprRef>, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    private init(_ fill: FillChannel, value constant: OneOf3<GG.ColorGradient, String, GG.ExprRef>, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1839,7 +1839,7 @@ public extension VizEncode where Channel == EncodingChannelMap.FillEncoding, Def
 
 // MARK: VizEncode: Stroke
 
-public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeEncoding {
 
 
 
@@ -1854,9 +1854,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefGradientStringNull { def }
 
     /// Creates an empty instance of this encoding.
     init(_ stroke: StrokeChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1873,7 +1873,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, D
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ stroke: StrokeChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ stroke: StrokeChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -1882,9 +1882,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, D
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefGradientStringNull { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ stroke: StrokeChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1919,7 +1919,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, D
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ stroke: StrokeChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ stroke: StrokeChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1936,7 +1936,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, D
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ stroke: StrokeChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ stroke: StrokeChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -1945,9 +1945,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, D
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefGradientStringNull { def }
 
     /// Creates this encoding with the given constant value.
     init(_ stroke: StrokeChannel, value constant: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -1958,12 +1958,12 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, D
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ stroke: StrokeChannel, value constant: ColorGradientLinear, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ stroke: StrokeChannel, value constant: GG.ColorGradientLinear, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.init(stroke, value: .init(.init(constant)), makeElements: makeElements)
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ stroke: StrokeChannel, value constant: ColorGradientRadial, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ stroke: StrokeChannel, value constant: GG.ColorGradientRadial, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.init(stroke, value: .init(.init(constant)), makeElements: makeElements)
     }
 
@@ -1973,11 +1973,11 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, D
     }
 
     /// Creates this encoding with the given constant color expression.
-    init(_ stroke: StrokeChannel, expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ stroke: StrokeChannel, expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.init(stroke, value: .init(expression), makeElements: makeElements)
     }
 
-    private init(_ stroke: StrokeChannel, value constant: OneOf3<ColorGradient, String, ExprRef>, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    private init(_ stroke: StrokeChannel, value constant: OneOf3<GG.ColorGradient, String, GG.ExprRef>, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -1988,7 +1988,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeEncoding, D
 
 // MARK: VizEncode: size
 
-public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.SizeEncoding {
 
 
 
@@ -2009,9 +2009,9 @@ public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.SizeEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
     /// Creates an empty instance of this encoding.
     init(_ size: SizeChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2028,7 +2028,7 @@ public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ size: SizeChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ size: SizeChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -2037,9 +2037,9 @@ public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.SizeEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefNumber { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ size: SizeChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2074,7 +2074,7 @@ public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ size: SizeChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ size: SizeChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2091,7 +2091,7 @@ public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ size: SizeChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ size: SizeChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2100,9 +2100,9 @@ public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.SizeEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
     /// Creates this encoding with the given constant value.
     init(_ size: SizeChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2113,7 +2113,7 @@ public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ size: SizeChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ size: SizeChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2125,7 +2125,7 @@ public extension VizEncode where Channel == EncodingChannelMap.SizeEncoding, Def
 
 // MARK: VizEncode: strokeWidth
 
-public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeWidthEncoding {
 
 
 
@@ -2142,9 +2142,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncodi
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeWidthEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
     /// Creates an empty instance of this encoding.
     init(_ strokeWidth: StrokeWidthChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2161,7 +2161,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncodi
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ strokeWidth: StrokeWidthChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeWidth: StrokeWidthChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -2170,9 +2170,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncodi
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeWidthEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefNumber { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ strokeWidth: StrokeWidthChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2207,7 +2207,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncodi
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ strokeWidth: StrokeWidthChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeWidth: StrokeWidthChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2224,7 +2224,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncodi
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ strokeWidth: StrokeWidthChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeWidth: StrokeWidthChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2233,9 +2233,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncodi
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeWidthEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
     /// Creates this encoding with the given constant value.
     init(_ strokeWidth: StrokeWidthChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2246,7 +2246,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncodi
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ strokeWidth: StrokeWidthChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeWidth: StrokeWidthChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2258,7 +2258,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeWidthEncodi
 
 // MARK: VizEncode: strokeOpacity
 
-public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeOpacityEncoding {
 
 
 
@@ -2273,9 +2273,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEnco
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeOpacityEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
     /// Creates an empty instance of this encoding.
     init(_ strokeOpacity: StrokeOpacityChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2292,7 +2292,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEnco
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ strokeOpacity: StrokeOpacityChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeOpacity: StrokeOpacityChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -2301,9 +2301,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEnco
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeOpacityEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefNumber { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ strokeOpacity: StrokeOpacityChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2338,7 +2338,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEnco
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ strokeOpacity: StrokeOpacityChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeOpacity: StrokeOpacityChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2355,7 +2355,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEnco
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ strokeOpacity: StrokeOpacityChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeOpacity: StrokeOpacityChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2364,9 +2364,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEnco
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeOpacityEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
     /// Creates this encoding with the given constant value.
     init(_ strokeOpacity: StrokeOpacityChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2377,7 +2377,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEnco
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ strokeOpacity: StrokeOpacityChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeOpacity: StrokeOpacityChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2389,7 +2389,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeOpacityEnco
 
 // MARK: VizEncode: fillOpacity
 
-public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.FillOpacityEncoding {
 
 
 
@@ -2404,9 +2404,9 @@ public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncodi
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.FillOpacityEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
     /// Creates an empty instance of this encoding.
     init(_ fillOpacity: FillOpacityChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2423,7 +2423,7 @@ public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncodi
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ fillOpacity: FillOpacityChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ fillOpacity: FillOpacityChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -2432,9 +2432,9 @@ public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncodi
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.FillOpacityEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefNumber { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ fillOpacity: FillOpacityChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2469,7 +2469,7 @@ public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncodi
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ fillOpacity: FillOpacityChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ fillOpacity: FillOpacityChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2486,7 +2486,7 @@ public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncodi
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ fillOpacity: FillOpacityChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ fillOpacity: FillOpacityChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2495,9 +2495,9 @@ public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncodi
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.FillOpacityEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
     /// Creates this encoding with the given constant value.
     init(_ fillOpacity: FillOpacityChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2508,7 +2508,7 @@ public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncodi
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ fillOpacity: FillOpacityChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ fillOpacity: FillOpacityChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2520,7 +2520,7 @@ public extension VizEncode where Channel == EncodingChannelMap.FillOpacityEncodi
 
 // MARK: VizEncode: opacity
 
-public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.OpacityEncoding {
 
 
 
@@ -2535,9 +2535,9 @@ public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.OpacityEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
     /// Creates an empty instance of this encoding.
     init(_ opacity: OpacityChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2554,7 +2554,7 @@ public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, 
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ opacity: OpacityChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ opacity: OpacityChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -2563,9 +2563,9 @@ public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, 
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.OpacityEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefNumber { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ opacity: OpacityChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2600,7 +2600,7 @@ public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, 
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ opacity: OpacityChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ opacity: OpacityChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2617,7 +2617,7 @@ public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, 
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ opacity: OpacityChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ opacity: OpacityChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2626,9 +2626,9 @@ public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, 
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.OpacityEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
     /// Creates this encoding with the given constant value.
     init(_ opacity: OpacityChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2639,7 +2639,7 @@ public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, 
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ opacity: OpacityChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ opacity: OpacityChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2651,7 +2651,7 @@ public extension VizEncode where Channel == EncodingChannelMap.OpacityEncoding, 
 
 // MARK: VizEncode: angle
 
-public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.AngleEncoding {
 
 
 
@@ -2666,9 +2666,9 @@ public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.AngleEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefNumber { def }
 
     /// Creates an empty instance of this encoding.
     init(_ angle: AngleChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2685,7 +2685,7 @@ public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, De
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ angle: AngleChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ angle: AngleChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -2694,9 +2694,9 @@ public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, De
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.AngleEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefNumber { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ angle: AngleChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2731,7 +2731,7 @@ public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, De
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ angle: AngleChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ angle: AngleChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2748,7 +2748,7 @@ public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, De
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ angle: AngleChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ angle: AngleChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2757,9 +2757,9 @@ public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, De
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.AngleEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefNumber { def }
 
     /// Creates this encoding with the given constant value.
     init(_ angle: AngleChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2770,7 +2770,7 @@ public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, De
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ angle: AngleChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ angle: AngleChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2783,7 +2783,7 @@ public extension VizEncode where Channel == EncodingChannelMap.AngleEncoding, De
 // MARK: VizEncode: theta
 
 
-public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ThetaEncoding {
 
 
 
@@ -2799,9 +2799,9 @@ public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ThetaEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> PositionFieldDefBase { def }
+    private func toDef(_ def: Def) -> GG.PositionFieldDefBase { def }
 
     /// Creates an empty instance of this encoding.
     init(_ theta: ThetaChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2818,7 +2818,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, De
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ theta: ThetaChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta: ThetaChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -2827,9 +2827,9 @@ public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, De
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ThetaEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> PositionDatumDefBase { def }
+    private func toDef(_ def: Def) -> GG.PositionDatumDefBase { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ theta: ThetaChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2864,7 +2864,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, De
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ theta: ThetaChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta: ThetaChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2881,7 +2881,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, De
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ theta: ThetaChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta: ThetaChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -2890,9 +2890,9 @@ public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, De
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ThetaEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumberWidthHeightExprRef { def }
 
     /// Creates this encoding with the given constant value.
     init(_ theta: ThetaChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2903,7 +2903,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, De
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ theta: ThetaChannel, value constant: LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta: ThetaChannel, value constant: GG.LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -2911,7 +2911,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, De
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ theta: ThetaChannel, expr expression: LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta: ThetaChannel, expr expression: GG.LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T3 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2919,7 +2919,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, De
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ theta: ThetaChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta: ThetaChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -2931,7 +2931,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ThetaEncoding, De
 
 // MARK: VizEncode: theta2
 
-public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Theta2Encoding {
 
 
 
@@ -2946,9 +2946,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Theta2Encoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> SecondaryFieldDef { def }
+    private func toDef(_ def: Def) -> GG.SecondaryFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ theta2: Theta2Channel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -2965,7 +2965,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, D
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ theta2: Theta2Channel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta2: Theta2Channel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -2974,9 +2974,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, D
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Theta2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> DatumDef { def }
+    private func toDef(_ def: Def) -> GG.DatumDef { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ theta2: Theta2Channel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3011,7 +3011,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, D
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ theta2: Theta2Channel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta2: Theta2Channel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3028,7 +3028,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, D
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ theta2: Theta2Channel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta2: Theta2Channel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3037,9 +3037,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, D
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Theta2Encoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumberWidthHeightExprRef { def }
 
     /// Creates this encoding with the given constant value.
     init(_ theta2: Theta2Channel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3050,7 +3050,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, D
     }
 
     /// Creates this encoding with the given constant value.
-    init(_ theta2: Theta2Channel, value constant: LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta2: Theta2Channel, value constant: GG.LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -3058,7 +3058,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, D
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ theta2: Theta2Channel, expr expression: LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta2: Theta2Channel, expr expression: GG.LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T3 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -3066,7 +3066,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, D
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ theta2: Theta2Channel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ theta2: Theta2Channel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -3078,7 +3078,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Theta2Encoding, D
 
 // MARK: VizEncode: radius
 
-public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.RadiusEncoding {
 
 
 
@@ -3093,9 +3093,9 @@ public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.RadiusEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> PositionFieldDefBase { def }
+    private func toDef(_ def: Def) -> GG.PositionFieldDefBase { def }
 
     /// Creates an empty instance of this encoding.
     init(_ radius: RadiusChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3112,7 +3112,7 @@ public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, D
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ radius: RadiusChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius: RadiusChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -3121,9 +3121,9 @@ public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, D
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.RadiusEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> PositionDatumDefBase { def }
+    private func toDef(_ def: Def) -> GG.PositionDatumDefBase { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ radius: RadiusChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3158,7 +3158,7 @@ public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, D
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ radius: RadiusChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius: RadiusChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3175,7 +3175,7 @@ public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, D
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ radius: RadiusChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius: RadiusChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3184,9 +3184,9 @@ public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, D
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.RadiusEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumberWidthHeightExprRef { def }
 
     /// Creates this encoding with the given constant value.
     init(_ radius: RadiusChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3198,7 +3198,7 @@ public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, D
 
 
     /// Creates this encoding with the given constant value.
-    init(_ radius: RadiusChannel, value constant: LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius: RadiusChannel, value constant: GG.LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -3206,7 +3206,7 @@ public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, D
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ radius: RadiusChannel, expr expression: LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius: RadiusChannel, expr expression: GG.LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T3 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -3214,7 +3214,7 @@ public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, D
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ radius: RadiusChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius: RadiusChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -3226,7 +3226,7 @@ public extension VizEncode where Channel == EncodingChannelMap.RadiusEncoding, D
 
 // MARK: VizEncode: radius2
 
-public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Radius2Encoding {
 
 
 
@@ -3241,9 +3241,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Radius2Encoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> SecondaryFieldDef { def }
+    private func toDef(_ def: Def) -> GG.SecondaryFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ radius2: Radius2Channel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3260,7 +3260,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, 
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ radius2: Radius2Channel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius2: Radius2Channel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -3269,9 +3269,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, 
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Radius2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> DatumDef { def }
+    private func toDef(_ def: Def) -> GG.DatumDef { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ radius2: Radius2Channel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3306,7 +3306,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, 
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ radius2: Radius2Channel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius2: Radius2Channel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3323,7 +3323,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, 
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ radius2: Radius2Channel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius2: Radius2Channel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3332,9 +3332,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, 
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Radius2Encoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumberWidthHeightExprRef { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumberWidthHeightExprRef { def }
 
     /// Creates this encoding with the given constant value.
     init(_ radius2: Radius2Channel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3346,7 +3346,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, 
 
 
     /// Creates this encoding with the given constant value.
-    init(_ radius2: Radius2Channel, value constant: LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius2: Radius2Channel, value constant: GG.LiteralWidth, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = constant
         self.deriveChannel = { .init(.init($0)) }
@@ -3354,7 +3354,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, 
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ radius2: Radius2Channel, expr expression: LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius2: Radius2Channel, expr expression: GG.LiteralHeight, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T3 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -3362,7 +3362,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, 
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ radius2: Radius2Channel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ radius2: Radius2Channel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T4 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -3374,7 +3374,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Radius2Encoding, 
 
 // MARK: VizEncode: xError
 
-public extension VizEncode where Channel == EncodingChannelMap.XErrorEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.XErrorEncoding {
 
 
 
@@ -3388,9 +3388,9 @@ public extension VizEncode where Channel == EncodingChannelMap.XErrorEncoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.XErrorEncoding, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.XErrorEncoding, Def == GG.SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> SecondaryFieldDef { def }
+    private func toDef(_ def: Def) -> GG.SecondaryFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ xError: XErrorChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3408,9 +3408,9 @@ public extension VizEncode where Channel == EncodingChannelMap.XErrorEncoding, D
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.XErrorEncoding, Def == ValueDefNumber {
+public extension VizEncode where Channel == GG.EncodingChannelMap.XErrorEncoding, Def == GG.ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumber { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumber { def }
 
     /// Creates this encoding with the repeat reference to one or more fields.
     init(_ xError: XErrorChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3427,7 +3427,7 @@ public extension VizEncode where Channel == EncodingChannelMap.XErrorEncoding, D
 // MARK: VizEncode: xError2
 
 
-public extension VizEncode where Channel == EncodingChannelMap.XError2Encoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.XError2Encoding {
 
 
 
@@ -3440,9 +3440,9 @@ public extension VizEncode where Channel == EncodingChannelMap.XError2Encoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.XError2Encoding, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.XError2Encoding, Def == GG.SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> SecondaryFieldDef { def }
+    private func toDef(_ def: Def) -> GG.SecondaryFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ xError2: XError2Channel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3460,9 +3460,9 @@ public extension VizEncode where Channel == EncodingChannelMap.XError2Encoding, 
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.XError2Encoding, Def == ValueDefNumber {
+public extension VizEncode where Channel == GG.EncodingChannelMap.XError2Encoding, Def == GG.ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumber { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumber { def }
 
     /// Creates this encoding with the repeat reference to one or more fields.
     init(_ xError2: XError2Channel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3478,7 +3478,7 @@ public extension VizEncode where Channel == EncodingChannelMap.XError2Encoding, 
 // MARK: VizEncode: yError
 
 
-public extension VizEncode where Channel == EncodingChannelMap.YErrorEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.YErrorEncoding {
 
 
 
@@ -3491,9 +3491,9 @@ public extension VizEncode where Channel == EncodingChannelMap.YErrorEncoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.YErrorEncoding, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.YErrorEncoding, Def == GG.SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> SecondaryFieldDef { def }
+    private func toDef(_ def: Def) -> GG.SecondaryFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ yError: YErrorChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3511,9 +3511,9 @@ public extension VizEncode where Channel == EncodingChannelMap.YErrorEncoding, D
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.YErrorEncoding, Def == ValueDefNumber {
+public extension VizEncode where Channel == GG.EncodingChannelMap.YErrorEncoding, Def == GG.ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumber { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumber { def }
 
     /// Creates this encoding with the repeat reference to one or more fields.
     init(_ yError: YErrorChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3528,7 +3528,7 @@ public extension VizEncode where Channel == EncodingChannelMap.YErrorEncoding, D
 // MARK: VizEncode: yError2
 
 
-public extension VizEncode where Channel == EncodingChannelMap.YError2Encoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.YError2Encoding {
 
 
 
@@ -3541,9 +3541,9 @@ public extension VizEncode where Channel == EncodingChannelMap.YError2Encoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.YError2Encoding, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.YError2Encoding, Def == GG.SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> SecondaryFieldDef { def }
+    private func toDef(_ def: Def) -> GG.SecondaryFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ yError2: YError2Channel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3561,9 +3561,9 @@ public extension VizEncode where Channel == EncodingChannelMap.YError2Encoding, 
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.YError2Encoding, Def == ValueDefNumber {
+public extension VizEncode where Channel == GG.EncodingChannelMap.YError2Encoding, Def == GG.ValueDefNumber {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefNumber { def }
+    private func toDef(_ def: Def) -> GG.ValueDefNumber { def }
 
     /// Creates this encoding with the repeat reference to one or more fields.
     init(_ yError2: YError2Channel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3578,7 +3578,7 @@ public extension VizEncode where Channel == EncodingChannelMap.YError2Encoding, 
 // MARK: VizEncode: column
 
 
-public extension VizEncode where Channel == EncodingChannelMap.ColumnEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ColumnEncoding {
 
 
 
@@ -3591,9 +3591,9 @@ public extension VizEncode where Channel == EncodingChannelMap.ColumnEncoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.ColumnEncoding, Def == RowColumnEncodingFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ColumnEncoding, Def == GG.RowColumnEncodingFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> RowColumnEncodingFieldDef { def }
+    private func toDef(_ def: Def) -> GG.RowColumnEncodingFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ column: ColumnChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3613,7 +3613,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ColumnEncoding, D
 // MARK: VizEncode: row
 
 
-public extension VizEncode where Channel == EncodingChannelMap.RowEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.RowEncoding {
 
 
 
@@ -3626,9 +3626,9 @@ public extension VizEncode where Channel == EncodingChannelMap.RowEncoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.RowEncoding, Def == RowColumnEncodingFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.RowEncoding, Def == GG.RowColumnEncodingFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> RowColumnEncodingFieldDef { def }
+    private func toDef(_ def: Def) -> GG.RowColumnEncodingFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ row: RowChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3651,7 +3651,7 @@ public extension VizEncode where Channel == EncodingChannelMap.RowEncoding, Def 
 // MARK: VizEncode: facet
 
 
-public extension VizEncode where Channel == EncodingChannelMap.FacetEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.FacetEncoding {
 
 
 
@@ -3664,9 +3664,9 @@ public extension VizEncode where Channel == EncodingChannelMap.FacetEncoding {
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.FacetEncoding, Def == FacetEncodingFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.FacetEncoding, Def == GG.FacetEncodingFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FacetEncodingFieldDef { def }
+    private func toDef(_ def: Def) -> GG.FacetEncodingFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ facet: FacetChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3686,7 +3686,7 @@ public extension VizEncode where Channel == EncodingChannelMap.FacetEncoding, De
 
 // MARK: VizEncode: latitude
 
-public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.LatitudeEncoding {
 
 
 
@@ -3702,9 +3702,9 @@ public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding 
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding, Def == LatLongFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.LatitudeEncoding, Def == GG.LatLongFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> LatLongFieldDef { def }
+    private func toDef(_ def: Def) -> GG.LatLongFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ latitude: LatitudeChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3721,7 +3721,7 @@ public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding,
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ latitude: LatitudeChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ latitude: LatitudeChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -3730,9 +3730,9 @@ public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding,
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.LatitudeEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> DatumDef { def }
+    private func toDef(_ def: Def) -> GG.DatumDef { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ latitude: LatitudeChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3767,7 +3767,7 @@ public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding,
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ latitude: LatitudeChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ latitude: LatitudeChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3784,7 +3784,7 @@ public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding,
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ latitude: LatitudeChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ latitude: LatitudeChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3796,7 +3796,7 @@ public extension VizEncode where Channel == EncodingChannelMap.LatitudeEncoding,
 // MARK: VizEncode: longitude
 
 
-public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.LongitudeEncoding {
 
 
 
@@ -3809,9 +3809,9 @@ public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.LongitudeEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> LatLongFieldDef { def }
+    private func toDef(_ def: Def) -> GG.LatLongFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ longitude: LongitudeChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3828,7 +3828,7 @@ public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ longitude: LongitudeChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ longitude: LongitudeChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -3837,9 +3837,9 @@ public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.LongitudeEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> DatumDef { def }
+    private func toDef(_ def: Def) -> GG.DatumDef { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ longitude: LongitudeChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3874,7 +3874,7 @@ public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ longitude: LongitudeChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ longitude: LongitudeChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3891,7 +3891,7 @@ public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ longitude: LongitudeChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ longitude: LongitudeChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -3904,7 +3904,7 @@ public extension VizEncode where Channel == EncodingChannelMap.LongitudeEncoding
 // MARK: VizEncode: latitude2
 
 
-public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Latitude2Encoding {
 
 
 
@@ -3919,9 +3919,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Latitude2Encoding, Def == GG.SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> SecondaryFieldDef { def }
+    private func toDef(_ def: Def) -> GG.SecondaryFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ latitude2: Latitude2Channel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3938,7 +3938,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ latitude2: Latitude2Channel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ latitude2: Latitude2Channel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -3947,9 +3947,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Latitude2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> DatumDef { def }
+    private func toDef(_ def: Def) -> GG.DatumDef { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ latitude2: Latitude2Channel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -3984,7 +3984,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ latitude2: Latitude2Channel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ latitude2: Latitude2Channel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -4001,7 +4001,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ latitude2: Latitude2Channel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ latitude2: Latitude2Channel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -4013,7 +4013,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Latitude2Encoding
 // MARK: VizEncode: longitude2
 
 
-public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Longitude2Encoding {
 
 
 
@@ -4028,9 +4028,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encodin
 }
 
 /// Empty Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encoding, Def == SecondaryFieldDef {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Longitude2Encoding, Def == GG.SecondaryFieldDef {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> SecondaryFieldDef { def }
+    private func toDef(_ def: Def) -> GG.SecondaryFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ longitude2: Longitude2Channel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4047,7 +4047,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encodin
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ longitude2: Longitude2Channel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ longitude2: Longitude2Channel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -4056,9 +4056,9 @@ public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encodin
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.Longitude2Encoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> DatumDef { def }
+    private func toDef(_ def: Def) -> GG.DatumDef { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ longitude2: Longitude2Channel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4093,7 +4093,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encodin
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ longitude2: Longitude2Channel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ longitude2: Longitude2Channel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -4110,7 +4110,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encodin
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ longitude2: Longitude2Channel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ longitude2: Longitude2Channel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -4122,7 +4122,7 @@ public extension VizEncode where Channel == EncodingChannelMap.Longitude2Encodin
 
 // MARK: VizEncode: href
 
-public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.HrefEncoding {
 
 
 
@@ -4136,9 +4136,9 @@ public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.HrefEncoding, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionStringFieldDefString { def }
 
     /// Creates an empty instance of this encoding.
     init(_ href: HrefChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4155,7 +4155,7 @@ public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding, Def
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ href: HrefChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ href: HrefChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -4163,9 +4163,9 @@ public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding, Def
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding, Def == StringValueDefWithCondition {
+public extension VizEncode where Channel == GG.EncodingChannelMap.HrefEncoding, Def == GG.StringValueDefWithCondition {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefStringNull { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefStringNull { def }
 
     /// Creates this encoding with the given constant value.
     init(_ href: HrefChannel, value constant: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4184,7 +4184,7 @@ public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding, Def
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ href: HrefChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ href: HrefChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -4195,7 +4195,7 @@ public extension VizEncode where Channel == EncodingChannelMap.HrefEncoding, Def
 
 // MARK: VizEncode: description
 
-public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.DescriptionEncoding {
 
 
 
@@ -4209,9 +4209,9 @@ public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncodi
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncoding, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.DescriptionEncoding, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionStringFieldDefString { def }
 
     /// Creates an empty instance of this encoding.
     init(_ description: DescriptionChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4228,7 +4228,7 @@ public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncodi
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ description: DescriptionChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ description: DescriptionChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -4236,9 +4236,9 @@ public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncodi
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncoding, Def == StringValueDefWithCondition {
+public extension VizEncode where Channel == GG.EncodingChannelMap.DescriptionEncoding, Def == GG.StringValueDefWithCondition {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefStringNull { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefStringNull { def }
 
     /// Creates this encoding with the given constant value.
     init(_ description: DescriptionChannel, value constant: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4257,7 +4257,7 @@ public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncodi
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ description: DescriptionChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ description: DescriptionChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -4267,7 +4267,7 @@ public extension VizEncode where Channel == EncodingChannelMap.DescriptionEncodi
 
 // MARK: VizEncode: url
 
-public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.UrlEncoding {
 
 
 
@@ -4280,9 +4280,9 @@ public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.UrlEncoding, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefString { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionStringFieldDefString { def }
 
     /// Creates an empty instance of this encoding.
     init(_ url: UrlChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4299,7 +4299,7 @@ public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding, Def 
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ url: UrlChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ url: UrlChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -4307,9 +4307,9 @@ public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding, Def 
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding, Def == Channel.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.UrlEncoding, Def == Channel.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> StringValueDefWithCondition { def }
+    private func toDef(_ def: Def) -> GG.StringValueDefWithCondition { def }
 
     /// Creates this encoding with the given constant value.
     init(_ url: UrlChannel, value constant: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4328,7 +4328,7 @@ public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding, Def 
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ url: UrlChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ url: UrlChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -4339,7 +4339,7 @@ public extension VizEncode where Channel == EncodingChannelMap.UrlEncoding, Def 
 
 // MARK: VizEncode: strokeDash
 
-public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeDashEncoding {
 
 
 
@@ -4357,9 +4357,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncodin
 
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeDashEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefNumberArray { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefNumberArray { def }
 
     /// Creates an empty instance of this encoding.
     init(_ strokeDash: StrokeDashChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4376,16 +4376,16 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncodin
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ strokeDash: StrokeDashChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeDash: StrokeDashChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeDashEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefNumberArray { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefNumberArray { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ strokeDash: StrokeDashChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4420,7 +4420,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncodin
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ strokeDash: StrokeDashChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeDash: StrokeDashChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -4437,7 +4437,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncodin
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ strokeDash: StrokeDashChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeDash: StrokeDashChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -4445,9 +4445,9 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncodin
     }
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.StrokeDashEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefNumberArray { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefNumberArray { def }
 
     /// Creates this encoding with the given constant value.
     init(_ strokeDash: StrokeDashChannel, value constant: [Double], @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4458,7 +4458,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncodin
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ strokeDash: StrokeDashChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ strokeDash: StrokeDashChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -4469,7 +4469,7 @@ public extension VizEncode where Channel == EncodingChannelMap.StrokeDashEncodin
 
 // MARK: VizEncode: key
 
-public extension VizEncode where Channel == EncodingChannelMap.KeyEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.KeyEncoding {
     enum KeyChannel {
         case key
     }
@@ -4478,9 +4478,9 @@ public extension VizEncode where Channel == EncodingChannelMap.KeyEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.KeyEncoding, Def == Channel.RawValue {
+public extension VizEncode where Channel == GG.EncodingChannelMap.KeyEncoding, Def == Channel.RawValue {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> TypedFieldDef { def }
+    private func toDef(_ def: Def) -> GG.TypedFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ key: KeyChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4497,7 +4497,7 @@ public extension VizEncode where Channel == EncodingChannelMap.KeyEncoding, Def 
     }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
-    init(_ key: KeyChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ key: KeyChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init($0) }
         self.def = .init(field: .init(`repeat`))
@@ -4507,7 +4507,7 @@ public extension VizEncode where Channel == EncodingChannelMap.KeyEncoding, Def 
 
 // MARK: VizEncode: shape
 
-public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ShapeEncoding {
     enum ShapeChannel {
         /// Shape of the mark.
         ///
@@ -4524,9 +4524,9 @@ public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ShapeEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionMarkPropFieldDefTypeForShapeStringNull { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionMarkPropFieldDefTypeForShapeStringNull { def }
 
     /// Creates an empty instance of this encoding.
     init(_ shape: ShapeChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4543,7 +4543,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, De
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ shape: ShapeChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ shape: ShapeChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -4552,9 +4552,9 @@ public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, De
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ShapeEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionDatumDefStringNull { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionDatumDefStringNull { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ shape: ShapeChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4589,7 +4589,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, De
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ shape: ShapeChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ shape: ShapeChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -4606,7 +4606,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, De
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ shape: ShapeChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ shape: ShapeChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -4615,14 +4615,14 @@ public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, De
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.ShapeEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionMarkPropFieldOrDatumDefTypeForShapeStringNull { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionMarkPropFieldOrDatumDefTypeForShapeStringNull { def }
 
     /// Creates this encoding with the given constant value.
-    init(_ shape: ShapeChannel, value constant: SymbolShape?, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ shape: ShapeChannel, value constant: GG.SymbolShape?, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
-        let value: Nullable<SymbolShape> = constant.map({ Nullable($0) }) ?? .v1(ExplicitNull())
+        let value: Nullable<GG.SymbolShape> = constant.map({ Nullable($0) }) ?? .v1(ExplicitNull())
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(value: value)
     }
@@ -4632,7 +4632,7 @@ public extension VizEncode where Channel == EncodingChannelMap.ShapeEncoding, De
 
 // MARK: VizEncode: detail
 
-public extension VizEncode where Channel == EncodingChannelMap.DetailEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.DetailEncoding {
     enum DetailChannel {
         case detail
     }
@@ -4641,9 +4641,9 @@ public extension VizEncode where Channel == EncodingChannelMap.DetailEncoding {
     typealias ChannelMultiFieldType = Channel.RawValue.T2 // [TypedFieldDef]
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.DetailEncoding, Def == Channel.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.DetailEncoding, Def == Channel.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> TypedFieldDef { def }
+    private func toDef(_ def: Def) -> GG.TypedFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ detail: DetailChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4660,7 +4660,7 @@ public extension VizEncode where Channel == EncodingChannelMap.DetailEncoding, D
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ detail: DetailChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ detail: DetailChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -4670,7 +4670,7 @@ public extension VizEncode where Channel == EncodingChannelMap.DetailEncoding, D
 
 // MARK: VizEncode: order
 
-public extension VizEncode where Channel == EncodingChannelMap.OrderEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.OrderEncoding {
     enum OrderChannel {
         case order
     }
@@ -4681,9 +4681,9 @@ public extension VizEncode where Channel == EncodingChannelMap.OrderEncoding {
 
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.OrderEncoding, Def == Channel.RawValue.T1.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.OrderEncoding, Def == Channel.RawValue.T1.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> OrderFieldDef { def }
+    private func toDef(_ def: Def) -> GG.OrderFieldDef { def }
 
     /// Creates an empty instance of this encoding.
     init(_ order: OrderChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4700,16 +4700,16 @@ public extension VizEncode where Channel == EncodingChannelMap.OrderEncoding, De
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ order: OrderChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ order: OrderChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.OrderEncoding, Def == Channel.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.OrderEncoding, Def == Channel.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> OrderValueDef { def }
+    private func toDef(_ def: Def) -> GG.OrderValueDef { def }
 
     /// Creates this encoding with the given constant value.
     init(_ order: OrderChannel, value constant: Double, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4720,7 +4720,7 @@ public extension VizEncode where Channel == EncodingChannelMap.OrderEncoding, De
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ order: OrderChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ order: OrderChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -4730,7 +4730,7 @@ public extension VizEncode where Channel == EncodingChannelMap.OrderEncoding, De
 
 // MARK: VizEncode: text
 
-public extension VizEncode where Channel == EncodingChannelMap.TextEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.TextEncoding {
     enum TextChannel {
         case text
     }
@@ -4741,9 +4741,9 @@ public extension VizEncode where Channel == EncodingChannelMap.TextEncoding {
 }
 
 /// Field Initializers
-public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def == Channel.RawValue.RawValue.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.TextEncoding, Def == Channel.RawValue.RawValue.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringFieldDefText { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionStringFieldDefText { def }
 
     /// Creates an empty instance of this encoding.
     init(_ text: TextChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4760,7 +4760,7 @@ public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ text: TextChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ text: TextChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
@@ -4769,9 +4769,9 @@ public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def
 }
 
 /// Datum Initializers
-public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def == Channel.RawValue.RawValue.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.TextEncoding, Def == Channel.RawValue.RawValue.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> FieldOrDatumDefWithConditionStringDatumDefText { def }
+    private func toDef(_ def: Def) -> GG.FieldOrDatumDefWithConditionStringDatumDefText { def }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
     init(_ text: TextChannel, datum: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4806,7 +4806,7 @@ public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def
     }
 
     /// Creates this encoding with the given datum that will be resolved against the scaled data values.
-    init(_ text: TextChannel, datum: DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ text: TextChannel, datum: GG.DateTime, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let datetime: Def.DatumChoice.T2 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -4823,7 +4823,7 @@ public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def
 
     /// Creates this encoding with the given repeated datum that will be resolved against the scaled data values.
     @available(*, unavailable, message: "use repeat field initializer")
-    init(_ text: TextChannel, datum: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ text: TextChannel, datum: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let ref: Def.DatumChoice.T4 = datum
         self.deriveChannel = { .init(.init($0)) }
@@ -4832,9 +4832,9 @@ public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def
 }
 
 /// Value Initializers
-public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def == Channel.RawValue.RawValue.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.TextEncoding, Def == Channel.RawValue.RawValue.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> ValueDefWithConditionStringFieldDefText { def }
+    private func toDef(_ def: Def) -> GG.ValueDefWithConditionStringFieldDefText { def }
 
     /// Creates this encoding with the given constant value.
     init(_ text: TextChannel, value string: String, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4851,7 +4851,7 @@ public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ text: TextChannel, expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ text: TextChannel, expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(value: .init(expression))
@@ -4863,7 +4863,7 @@ public extension VizEncode where Channel == EncodingChannelMap.TextEncoding, Def
 
 // MARK: VizEncode: tooltip
 
-public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding {
+public extension VizEncode where Channel == GG.EncodingChannelMap.TooltipEncoding {
     enum TooltipChannel {
         case tooltip
     }
@@ -4874,9 +4874,9 @@ public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding {
     typealias ChannelMultiFieldType = Channel.RawValue.T2.T3
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding, Def == Channel.RawValue.T2.T1 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.TooltipEncoding, Def == Channel.RawValue.T2.T1 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> StringFieldDefWithCondition { def }
+    private func toDef(_ def: Def) -> GG.StringFieldDefWithCondition { def }
 
     /// Creates an empty instance of this encoding.
     init(_ tooltip: TooltipChannel, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4893,16 +4893,16 @@ public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding, 
     }
 
     /// Creates this encoding with the repeat reference to one or more fields.
-    init(_ tooltip: TooltipChannel, repeat: RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ tooltip: TooltipChannel, repeat: GG.RepeatRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = .init(field: .init(`repeat`))
     }
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding, Def == Channel.RawValue.T2.T2 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.TooltipEncoding, Def == Channel.RawValue.T2.T2 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> StringValueDefWithCondition { def }
+    private func toDef(_ def: Def) -> GG.StringValueDefWithCondition { def }
 
     /// Creates this encoding with the given constant value.
     init(_ tooltip: TooltipChannel, value null: ExplicitNull, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
@@ -4921,7 +4921,7 @@ public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding, 
     }
 
     /// Creates this encoding with a dynamic expression.
-    init(_ tooltip: TooltipChannel, expr expression: ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
+    init(_ tooltip: TooltipChannel, expr expression: GG.ExprRef, @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         let value: Def.ValueChoice.T2.T2 = expression
         self.deriveChannel = { .init(.init($0)) }
@@ -4929,16 +4929,16 @@ public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding, 
     }
 }
 
-public extension VizEncode where Channel == EncodingChannelMap.TooltipEncoding, Def == Channel.RawValue.T2.T3 {
+public extension VizEncode where Channel == GG.EncodingChannelMap.TooltipEncoding, Def == Channel.RawValue.T2.T3 {
     /// Validate the type name to guard against future re-aliasing
-    private func toDef(_ def: Def) -> [StringFieldDef] { def }
+    private func toDef(_ def: Def) -> [GG.StringFieldDef] { def }
 
     /// Creates this encoding with the value mapped to the given field name in the data.
     init(_ tooltip: TooltipChannel, fields: [FieldNameRepresentable], @VizArrayBuilder<Channel.ChildElement> makeElements: @escaping () -> [Channel.ChildElement] = {[]}) {
         self.makeElements = makeElements
         self.deriveChannel = { .init(.init($0)) }
         self.def = fields.map {
-            StringFieldDef(field: .init($0.fieldName))
+            GG.StringFieldDef(field: .init($0.fieldName))
         }
     }
 }
@@ -5006,11 +5006,11 @@ private func emptyConstructor(channel: EncodingChannel) -> VizMarkElementType {
 // MARK: VizEncodingChannelType Multi-Field
 
 
-extension EncodingChannelMap.DetailEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.DetailEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .detail
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         // when adding to an encodings that already has a detail field, we append the new encoding to the existing one
         let defs = (encodings.detail?.rawValue.array ?? []) + self.rawValue.array
 
@@ -5023,11 +5023,11 @@ extension EncodingChannelMap.DetailEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.OrderEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.OrderEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .order
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         switch self.rawValue {
         case .v1(let oneOrManyFields):
             // merge multiple order fields into a single encoding
@@ -5049,11 +5049,11 @@ extension EncodingChannelMap.OrderEncoding : VizEncodingChannelType {
 }
 
 
-extension EncodingChannelMap.TooltipEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.TooltipEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .tooltip
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.tooltip != nil {
             // TODO: in theory, we could handle the special case of one tooltip with an array of fields being added to another tooltip with an array of fields…
             warnReplaceEncoding(self)
@@ -5066,11 +5066,11 @@ extension EncodingChannelMap.TooltipEncoding : VizEncodingChannelType {
 
 // MARK: VizEncodingChannelType Single-Field
 
-extension EncodingChannelMap.TextEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.TextEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .text
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.text != nil {
             warnReplaceEncoding(self)
         }
@@ -5078,11 +5078,11 @@ extension EncodingChannelMap.TextEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.AngleEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.AngleEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .angle
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.angle != nil {
             warnReplaceEncoding(self)
         }
@@ -5090,11 +5090,11 @@ extension EncodingChannelMap.AngleEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.ColorEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.ColorEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .color
     public typealias ChildElement = VizLegendEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.color != nil {
             warnReplaceEncoding(self)
         }
@@ -5102,11 +5102,11 @@ extension EncodingChannelMap.ColorEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.DescriptionEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.DescriptionEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .description
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.description != nil {
             warnReplaceEncoding(self)
         }
@@ -5114,11 +5114,11 @@ extension EncodingChannelMap.DescriptionEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.FillEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.FillEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .fill
     public typealias ChildElement = VizLegendEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.fill != nil {
             warnReplaceEncoding(self)
         }
@@ -5126,11 +5126,11 @@ extension EncodingChannelMap.FillEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.FillOpacityEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.FillOpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .fillOpacity
     public typealias ChildElement = VizLegendEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.fillOpacity != nil {
             warnReplaceEncoding(self)
         }
@@ -5138,11 +5138,11 @@ extension EncodingChannelMap.FillOpacityEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.HrefEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.HrefEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .href
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.href != nil {
             warnReplaceEncoding(self)
         }
@@ -5150,11 +5150,11 @@ extension EncodingChannelMap.HrefEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.LatitudeEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.LatitudeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .latitude
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.latitude != nil {
             warnReplaceEncoding(self)
         }
@@ -5162,11 +5162,11 @@ extension EncodingChannelMap.LatitudeEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.Latitude2Encoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.Latitude2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .latitude2
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.latitude2 != nil {
             warnReplaceEncoding(self)
         }
@@ -5174,11 +5174,11 @@ extension EncodingChannelMap.Latitude2Encoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.LongitudeEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.LongitudeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .longitude
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.longitude != nil {
             warnReplaceEncoding(self)
         }
@@ -5186,11 +5186,11 @@ extension EncodingChannelMap.LongitudeEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.Longitude2Encoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.Longitude2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .longitude2
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.longitude2 != nil {
             warnReplaceEncoding(self)
         }
@@ -5198,11 +5198,11 @@ extension EncodingChannelMap.Longitude2Encoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.OpacityEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.OpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .opacity
     public typealias ChildElement = VizLegendEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.opacity != nil {
             warnReplaceEncoding(self)
         }
@@ -5211,11 +5211,11 @@ extension EncodingChannelMap.OpacityEncoding : VizEncodingChannelType {
 }
 
 
-extension EncodingChannelMap.RadiusEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.RadiusEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .radius
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.radius != nil {
             warnReplaceEncoding(self)
         }
@@ -5223,11 +5223,11 @@ extension EncodingChannelMap.RadiusEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.Radius2Encoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.Radius2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .radius2
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.radius2 != nil {
             warnReplaceEncoding(self)
         }
@@ -5235,11 +5235,11 @@ extension EncodingChannelMap.Radius2Encoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.ShapeEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.ShapeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .shape
     public typealias ChildElement = VizLegendEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.shape != nil {
             warnReplaceEncoding(self)
         }
@@ -5247,11 +5247,11 @@ extension EncodingChannelMap.ShapeEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.SizeEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.SizeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .size
     public typealias ChildElement = VizLegendEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.size != nil {
             warnReplaceEncoding(self)
         }
@@ -5259,11 +5259,11 @@ extension EncodingChannelMap.SizeEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.StrokeEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.StrokeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .stroke
     public typealias ChildElement = VizLegendEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.stroke != nil {
             warnReplaceEncoding(self)
         }
@@ -5271,11 +5271,11 @@ extension EncodingChannelMap.StrokeEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.StrokeDashEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.StrokeDashEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeDash
     public typealias ChildElement = VizLegendEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.strokeDash != nil {
             warnReplaceEncoding(self)
         }
@@ -5283,11 +5283,11 @@ extension EncodingChannelMap.StrokeDashEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.StrokeOpacityEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.StrokeOpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeOpacity
     public typealias ChildElement = VizLegendEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.strokeOpacity != nil {
             warnReplaceEncoding(self)
         }
@@ -5295,11 +5295,11 @@ extension EncodingChannelMap.StrokeOpacityEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.StrokeWidthEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.StrokeWidthEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeWidth
     public typealias ChildElement = VizLegendEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.strokeWidth != nil {
             warnReplaceEncoding(self)
         }
@@ -5307,11 +5307,11 @@ extension EncodingChannelMap.StrokeWidthEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.ThetaEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.ThetaEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .theta
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.theta != nil {
             warnReplaceEncoding(self)
         }
@@ -5319,11 +5319,11 @@ extension EncodingChannelMap.ThetaEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.Theta2Encoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.Theta2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .theta2
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.theta2 != nil {
             warnReplaceEncoding(self)
         }
@@ -5332,11 +5332,11 @@ extension EncodingChannelMap.Theta2Encoding : VizEncodingChannelType {
 }
 
 
-extension EncodingChannelMap.UrlEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.UrlEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .url
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.url != nil {
             warnReplaceEncoding(self)
         }
@@ -5346,7 +5346,7 @@ extension EncodingChannelMap.UrlEncoding : VizEncodingChannelType {
 
 
 extension VizEncodingChannelType {
-    fileprivate func assignElementItems(_ elements: [VizEncodeElementType], scaleKey: WritableKeyPath<Self, Nullable<ScaleDef>?>? = nil, axisKey: WritableKeyPath<Self, Nullable<AxisDef>?>? = nil, legendKey: WritableKeyPath<Self, Nullable<LegendDef>?>? = nil, headerKey: WritableKeyPath<Self, Nullable<HeaderDef>?>? = nil) -> Self {
+    fileprivate func assignElementItems(_ elements: [VizEncodeElementType], scaleKey: WritableKeyPath<Self, Nullable<GG.ScaleDef>?>? = nil, axisKey: WritableKeyPath<Self, Nullable<GG.AxisDef>?>? = nil, legendKey: WritableKeyPath<Self, Nullable<GG.LegendDef>?>? = nil, headerKey: WritableKeyPath<Self, Nullable<GG.HeaderDef>?>? = nil) -> Self {
         var this = self
 
         for element in elements {
@@ -5371,11 +5371,11 @@ extension VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.XEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.XEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .x
     public typealias ChildElement = VizAxisEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.x != nil {
             warnReplaceEncoding(self)
         }
@@ -5384,11 +5384,11 @@ extension EncodingChannelMap.XEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.X2Encoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.X2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .x2
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.x2 != nil {
             warnReplaceEncoding(self)
         }
@@ -5396,11 +5396,11 @@ extension EncodingChannelMap.X2Encoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.XErrorEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.XErrorEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .xError
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.xError != nil {
             warnReplaceEncoding(self)
         }
@@ -5408,11 +5408,11 @@ extension EncodingChannelMap.XErrorEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.XError2Encoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.XError2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .xError2
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.xError2 != nil {
             warnReplaceEncoding(self)
         }
@@ -5420,11 +5420,11 @@ extension EncodingChannelMap.XError2Encoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.YEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.YEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .y
     public typealias ChildElement = VizAxisEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.y != nil {
             warnReplaceEncoding(self)
         }
@@ -5433,11 +5433,11 @@ extension EncodingChannelMap.YEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.Y2Encoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.Y2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .y2
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.y2 != nil {
             warnReplaceEncoding(self)
         }
@@ -5445,11 +5445,11 @@ extension EncodingChannelMap.Y2Encoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.YErrorEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.YErrorEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .yError
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.yError != nil {
             warnReplaceEncoding(self)
         }
@@ -5457,11 +5457,11 @@ extension EncodingChannelMap.YErrorEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.YError2Encoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.YError2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .yError2
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.yError2 != nil {
             warnReplaceEncoding(self)
         }
@@ -5469,11 +5469,11 @@ extension EncodingChannelMap.YError2Encoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.RowEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.RowEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .row
     public typealias ChildElement = VizHeaderEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.row != nil {
             warnReplaceEncoding(self)
         }
@@ -5481,11 +5481,11 @@ extension EncodingChannelMap.RowEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.ColumnEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.ColumnEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .column
     public typealias ChildElement = VizHeaderEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.column != nil {
             warnReplaceEncoding(self)
         }
@@ -5493,11 +5493,11 @@ extension EncodingChannelMap.ColumnEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.FacetEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.FacetEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .facet
     public typealias ChildElement = VizHeaderEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.facet != nil {
             warnReplaceEncoding(self)
         }
@@ -5505,11 +5505,11 @@ extension EncodingChannelMap.FacetEncoding : VizEncodingChannelType {
     }
 }
 
-extension EncodingChannelMap.KeyEncoding : VizEncodingChannelType {
+extension GG.EncodingChannelMap.KeyEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .key
     public typealias ChildElement = VizUnguidedEncodeElementType
 
-    public func addChannel(to encodings: inout EncodingChannelMap, elements: [VizEncodeElementType]) {
+    public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.key != nil {
             warnReplaceEncoding(self)
         }

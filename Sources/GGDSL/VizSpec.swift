@@ -5,21 +5,21 @@ public protocol SpecType : Codable {
     var description: String? { get set }
 //    var title: OneOf2<String, TitleParams>? { get set }
     /// The list of transforms applied to this layer's data
-    var transform: [DataTransformation]? { get set }
+    var transform: [GG.DataTransformation]? { get set }
 }
 
 
 public protocol TopLevelSpecType : SpecType {
     var schema: String? { get set }
-    var config: ConfigTheme? { get set }
+    var config: GG.ConfigTheme? { get set }
     //var usermeta: Dict? { get set }
 }
 
 /// A `ColorCode` or an `ExprRef`
-public typealias ColorExprable = Exprable<ColorLiteral>
+public typealias ColorExprable = Exprable<GG.ColorLiteral>
 
 /// The different options for a `Param` definition
-public typealias ParamChoice = OneOf<VariableParameter>.Or<TopLevelSelectionParameter> // ConfigTheme.ParamsItemChoice
+public typealias ParamChoice = OneOf<GG.VariableParameter>.Or<GG.TopLevelSelectionParameter> // ConfigTheme.ParamsItemChoice
 
 /// A visualization specification with generic metadata.
 ///
@@ -31,7 +31,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     public typealias SubSpec = VizSpec<Meta>
 
     /// The unique identifier of this spec
-    public var id: LayerId?
+    public var id: GG.LayerId?
 
     /// URL to [JSON schema](http://json-schema.org/) for a Vega-Lite specification. Unless you have a reason to change this, use `https://vega.github.io/schema/vega-lite/v4.json`. Setting the `$schema` property allows automatic validation and autocomplete in editors that support JSON schema.
     public var schema: String?
@@ -52,17 +52,17 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     public var data: VizDataSource? // i.e., Nullable<DataProvider>
 
     /// An array of data transformations such as filter and new field calculation.
-    public var transform: [DataTransformation]?
+    public var transform: [GG.DataTransformation]?
 
     /// Scale, axis, and legend resolutions for view composition specifications.
-    public var resolve: Resolve?
+    public var resolve: GG.Resolve?
 
     // MARK: Top-Level Specifications
     // https://vega.github.io/vega-lite/docs/spec#top-level
 
     /// A global data store for named datasets. This is a mapping from names to inline datasets.
     /// This can be an array of objects or primitive values or a string. Arrays of primitive values are ingested as objects with a `data` property.
-    public var datasets: Datasets?
+    public var datasets: GG.Datasets?
 
     /// CSS color property to use as the background of the entire view.
     public var background: ColorExprable?
@@ -70,7 +70,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     /// The default visualization padding, in pixels, from the edge of the visualization canvas to the data rectangle.  If a number, specifies padding for all sides.
     /// If an object, the value should have the format `{"left": 5, "top": 5, "right": 5, "bottom": 5}` to specify padding for each side of the visualization.
     /// __Default value__: `5`
-    public var padding: Padding?
+    public var padding: GG.Padding?
 
     /// Sets how the visualization size should be determined. If a string, should be one of `"pad"`, `"fit"` or `"none"`.
     /// Object values can additionally specify parameters for content sizing and automatic resizing.
@@ -82,7 +82,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     public var params: [ParamChoice]? // [OneOf<VariableParameter>.Or<TopLevelSelectionParameter>]
 
     /// Vega-Lite configuration object.  This property can only be defined at the top-level of a specification.
-    public var config: ConfigTheme? {
+    public var config: GG.ConfigTheme? {
         get { _config?.wrappedValue }
         _modify {
             var cfg = _config?.wrappedValue
@@ -92,7 +92,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     }
 
     /// Storing `Config` as an indirect reduces the potential memory layout size, but more importantly, it seems to work around a crash on encoding that we were seeing
-    private var _config: Indirect<ConfigTheme>?
+    private var _config: Indirect<GG.ConfigTheme>?
 
     /// Optional metadata that will be passed to Vega.
     /// This object is completely ignored by Vega and Vega-Lite and can be used for custom metadata.
@@ -110,26 +110,26 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     /// Alternatively, an object value of the form `{"row": string, "column": string}` can be used to supply different alignments for rows and columns.
     /// __Default value:__ `"all"`.
     public var align: AlignChoice?
-    public typealias AlignChoice = FacetEncodingFieldDef.AlignChoice
+    public typealias AlignChoice = GG.FacetEncodingFieldDef.AlignChoice
 
     /// The bounds calculation method to use for determining the extent of a sub-plot. One of `full` (the default) or `flush`.
     /// - If set to `full`, the entire calculated bounds (including axes, title, and legend) will be used.
     /// - If set to `flush`, only the specified width and height values for the sub-view will be used. The `flush` setting can be useful when attempting to place sub-plots without axes or legends into a uniform grid structure.
     /// __Default value:__ `"full"`
-    public var bounds: LiteralFullOrFlush?
+    public var bounds: GG.LiteralFullOrFlush?
 
     /// Boolean flag indicating if subviews should be centered relative to their respective rows or columns.
     /// An object value of the form `{"row": boolean, "column": boolean}` can be used to supply different centering values for rows and columns.
     /// __Default value:__ `false`
     public var center: CenterChoice?
-    public typealias CenterChoice = FacetEncodingFieldDef.CenterChoice
+    public typealias CenterChoice = GG.FacetEncodingFieldDef.CenterChoice
 
     /// The spacing in pixels between sub-views of the composition operator.
     /// An object of the form `{"row": number, "column": number}` can be used to set
     /// different spacing values for rows and columns.
     /// __Default value__: Depends on `"spacing"` property of [the view composition configuration](https://vega.github.io/vega-lite/docs/config#view-config) (`20` by default)
     public var spacing: SpacingChoice?
-    public typealias SpacingChoice = FacetEncodingFieldDef.SpacingChoice
+    public typealias SpacingChoice = GG.FacetEncodingFieldDef.SpacingChoice
 
 
     // MARK: Single View Properties
@@ -137,11 +137,11 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
 
     /// A string describing the mark type (one of `"bar"`, `"circle"`, `"square"`, `"tick"`, `"line"`,
     /// `"area"`, `"point"`, `"rule"`, `"geoshape"`, and `"text"`) or a [mark definition object](https://vega.github.io/vega-lite/docs/mark#mark-def).
-    public var mark: AnyMark?
+    public var mark: GG.AnyMark?
 
     /// A key-value mapping between encoding channels and definition of fields.
     /// This property can only be defined at the top-level of a specification.
-    public var encoding: EncodingChannelMap? {
+    public var encoding: GG.EncodingChannelMap? {
         get { _encoding?.wrappedValue }
         _modify {
             var cfg = _encoding?.wrappedValue
@@ -151,18 +151,18 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     }
 
     /// Storing `encoding` as an indirect reduces the potential memory layout size so it can load on background queues (with a 512KB stack limit)
-    private var _encoding: Indirect<EncodingChannelMap>?
+    private var _encoding: Indirect<GG.EncodingChannelMap>?
 
-    public var width: TopLevelUnitSpec.WidthChoice?
-    public var height: TopLevelUnitSpec.HeightChoice?
+    public var width: GG.TopLevelUnitSpec.WidthChoice?
+    public var height: GG.TopLevelUnitSpec.HeightChoice?
 
     /// An object defining the view background's fill and stroke.
     /// __Default value:__ none (transparent)
-    public var view: ViewBackground?
+    public var view: GG.ViewBackground?
 
     /// An object defining properties of geographic projection, which will be applied to `shape` path for `"geoshape"` marks
     /// and to `latitude` and `"longitude"` channels for other marks.
-    public var projection: Projection?
+    public var projection: GG.Projection?
 
 
 
@@ -202,7 +202,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     @usableFromInline var hconcat: [SubSpec]? // HConcatSpec
 
 
-    public init(id: LayerId? = .none, schema: String? = .none, align: AlignChoice? = .none, autosize: AutosizeChoice? = .none, background: ColorExprable? = .none, bounds: LiteralFullOrFlush? = .none, center: CenterChoice? = .none, columns: Double? = .none, config: ConfigTheme? = .none, data: VizDataSource? = .none, datasets: Datasets? = .none, description: String? = .none, encoding: EncodingChannelMap? = .none, height: TopLevelUnitSpec.HeightChoice? = .none, mark: AnyMark? = .none, name: String? = .none, padding: Padding? = .none, projection: Projection? = .none, resolve: Resolve? = .none, spacing: SpacingChoice? = .none, title: TitleChoice? = .none, transform: [DataTransformation]? = .none, params: [ParamChoice]? = .none, usermeta: Meta? = .none, view: ViewBackground? = .none, width: TopLevelUnitSpec.WidthChoice? = .none,
+    public init(id: GG.LayerId? = .none, schema: String? = .none, align: AlignChoice? = .none, autosize: AutosizeChoice? = .none, background: ColorExprable? = .none, bounds: GG.LiteralFullOrFlush? = .none, center: CenterChoice? = .none, columns: Double? = .none, config: GG.ConfigTheme? = .none, data: VizDataSource? = .none, datasets: GG.Datasets? = .none, description: String? = .none, encoding: GG.EncodingChannelMap? = .none, height: GG.TopLevelUnitSpec.HeightChoice? = .none, mark: GG.AnyMark? = .none, name: String? = .none, padding: GG.Padding? = .none, projection: GG.Projection? = .none, resolve: GG.Resolve? = .none, spacing: SpacingChoice? = .none, title: TitleChoice? = .none, transform: [GG.DataTransformation]? = .none, params: [ParamChoice]? = .none, usermeta: Meta? = .none, view: GG.ViewBackground? = .none, width: GG.TopLevelUnitSpec.WidthChoice? = .none,
                 concat: [SubSpec]? = .none, facet: FacetChoice? = .none, layer: [SubSpec]? = .none, `repeat`: RepeatChoice? = .none, spec: SubSpec? = .none, vconcat: [SubSpec]? = .none, hconcat: [SubSpec]? = .none) {
         self.id = id
         self.schema = schema
@@ -245,14 +245,14 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     /// Object values can additionally specify parameters for content sizing and automatic resizing.
     /// `"fit"` is only supported for single and layered views that don't use `rangeStep`.
     /// __Default value__: `pad`
-    public typealias AutosizeChoice = TopLevelUnitSpec.AutosizeChoice
+    public typealias AutosizeChoice = GG.TopLevelUnitSpec.AutosizeChoice
 
     /// Title for the plot.
-    public typealias TitleChoice = TopLevelUnitSpec.TitleChoice
+    public typealias TitleChoice = GG.TopLevelUnitSpec.TitleChoice
 
-    public typealias FacetChoice = OneOf2<FacetFieldDef, FacetMapping>
+    public typealias FacetChoice = OneOf2<GG.FacetFieldDef, GG.FacetMapping>
 
-    public typealias RepeatChoice = OneOf3<[FieldName], LayerRepeatMapping, RepeatMapping>
+    public typealias RepeatChoice = OneOf3<[GG.FieldName], GG.LayerRepeatMapping, GG.RepeatMapping>
 
 
     /// The `CodingKeys` for the spec. These are in the order we will see in the JSON result of `JSONEncoder.encodeOrdered` due to conformance to `OrderedCodingKey`.

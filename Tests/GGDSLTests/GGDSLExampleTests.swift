@@ -184,21 +184,21 @@ final class GGDSLExampleTests: XCTestCase {
                 Encode(.theta, field: "value")
                     .type(.quantitative)
                     .stack(.init(.init(true)))
-                    .scale(.init(ScaleDef(range: .init([.init(2.35619449), .init(8.639379797)]))))
+                    .scale(.init(GG.ScaleDef(range: .init([.init(2.35619449), .init(8.639379797)]))))
                 Encode(.color, field: "category")
                     .type(.nominal)
-                    .legend(.init(LegendDef(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))))
-                    .scale(.init(ScaleDef(domain: .init([.init(.init("Sky")), .init(.init("Shady side of a pyramid")), .init(.init("Sunny side of a pyramid"))]), range: .init([.init("#416D9D"), .init("#674028"), .init("#DEAC58")]))))
+                    .legend(.init(GG.LegendDef(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))))
+                    .scale(.init(GG.ScaleDef(domain: .init([.init(.init("Sky")), .init(.init("Shady side of a pyramid")), .init(.init("Sunny side of a pyramid"))]), range: .init([.init("#416D9D"), .init("#674028"), .init("#DEAC58")]))))
                 Encode(.order, field: "order")
             }.outerRadius(.init(80))
         }
-        .data(.init(DataProvider(.init(DataSource(.init(InlineData(values: InlineDataset(.init([
+        .data(.init(GG.DataProvider(.init(GG.DataSource(.init(GG.InlineData(values: GG.InlineDataset(.init([
             ["category": "Sky", "value": 75, "order": 3],
             ["category": "Shady side of a pyramid", "value": 10, "order": 1],
             ["category": "Sunny side of a pyramid", "value": 15, "order": 2],
         ])))))))))
         .description("Reproducing http://robslink.com/SAS/democd91/pyramid_pie.htm")
-        .view(ViewBackground(stroke: .init(.null))), againstJSON: """
+        .view(GG.ViewBackground(stroke: .init(.null))), againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "Reproducing http://robslink.com/SAS/democd91/pyramid_pie.htm",
@@ -280,7 +280,7 @@ final class GGDSLExampleTests: XCTestCase {
 
             }
         }
-        .data(.init(DataSource(UrlData(url: "data/unemployment-across-industries.json"))))
+        .data(.init(GG.DataSource(GG.UrlData(url: "data/unemployment-across-industries.json"))))
         .width(300)
         .height(200), againstJSON: """
 {
