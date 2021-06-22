@@ -1,4 +1,4 @@
-import GGSpec
+import GGSchema
 
 public protocol SpecType : Codable {
     var name: String? { get set }

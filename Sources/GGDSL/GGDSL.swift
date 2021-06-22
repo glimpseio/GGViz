@@ -1,4 +1,4 @@
-import GGSpec
+import GGSchema
 import BricBrac
 
 // A DSL for constructing a data visualization in Swift.
@@ -24,7 +24,7 @@ public typealias Repeat = VizRepeat
 
 /// A type that can be used to create a field value
 public protocol FieldNameRepresentable {
-    /// The `GGSpec.Field` form of this specification
+    /// The `GGSchema.Field` form of this specification
     var fieldName: GG.FieldName { get }
 }
 
@@ -815,7 +815,7 @@ public struct VizLayer : VizSpecElementType, VizLayerType {
     }
 
 //    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
-//    public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSpec.Projection, U>) -> (U) -> (Self) {
+//    public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSchema.Projection, U>) -> (U) -> (Self) {
 //        setting(path: (\Self.projection).appending(path: keyPath))
 //    }
 }
@@ -868,7 +868,7 @@ public struct VizRepeat : VizSpecElementType, VizLayerType {
     }
 
 //    /// Creates a setter function for the given dynamic keypath, allowing a fluent API for all the public properties of the instance
-//    public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSpec.Projection, U>) -> (U) -> (Self) {
+//    public subscript<U>(dynamicMember keyPath: WritableKeyPath<GGSchema.Projection, U>) -> (U) -> (Self) {
 //        setting(path: (\Self.projection).appending(path: keyPath))
 //    }
 }

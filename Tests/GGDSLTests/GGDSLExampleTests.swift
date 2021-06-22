@@ -185,7 +185,21 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_pie() throws {
         try check(viz: Graphiq {
-        }, againstJSON: """
+            Mark(.arc) {
+                Encode(.theta, field: "value").type(.quantitative)
+                Encode(.color, field: "category").type(.nominal)
+            }
+        }
+        .data(.init(GG.DataProvider(.init(GG.DataSource(.init(GG.InlineData(values: GG.InlineDataset(.init([
+            ["category": 1, "value": 4],
+            ["category": 2, "value": 6],
+            ["category": 3, "value": 10],
+            ["category": 4, "value": 3],
+            ["category": 5, "value": 7],
+            ["category": 6, "value": 8],
+        ])))))))))
+        .view(GG.ViewBackground(stroke: .null))
+        .description("A simple pie chart with embedded data."), againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "A simple pie chart with embedded data.",

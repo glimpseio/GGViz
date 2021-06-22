@@ -1,4 +1,4 @@
-import GGSpec
+import GGSchema
 
 /// The direction of a repeating field
 public typealias RepeatFacet = GG.RepeatRef.LiteralRowOrColumnOrRepeatOrLayer
@@ -362,7 +362,7 @@ public extension GG.CompositeMark { // i.e., OneOf3<BoxPlot, ErrorBar, ErrorBand
     }
 }
 
-public extension GG.Aggregate.RawValue { // i.e., OneOf3<GGSpec.NonArgAggregateOp, GGSpec.ArgmaxDef, GGSpec.ArgminDef>
+public extension GG.Aggregate.RawValue { // i.e., OneOf3<GGSchema.NonArgAggregateOp, GGSchema.ArgmaxDef, GGSchema.ArgminDef>
 
     /// Deprecated for clarity
     @available(*, deprecated, renamed: "simpleAggregate")
