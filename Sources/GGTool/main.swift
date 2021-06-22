@@ -1,6 +1,9 @@
+import GGViz
+import GGBundle
 import ArgumentParser
 
-struct Repeat: ParsableCommand {
+/// A tool to manage 
+struct GGTool: ParsableCommand {
     @Flag(help: "Include a counter with each repetition.")
     var includeCounter = false
 
@@ -25,6 +28,4 @@ struct Repeat: ParsableCommand {
     }
 }
 
-Repeat.main()
-
-
+GGTool.main()
