@@ -1,6 +1,5 @@
 import XCTest
 import GGDSL
-import GGSpec // it would be nice to eliminate this
 
 // This test case encapsulated all the sample specs and reproduces them using the GGDSL
 

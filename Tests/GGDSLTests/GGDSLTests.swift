@@ -225,7 +225,7 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizOrderEncoding() throws {
+    func testOrderEncoding() throws {
         try check(viz: Graphiq {
             Mark(.point) {
                 Encode(.order, field: "A").sort(.ascending)
@@ -286,7 +286,7 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizText() throws {
+    func testText() throws {
         try check(viz: Graphiq {
             Mark(.text) {
                 Encode(.text, values: ["Hello", "There!"])
@@ -303,7 +303,7 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizTooltip() throws {
+    func testTooltip() throws {
         try check(viz: Graphiq {
             Mark(.rect) {
                 Encode(.tooltip, fields: ["A", "B"])
@@ -321,7 +321,7 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizShapes() throws {
+    func testShapes() throws {
         try check(viz: Graphiq {
             Mark(.point) {
                 Encode(.shape, value: .circle)
@@ -353,7 +353,7 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizLayer() throws {
+    func testLayer() throws {
         try check(viz: Graphiq {
             VizLayer(.overlay)
         }, againstJSON: """
@@ -382,7 +382,7 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizLayerMarkTypes() throws {
+    func testLayerMarkTypes() throws {
         try check(viz: Graphiq {
             Layer(.horizontal) {
                 Encode(.x, value: .width)
@@ -435,7 +435,7 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizLayerNesting() throws {
+    func testLayerNesting() throws {
         try check(viz: Graphiq {
             Layer(.horizontal) {
                 Encode(.x, value: .width)
@@ -464,7 +464,7 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizProjection() throws {
+    func testProjection() throws {
         try check(viz: Graphiq {
             VizProjection()
         }, againstJSON: """
@@ -486,7 +486,7 @@ final class GGDSLTests: XCTestCase {
         """)
     }
 
-    func testVizRepeat() throws {
+    func testRepeat() throws {
         try check(viz: Graphiq {
             Repeat(.horizontal, fields: ["A", "B"]) { hfield in
                 Repeat(.vertical, fields: ["C", "D"]) { vfield in
@@ -503,6 +503,22 @@ final class GGDSLTests: XCTestCase {
                     "mark": "bar",
                     "encoding": { "x": { "field": { "repeat": "column" } }, "y": { "field": { "repeat": "row" } } }
                 }
+            }
+        }
+        """)
+
+        try check(viz: Graphiq {
+            Repeat(.wrap, fields: ["A", "B", "C", "D"]) { ffield in
+                Mark(.rule) {
+                    Encode(.x, repeat: ffield)
+                }
+            }
+        }, againstJSON: """
+        {
+            "repeat": ["A","B","C","D"],
+            "spec": {
+                "mark": "rule",
+                "encoding": { "x": { "field": { "repeat": "repeat" } } }
             }
         }
         """)
