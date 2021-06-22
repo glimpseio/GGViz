@@ -1,6 +1,5 @@
 import XCTest
 import GGDSL
-import GGSpec
 
 typealias SimpleViz = Viz<Bric.ObjType>
 typealias Graphiq = SimpleViz
