@@ -8,7 +8,24 @@ import GGDSL
 final class GGDSLExampleTests: XCTestCase {
     func test_bar() throws {
         try check(viz: Graphiq {
-        }, againstJSON: """
+            Mark(.bar) {
+                Encode(.x, field: "a") {
+                    Guide().labelAngle(0)
+                }
+                .type(.nominal)
+
+                Encode(.y, field: "b") {
+                }
+                .type(.quantitative)
+            }
+        }
+        .data(.init(GG.DataProvider(.init(GG.DataSource(.init(GG.InlineData(values: GG.InlineDataset(.init([
+            ["a": "A", "b": 28], ["a": "B", "b": 55], ["a": "C", "b": 43],
+            ["a": "D", "b": 91], ["a": "E", "b": 81], ["a": "F", "b": 53],
+            ["a": "G", "b": 19], ["a": "H", "b": 87], ["a": "I", "b": 52]
+        ])))))))))
+        .description("A simple bar chart with embedded data.")
+        , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "A simple bar chart with embedded data.",
@@ -127,7 +144,22 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_donut() throws {
         try check(viz: Graphiq {
-        }, againstJSON: """
+            Mark(.arc) {
+                Encode(.theta, field: "value").type(.quantitative)
+                Encode(.color, field: "category").type(.nominal)
+            }
+            .innerRadius(50)
+        }
+        .data(.init(GG.DataProvider(.init(GG.DataSource(.init(GG.InlineData(values: GG.InlineDataset(.init([
+            ["category": 1, "value": 4],
+            ["category": 2, "value": 6],
+            ["category": 3, "value": 10],
+            ["category": 4, "value": 3],
+            ["category": 5, "value": 7],
+            ["category": 6, "value": 8],
+        ])))))))))
+        .view(GG.ViewBackground(stroke: .null))
+        .description("A simple donut chart with embedded data."), againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "A simple donut chart with embedded data.",

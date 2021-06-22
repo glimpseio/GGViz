@@ -60,7 +60,7 @@ final class GGDSLTests: XCTestCase {
         try check(viz: Graphiq {
             Mark(.bar) {
                 Encode(.y, field: "B") {
-                    Guide().tickMinStep(10)
+                    Guide(.axis).tickMinStep(10)
                 }
             }
         }, againstJSON: """
