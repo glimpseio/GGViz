@@ -1,7 +1,9 @@
 import XCTest
 import GGDSL
+import GGSpec
 
 typealias SimpleViz = Viz<Bric.ObjType>
+typealias Graphiq = SimpleViz
 
 extension XCTestCase {
     /// Checks that the given viz builder matches the JSON spec.
@@ -37,29 +39,85 @@ final class GGDSLTests: XCTestCase {
 
     }
 
-    func testLegends() throws {
-        throw XCTSkip()
-    }
-
     func testAxes() throws {
-        try check(viz: SimpleViz {
-            Mark(.rect) {
+        try check(viz: Graphiq {
+            Mark(.bar) {
                 Encode(.x, field: "A") {
-                    Guide(.axis)
-                        .title(.init("A Axis"))
+                    Guide()
                 }
             }
         }, againstJSON: """
         {
-            "mark": "rect",
+            "mark": "bar",
             "encoding": {
                 "x": {
-                    "field": "A"
+                    "field": "A",
+                    "axis": { }
+                }
+            }
+        }
+        """)
+
+        try check(viz: Graphiq {
+            Mark(.bar) {
+                Encode(.y, field: "B") {
+                    Guide().tickMinStep(10)
+                }
+            }
+        }, againstJSON: """
+        {
+            "mark": "bar",
+            "encoding": {
+                "y": {
+                    "field": "B",
+                    "axis": { "tickMinStep": 10 }
                 }
             }
         }
         """)
     }
+
+    func testLegends() throws {
+        try check(viz: Graphiq {
+            Mark(.circle) {
+                Encode(.fill, field: "C") {
+                    Guide()
+                }
+            }
+        }, againstJSON: """
+        {
+            "mark": "circle",
+            "encoding": {
+                "fill": {
+                    "field": "C",
+                    "legend": { }
+                }
+            }
+        }
+        """)
+    }
+
+
+    func testHeaders() throws {
+        try check(viz: Graphiq {
+            Mark(.text) {
+                Encode(.facet, field: "R") {
+                    Guide()
+                }
+            }
+        }, againstJSON: """
+        {
+            "mark": "text",
+            "encoding": {
+                "facet": {
+                    "field": "R",
+                    "header": { }
+                }
+            }
+        }
+        """)
+    }
+
 
     /// Verify that the raw legend is created by the builder DSL
     func testLegendValues() {
@@ -82,7 +140,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testMarkSimple() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Mark(.square)
         }, againstJSON: """
             {"mark":"square"}
@@ -90,7 +148,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testMarkCompound() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             VizMark(.boxplot)
         }, againstJSON: """
             {"mark":"boxplot"}
@@ -98,7 +156,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testTransform() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Transform(.sample) {
                 Mark(.square) {
                 }
@@ -112,7 +170,7 @@ final class GGDSLTests: XCTestCase {
             }
             """)
 
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Transform(.loess, field: "A", on: "B") {
                 Mark(.square)
             }
@@ -125,11 +183,11 @@ final class GGDSLTests: XCTestCase {
             }
             """)
 
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Transform(.density, field: "A", densityOutput: "DENSE") { sample, value in
                 Mark(.square) {
                     Encode(.x, field: sample) {
-                        Guide(.axis)
+//                        Guide(.axis)
                     }
                     Encode(.y, field: value)
                 }
@@ -140,7 +198,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testDetailEncoding() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Mark(.circle) {
                 Encode(.color, field: "C")
                     .aggregate(.min)
@@ -169,7 +227,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testVizOrderEncoding() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Mark(.point) {
                 Encode(.order, field: "A").sort(.ascending)
                 Encode(.order, field: "B").sort(.descending)
@@ -188,7 +246,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testFacets() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Mark(.rect) {
                 Encode(.row, field: "ROW_FIELD")
                 Encode(.column, field: "COLUMN_FIELD")
@@ -213,7 +271,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testStrokeDash() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Mark(.line) {
                 Encode(.strokeDash, value: [1, 2, 3])
             }
@@ -230,7 +288,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testVizText() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Mark(.text) {
                 Encode(.text, values: ["Hello", "There!"])
             }
@@ -247,7 +305,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testVizTooltip() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Mark(.rect) {
                 Encode(.tooltip, fields: ["A", "B"])
             }
@@ -265,7 +323,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testVizShapes() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Mark(.point) {
                 Encode(.shape, value: .circle)
             }
@@ -280,7 +338,7 @@ final class GGDSLTests: XCTestCase {
         }
         """)
 
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Mark(.point) {
                 Encode(.shape, value: .path("M0,0 L1,1"))
             }
@@ -297,7 +355,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testVizLayer() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             VizLayer(.overlay)
         }, againstJSON: """
         {
@@ -305,7 +363,7 @@ final class GGDSLTests: XCTestCase {
         }
         """)
 
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             VizLayer(.vertical)
         }, againstJSON: """
         {
@@ -313,7 +371,7 @@ final class GGDSLTests: XCTestCase {
         }
         """)
 
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Layer(.wrap) {
                 Mark(.bar) {
                     Encode(.x)
@@ -326,7 +384,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testVizLayerMarkTypes() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Layer(.horizontal) {
                 Encode(.x, value: .width)
                 Encode(.y, value: .height)
@@ -379,7 +437,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testVizLayerNesting() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Layer(.horizontal) {
                 Encode(.x, value: .width)
                 Layer(.vertical) {
@@ -408,7 +466,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testVizProjection() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             VizProjection()
         }, againstJSON: """
         {
@@ -416,7 +474,7 @@ final class GGDSLTests: XCTestCase {
         }
         """)
 
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             VizProjection(.albersUsa)
                 .precision(0.1)
         }, againstJSON: """
@@ -430,7 +488,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testVizRepeat() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Repeat(.horizontal, fields: ["A", "B"]) { hfield in
                 Repeat(.vertical, fields: ["C", "D"]) { vfield in
                     Mark(.bar) {
@@ -452,7 +510,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testEncodingVariations() throws {
-        _ = SimpleViz {
+        _ = Graphiq {
             VizTheme()
                 .font("serif")
                 .title(.init(fontSize: .init(ExprRef(expr: Expr("width * 0.05")))))
@@ -676,7 +734,7 @@ final class GGDSLTests: XCTestCase {
     }
 
     func testExpressions() throws {
-        let viz = SimpleViz {
+        let viz = Graphiq {
             VizTheme()
                 .font("serif")
                 .title(.init(fontSize: .init(ExprRef(expr: Expr("width * 0.05")))))

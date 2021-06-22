@@ -18,6 +18,15 @@ public typealias VizDataSource = Nullable<DataProvider> // e.g., TopLevelUnitSpe
 /// A type that either be a static value (typically a number or string) or the result of a dynamic [expression](https://vega.github.io/vega/docs/expressions/).
 public typealias Exprable<T> = OneOf<T>.Or<ExprRef>
 
+
+extension Pure {
+    /// A simple no-op for synthesizing a keypath that goes nowhere
+    subscript<T>(noop noop: Bool) -> T? {
+        get { nil }
+        set { } // no-po
+    }
+}
+
 public extension ExprRef {
     /// Construct this expression reference from a string
     init(_ expression: String) {

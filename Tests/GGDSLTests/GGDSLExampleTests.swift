@@ -1,5 +1,6 @@
 import XCTest
 import GGDSL
+import GGSpec // it would be nice to eliminate this
 
 // This test case encapsulated all the sample specs and reproduces them using the GGDSL
 
@@ -7,7 +8,7 @@ import GGDSL
 
 final class GGDSLExampleTests: XCTestCase {
     func test_bar() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -29,7 +30,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_airport_connections() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -126,7 +127,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_donut() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -152,7 +153,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_pie() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -178,7 +179,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_pie_pyramid() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
             Mark(.arc) {
                 Encode(.theta, field: "value")
                     .type(.quantitative)
@@ -239,7 +240,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_radial() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -266,8 +267,22 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area() throws {
-        try check(viz: SimpleViz {
-        }, againstJSON: """
+        try check(viz: Graphiq {
+            Mark(.area) {
+                Encode(.x, field: "date") {
+                    Guide()
+                        .format("%Y")
+                }
+                .timeUnit(.init(.init(.init(.yearmonth))))
+                Encode(.y, field: "count")
+                    .aggregate(.init(.sum))
+                    .title(.init("count"))
+
+            }
+        }
+        .data(.init(DataSource(UrlData(url: "data/unemployment-across-industries.json"))))
+        .width(300)
+        .height(200), againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "width": 300,
@@ -289,7 +304,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_cumulative_freq() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -315,7 +330,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_density() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -345,7 +360,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_density_facet() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -373,7 +388,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_density_stacked() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -401,7 +416,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_gradient() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -452,7 +467,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_horizon() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -505,7 +520,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_overlay() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -522,7 +537,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_aggregate() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -543,7 +558,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_aggregate_sort_by_encoding() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -569,7 +584,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_argmax() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -589,7 +604,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_axis_space_saving() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -627,7 +642,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_binned_data() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -660,7 +675,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_color_disabled_scale() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -702,7 +717,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_count_minimap() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -754,7 +769,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_diverging_stack_population_pyramid() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -793,7 +808,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_diverging_stack_transform() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -900,7 +915,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_gantt() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -923,7 +938,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_grouped() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -961,7 +976,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_layered_transparent() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -991,7 +1006,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_layered_weather() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1086,7 +1101,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_month_temporal_initial() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1109,7 +1124,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_negative() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1147,7 +1162,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_negative_horizontal_label() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1204,7 +1219,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_bar_size_responsive() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1221,7 +1236,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_boxplot_2D_vertical() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1242,7 +1257,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_boxplot_minmax_2D_vertical() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1266,7 +1281,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_boxplot_preaggregated() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1334,7 +1349,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_brush_table() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1392,7 +1407,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_circle() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1407,7 +1422,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_circle_binned() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1429,7 +1444,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_circle_bubble_health_income() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1463,7 +1478,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_circle_custom_tick_labels() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1490,7 +1505,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_circle_github_punchcard() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1520,7 +1535,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_circle_natural_disasters() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1559,7 +1574,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_circle_wilkinson_dotplot() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1590,7 +1605,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_concat_bar_scales_discretize() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1725,7 +1740,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_concat_layer_voyager_result() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1912,7 +1927,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_concat_marginal_histograms() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1973,7 +1988,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_concat_population_pyramid() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2048,7 +2063,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_connected_scatterplot() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2070,7 +2085,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_facet_bullet() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2125,7 +2140,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_facet_grid_bar() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2187,7 +2202,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_choropleth() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2225,7 +2240,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_circle() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2256,7 +2271,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_layer() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2307,7 +2322,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_layer_line_london() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2432,7 +2447,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_line() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
 //            VizLayer(.overlay) {
 //                // background map
 //                VizMark(.geoshape) {
@@ -2459,8 +2474,8 @@ final class GGDSLExampleTests: XCTestCase {
 //            }
 //        }
 //        .description("Line drawn between airports in the U.S. simulating a flight itinerary")
-//        .width(.init(800.0))
-//        .height(.init(500.0))
+//        .width(800.0)
+//        .height(500.0)
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2562,7 +2577,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_params_projections() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2605,7 +2620,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_repeat() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2656,7 +2671,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_rule() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2753,7 +2768,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_text() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2812,7 +2827,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_geo_trellis() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2849,7 +2864,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_histogram() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2867,7 +2882,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_histogram_log() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2913,7 +2928,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_histogram_rel_freq() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2952,7 +2967,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_area_brush() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2978,7 +2993,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_bar_select_highlight() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3036,7 +3051,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_bin_extent() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3074,7 +3089,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_brush() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3099,7 +3114,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_concat_layer() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3182,7 +3197,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_global_development() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3346,7 +3361,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_index_chart() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3418,7 +3433,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_layered_crossfilter() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3460,7 +3475,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_legend() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3495,7 +3510,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_line_hover() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3554,7 +3569,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_multi_line_label() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3638,7 +3653,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_multi_line_pivot_tooltip() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3690,7 +3705,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_multi_line_tooltip() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3736,7 +3751,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_overview_detail() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3778,7 +3793,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_paintbrush() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3802,7 +3817,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_query_widgets() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3843,7 +3858,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_seattle_weather() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3926,7 +3941,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_interactive_splom() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -3981,7 +3996,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_isotype_bar_chart() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4070,7 +4085,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_isotype_bar_chart_emoji() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4138,7 +4153,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_isotype_grid() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4272,7 +4287,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_joinaggregate_mean_difference() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4315,7 +4330,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_joinaggregate_mean_difference_by_year() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4374,7 +4389,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_joinaggregate_residual_graph() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4420,7 +4435,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_arc_label() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4453,7 +4468,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_bar_annotations() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4524,7 +4539,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_bar_fruit() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4578,7 +4593,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_bar_labels() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4612,7 +4627,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_bar_labels_grey() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4648,7 +4663,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_candlestick() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4701,7 +4716,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_cumulative_histogram() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4744,7 +4759,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_dual_axis() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4797,7 +4812,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_falkensee() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4909,7 +4924,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_histogram_global_mean() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -4933,7 +4948,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_likert() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5191,7 +5206,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_line_co2_concentration() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5263,7 +5278,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_line_errorband_ci() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5300,7 +5315,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_line_mean_point_raw() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5325,7 +5340,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_line_rolling_mean_point_raw() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5366,7 +5381,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_line_window() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5427,7 +5442,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_point_errorbar_ci() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5459,7 +5474,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_point_errorbar_stdev() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5491,7 +5506,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_point_line_loess() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5543,7 +5558,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_point_line_regression() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5615,7 +5630,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_precipitation_mean() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5655,7 +5670,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_ranged_dot() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5729,7 +5744,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_scatter_errorband_1D_stdev_global_mean() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5769,7 +5784,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_text_heatmap() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5815,7 +5830,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5832,7 +5847,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_bump() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5868,7 +5883,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_color() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5885,7 +5900,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_color_halo() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5920,7 +5935,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_conditional_axis() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5965,7 +5980,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_dashed_part() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -5992,7 +6007,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_monotone() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6011,7 +6026,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_overlay() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6031,7 +6046,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_overlay_stroked() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6054,7 +6069,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_skip_invalid_mid_overlay() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6100,7 +6115,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_slope() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6126,7 +6141,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_step() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6146,7 +6161,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_line_strokedash() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6163,7 +6178,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_lookup() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6186,7 +6201,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_nested_concat_align() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6237,7 +6252,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_parallel_coordinate() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6348,7 +6363,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_point_2d() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6364,7 +6379,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_point_angle_windvector() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6403,7 +6418,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_point_bubble() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6420,7 +6435,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_point_color_with_shape() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6448,7 +6463,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_point_href() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6470,7 +6485,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_point_invalid_color() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6502,7 +6517,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_point_quantile_quantile() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6560,7 +6575,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_rect_binned_heatmap() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6600,7 +6615,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_rect_heatmap() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6619,7 +6634,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_rect_heatmap_weather() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6668,7 +6683,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_rect_lasagna() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6730,7 +6745,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_rect_mosaic_labelled_with_offset() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6973,7 +6988,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_repeat_histogram() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -6993,7 +7008,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_repeat_layer() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7028,7 +7043,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_scatter_image() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7050,7 +7065,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_selection_heatmap() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7116,7 +7131,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_selection_layer_bar_month() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7165,7 +7180,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_selection_translate_scatterplot_drag() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7192,7 +7207,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_sequence_line_fold() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7241,7 +7256,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_stacked_area() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7266,7 +7281,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_stacked_area_normalize() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7291,7 +7306,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_stacked_area_stream() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7315,7 +7330,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_stacked_bar_count_corner_radius_mark() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7331,7 +7346,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_stacked_bar_h() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7347,7 +7362,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_stacked_bar_normalize() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7375,7 +7390,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_stacked_bar_weather() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7407,7 +7422,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_text_scatterplot_colored() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7428,7 +7443,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_tick_dot() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7442,7 +7457,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_tick_strip() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7458,7 +7473,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_trail_color() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7476,7 +7491,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_trail_comet() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7515,7 +7530,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_trellis_anscombe() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7541,7 +7556,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_trellis_area() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7580,7 +7595,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_trellis_area_seattle() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7634,7 +7649,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_trellis_bar() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7663,7 +7678,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_trellis_bar_histogram() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7686,7 +7701,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_trellis_barley() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7720,7 +7735,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_trellis_scatter() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7737,7 +7752,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_trellis_stacked_bar() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7754,7 +7769,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_vconcat_weather() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7806,7 +7821,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_waterfall_chart() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -7940,7 +7955,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_wheat_wages() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -8065,7 +8080,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_window_percent_of_total() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -8106,7 +8121,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_window_rank() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -8158,7 +8173,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_window_top_k() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -8206,7 +8221,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_window_top_k_others() throws {
-        try check(viz: SimpleViz {
+        try check(viz: Graphiq {
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
