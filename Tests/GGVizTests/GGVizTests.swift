@@ -1,6 +1,7 @@
 import XCTest
 
 import GGViz
+import GGSpec
 import Judo
 import MiscKit
 import BricBrac
