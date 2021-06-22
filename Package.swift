@@ -24,7 +24,7 @@ let package = Package(
         .package(url: "https://github.com/jectivex/Judo.git", .branch("main")),
         .package(url: "https://github.com/glimpseio/GGGrammar.git", .branch("main")),
         .package(url: "https://github.com/weichsel/ZIPFoundation.git", .upToNextMinor(from: "0.9.12")),
-        .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMinor(from: "0.4.0")),
+        .package(url: "https://github.com/apple/swift-argument-parser", .upToNextMinor(from: "0.4.3")),
     ],
     targets: [
         .target(
