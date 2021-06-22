@@ -2,7 +2,7 @@ import Foundation
 import MiscKit
 import Judo
 
-/// Uses `JXKit` and `GGSpec`
+/// Uses `JXKit` and `GGSchema`
 ///
 /// Uses: `JXContext.installGGViz`
 open class VizEngine {
@@ -238,7 +238,7 @@ public extension VizEngine {
 //        }
     }
 
-    /// The result of compiling a GGSpec
+    /// The result of compiling a GGSchema
     struct CompileOutput<Meta: VizSpecMeta> : Decodable {
         public var vega: Bric
         public var normalized: VizSpec<Meta>?
