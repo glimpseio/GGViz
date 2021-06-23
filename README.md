@@ -15,7 +15,7 @@ This project contains three sub-projects:
 
 # GGDSL
 
-The GGDSL package exposes a native Swift DSL that succinctly describes a layered grammar of graphics inspired by Jacques Bertin's [Sémiologie graphique](https://fr.wikipedia.org/wiki/Sémiologie_graphique), and subsequent implementations: Leland Wilkinson’s [Grammar of Graphics](https://www.springer.com/gp/book/9780387245447), Hadley Wickham's [ggplot2](https://en.wikipedia.org/wiki/Ggplot2), Stanford's [Polaris](http://www.graphics.stanford.edu/projects/polaris/), and the [Vega](https://vega.github.io) projects (which is also used as the runtime for rendering visualizations in the [GGViz] package). 
+The GGDSL package exposes a native Swift DSL that succinctly describes a layered grammar of graphics inspired by Jacques Bertin's [Sémiologie graphique](https://fr.wikipedia.org/wiki/Sémiologie_graphique), and subsequent implementations: Leland Wilkinson’s [Grammar of Graphics](https://www.springer.com/gp/book/9780387245447), Hadley Wickham's [ggplot2](https://en.wikipedia.org/wiki/Ggplot2), Stanford's [Polaris](http://www.graphics.stanford.edu/projects/polaris/), and the [Vega](https://vega.github.io) projects (which is also used as the runtime for rendering visualizations in the [GGViz](#GGViz) package). 
 
 # GGBundle
 
@@ -31,9 +31,6 @@ The format of the file is:
     - ext/ggviz.js (optional): the local copy of the stand-alone visualization runtime
 
 
+# GGViz
 
-
-
-
-
-
+GGViz is the visualization runtime for a [GGDSL](#GGDSL), and can be used to render a `GGDSL` into various formats: `svg`, `pdf`, `png`, as well as generating an interactive HTML5 [GGBundle](#GGBundle).

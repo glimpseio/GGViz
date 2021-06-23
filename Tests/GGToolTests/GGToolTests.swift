@@ -41,7 +41,7 @@ final class GGToolTests: XCTestCase {
     func productsDirectory() throws -> URL {
         print("#### main bundle:", Bundle.main)
         print("#### main bundleURL:", Bundle.main.bundleURL)
-        print("#### main bundleURL children:", try FileManager.default.contentsOfDirectory(at: Bundle.main.bundleURL, includingPropertiesForKeys: nil, options: FileManager.DirectoryEnumerationOptions.includesDirectoriesPostOrder))
+        print("#### main bundleURL children:", try FileManager.default.contentsOfDirectory(at: Bundle.main.bundleURL, includingPropertiesForKeys: nil, options: []))
 
         #if os(macOS)
         print("#### checking bundles:", Bundle.allBundles.map(\.bundleURL))
