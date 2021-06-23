@@ -17,7 +17,17 @@ final class GGToolTests: XCTestCase {
 
         // Mac Catalyst won't have `Process`, but it is supported for executables.
         #if !targetEnvironment(macCatalyst)
-        let ggtool = try productsDirectory().appendingPathComponent("GGTool")
+
+        // the relative path to the tool
+        let toolPath: String
+
+        #if(Linux)
+        toolPath = "GGTool"
+        #else
+        toolPath = "GGTool"
+        #endif
+
+        let ggtool = try productsDirectory().appendingPathComponent(toolPath)
 
         let process = Process()
         process.executableURL = ggtool
@@ -43,6 +53,9 @@ final class GGToolTests: XCTestCase {
         print("#### main bundleURL:", Bundle.main.bundleURL)
         print("#### main bundleURL children:", try FileManager.default.contentsOfDirectory(at: Bundle.main.bundleURL, includingPropertiesForKeys: nil, options: []))
 
+        for path in FileManager.default.enumerator(at: Bundle.main.bundleURL, includingPropertiesForKeys: nil, options: [], errorHandler: { _, _ in true })! {
+            print(" - path:", path)
+        }
         #if os(macOS)
         print("#### checking bundles:", Bundle.allBundles.map(\.bundleURL))
         for bundle in Bundle.allBundles where bundle.bundlePath.hasSuffix(".xctest") {
