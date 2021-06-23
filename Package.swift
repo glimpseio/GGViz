@@ -51,16 +51,16 @@ let package = Package(
             name: "GGVizTests",
             dependencies: ["GGViz"],
             resources: [.copy("TestResources/")]),
-        .target(
-            name: "GGTool",
-            dependencies: [
-                "GGBundle",
-                "GGViz",
-                "ZIPFoundation",
-                .product(name: "ArgumentParser", package: "swift-argument-parser")
-            ]),
-        .testTarget(
-            name: "GGToolTests",
-            dependencies: ["GGTool"]),
+        //.target(
+            //name: "GGTool",
+            //dependencies: [
+                //"GGBundle",
+                //"GGViz",
+                //"ZIPFoundation",
+                //.product(name: "ArgumentParser", package: "swift-argument-parser")
+            //]),
+        //.testTarget(
+            //name: "GGToolTests",
+            //dependencies: ["GGTool"]),
     ]
 )

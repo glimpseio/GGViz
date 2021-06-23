@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
             xcodebuild clean test \
-              -scheme "GGDSL" \
+              -scheme "GGViz" \
               -sdk "iphonesimulator" \
               -destination "platform=iOS Simulator,name=iPod touch (7th generation)" \
               ONLY_ACTIVE_ARCH=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@v2
       - run: |
             xcodebuild clean test \
-              -scheme "GGSDL" \
+              -scheme "GGViz" \
               -sdk "appletvsimulator" \
               -destination "platform=tvOS Simulator,name=Apple TV" \
               ONLY_ACTIVE_ARCH=NO CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO

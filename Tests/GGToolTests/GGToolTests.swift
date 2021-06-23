@@ -5,7 +5,7 @@ final class GGToolTests: XCTestCase {
     func testExample() throws {
         XCTAssertEqual(try runGGTool(["--count", "1", "ABC"]), "ABC\n")
         XCTAssertEqual(try runGGTool(["--count", "2", "ABC"]), "ABC\nABC\n")
-        XCTAssertEqual(try runGGTool(["--count", "3", "ABC"]), "ABC\nABC\nABC\n")
+        XCTAssertEqual(try runGGTool(["--count", "3", "ABC"]), "ABC\nABC\nABCx\n")
     }
 
     func runGGTool(_ args: [String]) throws -> String? {
