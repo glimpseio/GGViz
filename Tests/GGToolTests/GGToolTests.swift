@@ -19,13 +19,7 @@ final class GGToolTests: XCTestCase {
         #if !targetEnvironment(macCatalyst)
 
         // the relative path to the tool
-        let toolPath: String
-
-        #if(Linux)
-        toolPath = "GGTool"
-        #else
-        toolPath = "GGTool"
-        #endif
+        let toolPath: String = "ggtool"
 
         let ggtool = try productsDirectory().appendingPathComponent(toolPath)
 
