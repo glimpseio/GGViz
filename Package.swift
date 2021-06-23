@@ -16,9 +16,9 @@ let package = Package(
         .library(
             name: "GGBundle",
             targets: ["GGBundle"]),
-        //.executable(
-            //name: "ggtool",
-            //targets: ["GGTool"]),
+        .executable( // SR-1954
+            name: "ggtool", // SR-1954
+            targets: ["GGTool"]), // SR-1954
     ],
     dependencies: [
         .package(url: "https://github.com/jectivex/Judo.git", .branch("main")),
@@ -51,16 +51,16 @@ let package = Package(
             name: "GGVizTests",
             dependencies: ["GGViz"],
             resources: [.copy("TestResources/")]),
-        //.target(
-            //name: "GGTool",
-            //dependencies: [
-                //"GGBundle",
-                //"GGViz",
-                //"ZIPFoundation",
-                //.product(name: "ArgumentParser", package: "swift-argument-parser")
-            //]),
-        //.testTarget(
-            //name: "GGToolTests",
-            //dependencies: ["GGTool"]),
+        .target( // SR-1954
+            name: "GGTool", // SR-1954
+            dependencies: [ // SR-1954
+                "GGBundle", // SR-1954
+                "GGViz", // SR-1954
+                "ZIPFoundation", // SR-1954
+                .product(name: "ArgumentParser", package: "swift-argument-parser") // SR-1954
+            ]), // SR-1954
+        .testTarget( // SR-1954
+            name: "GGToolTests", // SR-1954
+            dependencies: ["GGTool"]), // SR-1954
     ]
 )

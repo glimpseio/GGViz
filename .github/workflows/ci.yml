@@ -29,6 +29,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Remove Tool from Package.swift (SR-1954)
+        run: sed -i'.bk' 's;\(.*\)// SR-1954$;// SR-1954 \1;g' Package.swift
+
       - run: |
             xcodebuild clean test \
               -scheme "GGViz-Package" \
@@ -44,6 +47,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Remove Tool from Package.swift (SR-1954)
+        run: sed -i'.bk' 's;\(.*\)// SR-1954$;// SR-1954 \1;g' Package.swift
       - run: |
             xcodebuild clean test \
               -scheme "GGViz-Package" \
