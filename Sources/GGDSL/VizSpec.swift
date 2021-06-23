@@ -153,8 +153,11 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     /// Storing `encoding` as an indirect reduces the potential memory layout size so it can load on background queues (with a 512KB stack limit)
     private var _encoding: Indirect<GG.EncodingChannelMap>?
 
-    public var width: GG.TopLevelUnitSpec.WidthChoice?
-    public var height: GG.TopLevelUnitSpec.HeightChoice?
+    public typealias Width = OneOf<Double>.Or<GG.LiteralContainer>.Or<GG.Step>
+    public var width: Width?
+
+    public typealias Height = OneOf<Double>.Or<GG.LiteralContainer>.Or<GG.Step>
+    public var height: Height?
 
     /// An object defining the view background's fill and stroke.
     /// __Default value:__ none (transparent)
@@ -202,7 +205,7 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     @usableFromInline var hconcat: [SubSpec]? // HConcatSpec
 
 
-    public init(id: GG.LayerId? = .none, schema: String? = .none, align: AlignChoice? = .none, autosize: AutosizeChoice? = .none, background: ColorExprable? = .none, bounds: GG.LiteralFullOrFlush? = .none, center: CenterChoice? = .none, columns: Double? = .none, config: GG.ConfigTheme? = .none, data: VizDataSource? = .none, datasets: GG.Datasets? = .none, description: String? = .none, encoding: GG.EncodingChannelMap? = .none, height: GG.TopLevelUnitSpec.HeightChoice? = .none, mark: GG.AnyMark? = .none, name: String? = .none, padding: GG.Padding? = .none, projection: GG.Projection? = .none, resolve: GG.Resolve? = .none, spacing: SpacingChoice? = .none, title: TitleChoice? = .none, transform: [GG.DataTransformation]? = .none, params: [ParamChoice]? = .none, usermeta: Meta? = .none, view: GG.ViewBackground? = .none, width: GG.TopLevelUnitSpec.WidthChoice? = .none,
+    public init(id: GG.LayerId? = .none, schema: String? = .none, align: AlignChoice? = .none, autosize: AutosizeChoice? = .none, background: ColorExprable? = .none, bounds: GG.LiteralFullOrFlush? = .none, center: CenterChoice? = .none, columns: Double? = .none, config: GG.ConfigTheme? = .none, data: VizDataSource? = .none, datasets: GG.Datasets? = .none, description: String? = .none, encoding: GG.EncodingChannelMap? = .none, height: Height? = .none, mark: GG.AnyMark? = .none, name: String? = .none, padding: GG.Padding? = .none, projection: GG.Projection? = .none, resolve: GG.Resolve? = .none, spacing: SpacingChoice? = .none, title: TitleChoice? = .none, transform: [GG.DataTransformation]? = .none, params: [ParamChoice]? = .none, usermeta: Meta? = .none, view: GG.ViewBackground? = .none, width: Width? = .none,
                 concat: [SubSpec]? = .none, facet: FacetChoice? = .none, layer: [SubSpec]? = .none, `repeat`: RepeatChoice? = .none, spec: SubSpec? = .none, vconcat: [SubSpec]? = .none, hconcat: [SubSpec]? = .none) {
         self.id = id
         self.schema = schema
@@ -245,10 +248,10 @@ public struct VizSpec<Meta: VizSpecMeta> : Pure, Hashable, Codable, TopLevelSpec
     /// Object values can additionally specify parameters for content sizing and automatic resizing.
     /// `"fit"` is only supported for single and layered views that don't use `rangeStep`.
     /// __Default value__: `pad`
-    public typealias AutosizeChoice = GG.TopLevelUnitSpec.AutosizeChoice
+    public typealias AutosizeChoice = OneOf<GG.AutosizeType>.Or<GG.AutoSizeParams>
 
     /// Title for the plot.
-    public typealias TitleChoice = GG.TopLevelUnitSpec.TitleChoice
+    public typealias TitleChoice = OneOf<GG.StringList>.Or<GG.TitleParams>
 
     public typealias FacetChoice = OneOf2<GG.FacetFieldDef, GG.FacetMapping>
 

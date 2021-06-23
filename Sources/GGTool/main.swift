@@ -2,7 +2,7 @@ import GGViz
 import GGBundle
 import ArgumentParser
 
-/// A tool to manage 
+/// A tool for creating and managning visualizations
 struct GGTool: ParsableCommand {
     @Flag(help: "Include a counter with each repetition.")
     var includeCounter = false
@@ -15,9 +15,6 @@ struct GGTool: ParsableCommand {
 
     mutating func run() throws {
         let repeatCount = count ?? .max
-
-        print("Go-go Gadget Tool!")
-
         for i in 1...repeatCount {
             if includeCounter {
                 print("\(i): \(phrase)")
