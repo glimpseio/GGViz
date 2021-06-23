@@ -16,7 +16,6 @@ final class GGToolTests: XCTestCase {
 
         // Mac Catalyst won't have `Process`, but it is supported for executables.
         #if !targetEnvironment(macCatalyst)
-
         let fooBinary = productsDirectory.appendingPathComponent("GGTool")
 
         let process = Process()
@@ -40,7 +39,9 @@ final class GGToolTests: XCTestCase {
     /// Returns path to the built products directory.
     var productsDirectory: URL {
       #if os(macOS)
+      print("#### checking bundles:", Bundle.allBundles.map(\.bundleURL))
         for bundle in Bundle.allBundles where bundle.bundlePath.hasSuffix(".xctest") {
+            print("#### checking bundle:", bundle)
             return bundle.bundleURL.deletingLastPathComponent()
         }
         fatalError("couldn't find the products directory")
