@@ -4,6 +4,8 @@ import GGDSL
 // This test case encapsulated all the sample specs and reproduces them using the GGDSL
 
 
+/// - TODO: @available(*, deprecated, message: "DSL should not require access to GG types")
+typealias GG = GGSchema.GG
 
 final class GGDSLExampleTests: XCTestCase {
     func test_bar() throws {
@@ -14,9 +16,8 @@ final class GGDSLExampleTests: XCTestCase {
                 }
                 .type(.nominal)
 
-                Encode(.y, field: "b") {
-                }
-                .type(.quantitative)
+                Encode(.y, field: "b")
+                    .type(.quantitative)
             }
         }
         .data(.init(GG.DataProvider(.init(GG.DataSource(.init(GG.InlineData(values: GG.InlineDataset(.init([
@@ -226,15 +227,30 @@ final class GGDSLExampleTests: XCTestCase {
     func test_arc_pie_pyramid() throws {
         try check(viz: Graphiq {
             Mark(.arc) {
-                Encode(.theta, field: "value")
-                    .type(.quantitative)
-                    .stack(.init(.init(true)))
-                    .scale(.init(GG.ScaleDef(range: .init([.init(2.35619449), .init(8.639379797)]))))
-                Encode(.color, field: "category")
-                    .type(.nominal)
-                    .legend(.init(GG.LegendDef(columns: .init(1), legendX: .init(200), legendY: .init(80), orient: .init(.none), title: .init(.null))))
-                    .scale(.init(GG.ScaleDef(domain: .init([.init(.init("Sky")), .init(.init("Shady side of a pyramid")), .init(.init("Sunny side of a pyramid"))]), range: .init([.init("#416D9D"), .init("#674028"), .init("#DEAC58")]))))
+                Encode(.theta, field: "value") {
+                    Scale()
+                        .range(2.35619449...8.639379797)
+                }
+                .type(.quantitative)
+                .stack(.init(.init(true)))
+
+                Encode(.color, field: "category") {
+                    Scale()
+                        .scale(domainValue: "Sky", toRange: "#416D9D")
+                        .scale(domainValue: "Shady side of a pyramid", toRange: "#674028")
+                        .scale(domainValue: "Sunny side of a pyramid", toRange: "#DEAC58")
+
+                    Guide()
+                        .columns(1)
+                        .legendX(200)
+                        .legendY(80)
+                        .orient(GG.LegendOrient.none)
+                        .title(.init(.null))
+                }
+                .type(.nominal)
+
                 Encode(.order, field: "order")
+
             }.outerRadius(.init(80))
         }
         .data(.init(GG.DataProvider(.init(GG.DataSource(.init(GG.InlineData(values: GG.InlineDataset(.init([

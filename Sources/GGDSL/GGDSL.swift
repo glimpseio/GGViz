@@ -160,11 +160,6 @@ public protocol VizLayerElementType : VizSpecBuilderType {
 public protocol VizSpecElementType : VizLayerElementType {
 }
 
-/// An element that can be added to a `VizEncode`, sich as `VizAxis`, `VizLegend`, and `VizScale`
-public protocol VizEncodingElementType : VizSpecBuilderType {
-    func add<E: VizMarkElementType>(to encoding: inout E)
-}
-
 public protocol VizMarkType : VizSpecElementType {
     var encodings: GG.EncodingChannelMap { get }
 }
@@ -618,21 +613,38 @@ public protocol VizGuidedEncodeElementType : VizEncodeElementType {
 }
 
 /// A `VizEncodeElementType` that can contain an axis
-public protocol VizAxisEncodeElementType : VizGuidedEncodeElementType {
+public protocol VizPositionalEncodeElementType : VizGuidedEncodeElementType {
+}
+
+/// A `VizEncodeElementType` that can contain an axis
+public protocol VizPolarEncodeElementType : VizGuidedEncodeElementType {
+}
+
+/// A `VizEncodeElementType` that can contain a Legend
+public protocol VizMarkPropertyEncodeElementType : VizGuidedEncodeElementType {
+}
+
+/// A `VizEncodeElementType` that can contain a Header
+public protocol VizFacetEncodeElementType : VizGuidedEncodeElementType {
+}
+
+/// A `VizEncodeElementType` that can contain an axis
+public protocol VizAxisEncodeElementType : VizPositionalEncodeElementType {
     var rawValue: GG.AxisDef { get }
 }
 
 /// A `VizEncodeElementType` that can contain a legend
-public protocol VizLegendEncodeElementType : VizGuidedEncodeElementType {
+public protocol VizLegendEncodeElementType : VizMarkPropertyEncodeElementType {
     var rawValue: GG.LegendDef { get }
 }
 
 /// A `VizEncodeElementType` that can contain a header
-public protocol VizHeaderEncodeElementType : VizGuidedEncodeElementType {
+public protocol VizHeaderEncodeElementType : VizFacetEncodeElementType {
     var rawValue: GG.HeaderDef { get }
 }
 
-public protocol VizScaleEncodeElementType : VizEncodeElementType {
+/// A `VizScaleEncodeElementType` that can be added to any encoding that supports scales: VizPositionalEncodeElementType, VizMarkPropertyEncodeElementType, VizFacetEncodeElementType, VizPolarEncodeElementType
+public protocol VizScaleEncodeElementType : VizPositionalEncodeElementType, VizMarkPropertyEncodeElementType, VizFacetEncodeElementType, VizPolarEncodeElementType {
     var rawValue: GG.ScaleDef { get }
 }
 
@@ -677,7 +689,7 @@ extension VizEncodeElementType {
 
 /// Scales map data values (numbers, dates, categories, etc.) to visual values (pixels, colors, sizes).
 @dynamicMemberLookup
-public struct VizScale<Def : VizGuideDefType> : VizScaleEncodeElementType, VizDSLType, EncapsulatedPropertyRouter {
+public struct VizScale : VizScaleEncodeElementType, VizDSLType, EncapsulatedPropertyRouter {
     public var rawValue: GG.ScaleDef
 
     public init(rawValue scaleDef: GG.ScaleDef = GG.ScaleDef()) {
@@ -685,13 +697,27 @@ public struct VizScale<Def : VizGuideDefType> : VizScaleEncodeElementType, VizDS
     }
 }
 
-/// A guide, which can be an `.axis`, `.legend`, or `.header`
-public protocol VizGuideType : VizEncodeElementType {
+public extension VizScale {
+    func scale(domainValue: String, toRange rangeValue: String) -> Self {
+        var this = self
+        var domain = this.rawValue.domain?.v1 ?? []
+        var range = this.rawValue.range?.v2 ?? []
+        domain.append(.init(.init(domainValue)))
+        range.append(.init(rangeValue))
+        this.rawValue.domain = .init(domain)
+        this.rawValue.range = .init(range)
+        return this
+    }
+
+    /// Sets the numeric range as the scale's range
+    func range<T: BinaryFloatingPoint>(_ numericRange: ClosedRange<T>) -> Self {
+        let range = GG.ScaleDef.RangeChoice([.init(.init(numericRange.lowerBound)), .init(.init(numericRange.upperBound))])
+        return assigning(value: .init(range), to: \.range, with: { $0 })
+    }
 }
 
-
 @dynamicMemberLookup
-public struct VizGuide<Def : VizGuideDefType> : VizGuideType, VizDSLType, EncapsulatedPropertyRouter {
+public struct VizGuide<Def : VizGuideDefType> : VizDSLType, EncapsulatedPropertyRouter {
     public var rawValue: Def
 
     public init(rawValue guideDef: Def) {
@@ -703,7 +729,7 @@ extension VizGuide : VizGuidedEncodeElementType {
 
 }
 
-extension VizGuide : VizLegendEncodeElementType where Def == GG.LegendDef {
+extension VizGuide : VizLegendEncodeElementType & VizMarkPropertyEncodeElementType where Def == GG.LegendDef {
     public enum LegendGuide {
         /// A legend is a guide that shows the values for non-positional visual scales such as color, size, or line dash patterns.
         case legend
@@ -714,7 +740,7 @@ extension VizGuide : VizLegendEncodeElementType where Def == GG.LegendDef {
     }
 }
 
-extension VizGuide : VizAxisEncodeElementType where Def == GG.AxisDef {
+extension VizGuide : VizAxisEncodeElementType & VizPositionalEncodeElementType where Def == GG.AxisDef {
     public enum AxisGuide {
         /// An axis is a guide that for positional scales
         case axis
@@ -725,7 +751,7 @@ extension VizGuide : VizAxisEncodeElementType where Def == GG.AxisDef {
     }
 }
 
-extension VizGuide : VizHeaderEncodeElementType where Def == GG.HeaderDef {
+extension VizGuide : VizHeaderEncodeElementType & VizFacetEncodeElementType where Def == GG.HeaderDef {
     public enum HeaderGuide {
         /// An header is a guide that for headers
         case header
@@ -5080,7 +5106,7 @@ extension GG.EncodingChannelMap.TextEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.AngleEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .angle
-    public typealias ChildElement = VizUnguidedEncodeElementType
+    public typealias ChildElement = VizPolarEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.angle != nil {
@@ -5092,7 +5118,7 @@ extension GG.EncodingChannelMap.AngleEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.ColorEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .color
-    public typealias ChildElement = VizLegendEncodeElementType
+    public typealias ChildElement = VizMarkPropertyEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.color != nil {
@@ -5116,7 +5142,7 @@ extension GG.EncodingChannelMap.DescriptionEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.FillEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .fill
-    public typealias ChildElement = VizLegendEncodeElementType
+    public typealias ChildElement = VizMarkPropertyEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.fill != nil {
@@ -5128,7 +5154,7 @@ extension GG.EncodingChannelMap.FillEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.FillOpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .fillOpacity
-    public typealias ChildElement = VizLegendEncodeElementType
+    public typealias ChildElement = VizMarkPropertyEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.fillOpacity != nil {
@@ -5200,7 +5226,7 @@ extension GG.EncodingChannelMap.Longitude2Encoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.OpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .opacity
-    public typealias ChildElement = VizLegendEncodeElementType
+    public typealias ChildElement = VizMarkPropertyEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.opacity != nil {
@@ -5213,7 +5239,7 @@ extension GG.EncodingChannelMap.OpacityEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.RadiusEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .radius
-    public typealias ChildElement = VizUnguidedEncodeElementType
+    public typealias ChildElement = VizPolarEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.radius != nil {
@@ -5225,7 +5251,7 @@ extension GG.EncodingChannelMap.RadiusEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.Radius2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .radius2
-    public typealias ChildElement = VizUnguidedEncodeElementType
+    public typealias ChildElement = VizPolarEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.radius2 != nil {
@@ -5237,7 +5263,7 @@ extension GG.EncodingChannelMap.Radius2Encoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.ShapeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .shape
-    public typealias ChildElement = VizLegendEncodeElementType
+    public typealias ChildElement = VizMarkPropertyEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.shape != nil {
@@ -5249,7 +5275,7 @@ extension GG.EncodingChannelMap.ShapeEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.SizeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .size
-    public typealias ChildElement = VizLegendEncodeElementType
+    public typealias ChildElement = VizMarkPropertyEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.size != nil {
@@ -5261,7 +5287,7 @@ extension GG.EncodingChannelMap.SizeEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.StrokeEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .stroke
-    public typealias ChildElement = VizLegendEncodeElementType
+    public typealias ChildElement = VizMarkPropertyEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.stroke != nil {
@@ -5273,7 +5299,7 @@ extension GG.EncodingChannelMap.StrokeEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.StrokeDashEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeDash
-    public typealias ChildElement = VizLegendEncodeElementType
+    public typealias ChildElement = VizMarkPropertyEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.strokeDash != nil {
@@ -5285,7 +5311,7 @@ extension GG.EncodingChannelMap.StrokeDashEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.StrokeOpacityEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeOpacity
-    public typealias ChildElement = VizLegendEncodeElementType
+    public typealias ChildElement = VizMarkPropertyEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.strokeOpacity != nil {
@@ -5297,7 +5323,7 @@ extension GG.EncodingChannelMap.StrokeOpacityEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.StrokeWidthEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .strokeWidth
-    public typealias ChildElement = VizLegendEncodeElementType
+    public typealias ChildElement = VizMarkPropertyEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.strokeWidth != nil {
@@ -5309,7 +5335,7 @@ extension GG.EncodingChannelMap.StrokeWidthEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.ThetaEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .theta
-    public typealias ChildElement = VizUnguidedEncodeElementType
+    public typealias ChildElement = VizPolarEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.theta != nil {
@@ -5321,7 +5347,7 @@ extension GG.EncodingChannelMap.ThetaEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.Theta2Encoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .theta2
-    public typealias ChildElement = VizUnguidedEncodeElementType
+    public typealias ChildElement = VizPolarEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.theta2 != nil {
@@ -5373,7 +5399,7 @@ extension VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.XEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .x
-    public typealias ChildElement = VizAxisEncodeElementType
+    public typealias ChildElement = VizPositionalEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.x != nil {
@@ -5422,7 +5448,7 @@ extension GG.EncodingChannelMap.XError2Encoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.YEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .y
-    public typealias ChildElement = VizAxisEncodeElementType
+    public typealias ChildElement = VizPositionalEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.y != nil {
@@ -5471,7 +5497,7 @@ extension GG.EncodingChannelMap.YError2Encoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.RowEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .row
-    public typealias ChildElement = VizHeaderEncodeElementType
+    public typealias ChildElement = VizFacetEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.row != nil {
@@ -5483,7 +5509,7 @@ extension GG.EncodingChannelMap.RowEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.ColumnEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .column
-    public typealias ChildElement = VizHeaderEncodeElementType
+    public typealias ChildElement = VizFacetEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.column != nil {
@@ -5495,7 +5521,7 @@ extension GG.EncodingChannelMap.ColumnEncoding : VizEncodingChannelType {
 
 extension GG.EncodingChannelMap.FacetEncoding : VizEncodingChannelType {
     public static let encodingChannel: EncodingChannel = .facet
-    public typealias ChildElement = VizHeaderEncodeElementType
+    public typealias ChildElement = VizFacetEncodeElementType
 
     public func addChannel(to encodings: inout GG.EncodingChannelMap, elements: [VizEncodeElementType]) {
         if encodings.facet != nil {

@@ -29,12 +29,77 @@ final class GGDSLTests: XCTestCase {
 
 
     func testScales() throws {
-        throw XCTSkip()
+        let _ = GG.EncodingChannelMap.X(t1: .init()).rawValue.v1?.scale
+        let _ = GG.EncodingChannelMap.Y(t1: .init()).rawValue.v1?.scale
+        let _ = GG.EncodingChannelMap.Color(t1: .init()).rawValue.v1?.scale
+        let _ = GG.EncodingChannelMap.StrokeDash(t1: .init()).rawValue.v1?.scale
+        //let _ = GG.EncodingChannelMap.X2(t1: .init()).rawValue.v1?.scale
+        //let _ = GG.EncodingChannelMap.Y2(t1: .init()).rawValue.v1?.scale
+        //let _ = GG.EncodingChannelMap.Row(t1: .init()).rawValue.v1?.scale
+        //let _ = GG.EncodingChannelMap.Text(t1: .init()).rawValue.v1?.scale
 
-//        VizScale()
-//            .scale(domain: "Sky", range: "#416D9D")
-//            .scale(domain: "Shady side of a pyramid", range: "#674028")
-//            .scale(domain: "Sunny side of a pyramid", range: "#DEAC58")
+        XCTAssertEqual(Scale().range((Double.pi * 0.75)...(Double.pi * 2.75)).rawValue.jsonDebugDescription, """
+            {"range":[2.3561944901923448,8.6393797973719302]}
+            """)
+
+        XCTAssertEqual(Scale().range((Float80.pi * 0.75)...(Float80.pi * 2.75)).rawValue.jsonDebugDescription, """
+            {"range":[2.3561944901923448,8.639379797371932]}
+            """)
+
+        try check(viz: Graphiq {
+            Mark(.bar) {
+                Encode(.x, field: "A") {
+                    Scale()
+                }
+            }
+        }, againstJSON: """
+        {
+            "mark": "bar",
+            "encoding": {
+                "x": {
+                    "field": "A",
+                    "scale": { }
+                }
+            }
+        }
+        """)
+
+        try check(viz: Graphiq {
+            Mark(.bar) {
+                Encode(.y, field: "A") {
+                    Scale()
+                }
+            }
+        }, againstJSON: """
+        {
+            "mark": "bar",
+            "encoding": {
+                "y": {
+                    "field": "A",
+                    "scale": { }
+                }
+            }
+        }
+        """)
+
+
+        try check(viz: Graphiq {
+            Mark(.bar) {
+                Encode(.color, field: "A") {
+                    Scale()
+                }
+            }
+        }, againstJSON: """
+        {
+            "mark": "bar",
+            "encoding": {
+                "color": {
+                    "field": "A",
+                    "scale": { }
+                }
+            }
+        }
+        """)
 
     }
 
