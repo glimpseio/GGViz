@@ -38,13 +38,21 @@ final class GGDSLTests: XCTestCase {
         //let _ = GG.EncodingChannelMap.Row(t1: .init()).rawValue.v1?.scale
         //let _ = GG.EncodingChannelMap.Text(t1: .init()).rawValue.v1?.scale
 
+        #if os(Linux) || os(Windows) // ugh
+        XCTAssertEqual(Scale().range((Double.pi * 0.75)...(Double.pi * 2.75)).rawValue.jsonDebugDescription, """
+            {"range":[2.356194490192345,8.63937979737193]}
+            """)
+        XCTAssertEqual(Scale().range((Float80.pi * 0.75)...(Float80.pi * 2.75)).rawValue.jsonDebugDescription, """
+            {"range":[2.356194490192345,8.639379797371932]}
+            """)
+        #else
         XCTAssertEqual(Scale().range((Double.pi * 0.75)...(Double.pi * 2.75)).rawValue.jsonDebugDescription, """
             {"range":[2.3561944901923448,8.6393797973719302]}
             """)
-
         XCTAssertEqual(Scale().range((Float80.pi * 0.75)...(Float80.pi * 2.75)).rawValue.jsonDebugDescription, """
             {"range":[2.3561944901923448,8.639379797371932]}
             """)
+        #endif
 
         try check(viz: Graphiq {
             Mark(.bar) {

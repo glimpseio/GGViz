@@ -10,6 +10,20 @@ typealias GG = GGSchema.GG
 final class GGDSLExampleTests: XCTestCase {
     func test_bar() throws {
         try check(viz: Graphiq {
+            InlineData {
+                [
+                    ["a": "A", "b": 28],
+                    ["a": "B", "b": 55],
+                    ["a": "C", "b": 43],
+                    ["a": "D", "b": 91],
+                    ["a": "E", "b": 81],
+                    ["a": "F", "b": 53],
+                    ["a": "G", "b": 19],
+                    ["a": "H", "b": 87],
+                    ["a": "I", "b": 52],
+                ]
+            }
+
             Mark(.bar) {
                 Encode(.x, field: "a") {
                     Guide().labelAngle(0)
@@ -20,11 +34,6 @@ final class GGDSLExampleTests: XCTestCase {
                     .type(.quantitative)
             }
         }
-        .data(.init(GG.DataProvider(.init(GG.DataSource(.init(GG.InlineData(values: GG.InlineDataset(.init([
-            ["a": "A", "b": 28], ["a": "B", "b": 55], ["a": "C", "b": 43],
-            ["a": "D", "b": 91], ["a": "E", "b": 81], ["a": "F", "b": 53],
-            ["a": "G", "b": 19], ["a": "H", "b": 87], ["a": "I", "b": 52]
-        ])))))))))
         .description("A simple bar chart with embedded data.")
         , againstJSON: """
 {
@@ -145,20 +154,21 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_donut() throws {
         try check(viz: Graphiq {
+            InlineData {[
+                ["category": 1, "value": 4],
+                ["category": 2, "value": 6],
+                ["category": 3, "value": 10],
+                ["category": 4, "value": 3],
+                ["category": 5, "value": 7],
+                ["category": 6, "value": 8],
+            ]}
+
             Mark(.arc) {
                 Encode(.theta, field: "value").type(.quantitative)
                 Encode(.color, field: "category").type(.nominal)
             }
             .innerRadius(50)
         }
-        .data(.init(GG.DataProvider(.init(GG.DataSource(.init(GG.InlineData(values: GG.InlineDataset(.init([
-            ["category": 1, "value": 4],
-            ["category": 2, "value": 6],
-            ["category": 3, "value": 10],
-            ["category": 4, "value": 3],
-            ["category": 5, "value": 7],
-            ["category": 6, "value": 8],
-        ])))))))))
         .view(GG.ViewBackground(stroke: .null))
         .description("A simple donut chart with embedded data."), againstJSON: """
 {
@@ -186,19 +196,20 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_pie() throws {
         try check(viz: Graphiq {
+            InlineData {[
+                ["category": 1, "value": 4],
+                ["category": 2, "value": 6],
+                ["category": 3, "value": 10],
+                ["category": 4, "value": 3],
+                ["category": 5, "value": 7],
+                ["category": 6, "value": 8],
+            ]}
+
             Mark(.arc) {
                 Encode(.theta, field: "value").type(.quantitative)
                 Encode(.color, field: "category").type(.nominal)
             }
         }
-        .data(.init(GG.DataProvider(.init(GG.DataSource(.init(GG.InlineData(values: GG.InlineDataset(.init([
-            ["category": 1, "value": 4],
-            ["category": 2, "value": 6],
-            ["category": 3, "value": 10],
-            ["category": 4, "value": 3],
-            ["category": 5, "value": 7],
-            ["category": 6, "value": 8],
-        ])))))))))
         .view(GG.ViewBackground(stroke: .null))
         .description("A simple pie chart with embedded data."), againstJSON: """
 {
@@ -226,6 +237,12 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_pie_pyramid() throws {
         try check(viz: Graphiq {
+            InlineData {[
+                ["category": "Sky", "value": 75, "order": 3],
+                ["category": "Shady side of a pyramid", "value": 10, "order": 1],
+                ["category": "Sunny side of a pyramid", "value": 15, "order": 2],
+            ]}
+
             Mark(.arc) {
                 Encode(.theta, field: "value") {
                     Scale()
@@ -253,11 +270,6 @@ final class GGDSLExampleTests: XCTestCase {
 
             }.outerRadius(.init(80))
         }
-        .data(.init(GG.DataProvider(.init(GG.DataSource(.init(GG.InlineData(values: GG.InlineDataset(.init([
-            ["category": "Sky", "value": 75, "order": 3],
-            ["category": "Shady side of a pyramid", "value": 10, "order": 1],
-            ["category": "Sunny side of a pyramid", "value": 15, "order": 2],
-        ])))))))))
         .description("Reproducing http://robslink.com/SAS/democd91/pyramid_pie.htm")
         .view(GG.ViewBackground(stroke: .init(.null))), againstJSON: """
 {
@@ -302,7 +314,27 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_radial() throws {
         try check(viz: Graphiq {
-        }, againstJSON: """
+            InlineData { [12, 23, 47, 6, 52, 19] }
+            Layer {
+                Encode(.color, field: "data").type(.nominal).legend(.init(.null))
+                Encode(.theta, field: "data").type(.quantitative).stack(.init(true))
+                Encode(.radius, field: "data") {
+                    Scale().type(.sqrt).zero(true).rangeMin(20)
+                }
+
+                Mark(.arc) {
+                }
+                .innerRadius(20)
+                .stroke(.init(GG.ColorLiteral(GG.HexColor("#fff"))))
+
+                Mark(.text) {
+                    Encode(.text, field: "data").type(.quantitative)
+                }
+                .radiusOffset(10)
+            }
+        }
+        .view(GG.ViewBackground(stroke: .null))
+        .description("A simple radial chart with embedded data."), againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "A simple radial chart with embedded data.",
