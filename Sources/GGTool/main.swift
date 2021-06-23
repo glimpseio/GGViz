@@ -2,7 +2,7 @@ import GGViz
 import GGBundle
 import ArgumentParser
 
-/// A tool for creating and managning visualizations
+/// A tool for creating and managing visualizations
 struct GGTool: ParsableCommand {
     @Flag(help: "Include a counter with each repetition.")
     var includeCounter = false
