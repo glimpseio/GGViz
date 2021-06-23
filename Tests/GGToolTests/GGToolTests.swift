@@ -3,6 +3,7 @@ import class Foundation.Bundle
 
 final class GGToolTests: XCTestCase {
     func testExample() throws {
+        print("###### RUNNING EXAMPLE") // not called on linux…
         XCTAssertEqual(try runGGTool(["--count", "1", "ABC"]), "ABC\n")
         XCTAssertEqual(try runGGTool(["--count", "2", "ABC"]), "ABC\nABC\n")
         XCTAssertEqual(try runGGTool(["--count", "3", "ABC"]), "ABC\nABC\nABC\n")
@@ -16,10 +17,10 @@ final class GGToolTests: XCTestCase {
 
         // Mac Catalyst won't have `Process`, but it is supported for executables.
         #if !targetEnvironment(macCatalyst)
-        let fooBinary = productsDirectory.appendingPathComponent("GGTool")
+        let ggtool = productsDirectory.appendingPathComponent("GGTool")
 
         let process = Process()
-        process.executableURL = fooBinary
+        process.executableURL = ggtool
         process.arguments = args
 
         let pipe = Pipe()
