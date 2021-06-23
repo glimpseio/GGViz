@@ -39,8 +39,8 @@ final class GGToolTests: XCTestCase {
 
     /// Returns path to the built products directory.
     var productsDirectory: URL {
-      #if os(macOS)
       print("#### checking bundles:", Bundle.allBundles.map(\.bundleURL))
+        #if os(macOS)
         for bundle in Bundle.allBundles where bundle.bundlePath.hasSuffix(".xctest") {
             print("#### checking bundle:", bundle)
             return bundle.bundleURL.deletingLastPathComponent()
