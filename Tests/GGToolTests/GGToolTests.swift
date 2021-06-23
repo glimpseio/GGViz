@@ -21,7 +21,7 @@ final class GGToolTests: XCTestCase {
         // the relative path to the tool
         let toolPath: String = "ggtool"
 
-        let ggtool = try productsDirectory().appendingPathComponent(toolPath)
+        let ggtool = buildOutputFolder().appendingPathComponent(toolPath)
 
         let process = Process()
         process.executableURL = ggtool
@@ -42,23 +42,14 @@ final class GGToolTests: XCTestCase {
     }
 
     /// Returns path to the built products directory.
-    func productsDirectory() throws -> URL {
-        print("#### main bundle:", Bundle.main)
-        print("#### main bundleURL:", Bundle.main.bundleURL)
-        print("#### main bundleURL children:", try FileManager.default.contentsOfDirectory(at: Bundle.main.bundleURL, includingPropertiesForKeys: nil, options: []))
-
-        for path in FileManager.default.enumerator(at: Bundle.main.bundleURL, includingPropertiesForKeys: nil, options: [], errorHandler: { _, _ in true })! {
-            print(" - path:", path)
-        }
-        #if os(macOS)
-        print("#### checking bundles:", Bundle.allBundles.map(\.bundleURL))
+    func buildOutputFolder() -> URL {
+        #if os(macOS) // check for Xcode test bundles
         for bundle in Bundle.allBundles where bundle.bundlePath.hasSuffix(".xctest") {
-            print("#### checking bundle:", bundle)
             return bundle.bundleURL.deletingLastPathComponent()
         }
-        fatalError("couldn't find the products directory")
-      #else
+        #endif
+
+        // on linux, this should be the folder above the tool
         return Bundle.main.bundleURL
-      #endif
     }
 }
