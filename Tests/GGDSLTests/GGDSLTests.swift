@@ -13,11 +13,14 @@ extension XCTestCase {
             throw XCTSkip("skip empty check for \(function)", file: file, line: line)
         }
 
-        var checkSpec = try VizSpec<M>.loadFromJSON(data: json.data(using: .utf8) ?? Data())
-        checkSpec.schema = nil // schema property is optional
+        var refSpec = try VizSpec<M>.loadFromJSON(data: Data(json.utf8))
+        var checkSpec = viz.rawValue
 
-        // first check if they both to serialize to the same JSON…
-        XCTAssertEqual("\n" + viz.debugDescription + "\n", "\n" + checkSpec.jsonDebugDescription + "\n")
+        (refSpec.schema, checkSpec.schema) = (nil, nil) // schema property is optional
+        (refSpec.description, checkSpec.description) = (nil, nil) // trim description for succicinctness
+
+        // first check if they both to serialize to the same JSON; this makes it easier to identify differences
+        XCTAssertEqual("\n" + refSpec.jsonDebugDescription + "\n", "\n" + checkSpec.jsonDebugDescription + "\n")
         if viz.debugDescription == checkSpec.jsonDebugDescription {
             // … then check for actual equality of thw structure
             XCTAssertEqual(viz.rawValue, checkSpec)
@@ -849,7 +852,6 @@ final class GGDSLTests: XCTestCase {
             .cornerRadius(10)
         }
         .title(.init("Bar Chart"))
-        .description("A simple bar chart with embedded data.")
 
         try check(viz: viz, againstJSON: """
         {

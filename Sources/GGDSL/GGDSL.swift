@@ -3,6 +3,20 @@ import BricBrac
 
 // A DSL for constructing a data visualization in Swift.
 
+/// Work-in-progress, simply to highlight a line with a deprecation warning
+@available(*, deprecated, message: "work-in-progress")
+fileprivate func wip<T>(_ value: T) -> T { value }
+
+/// Work-in-progress death, simply to highlight a line with a deprecation warning
+@available(*, deprecated, message: "work-in-progress")
+fileprivate func hole<T>(_ params: Any...) -> T { fatalError(wip("derp")) }
+
+
+/// Issues a warning to the console that the existing encoding is being replaced
+fileprivate func warnReplaceEncoding<C: VizEncodingChannelType>(_ instance: C) {
+    print("warnReplaceEncoding: encoding for \(C.encodingChannel.rawValue) overrides existing definition")
+}
+
 
 /// Experimental typealiases for nicer DSL
 public typealias Layer = VizLayer
@@ -5645,18 +5659,3 @@ extension GG.EncodingChannelMap.KeyEncoding : VizEncodingChannelType {
         encodings.key = assignElementItems(elements)
     }
 }
-
-
-/// Issues a warning to the console that the existing encoding is being replaced
-func warnReplaceEncoding<C: VizEncodingChannelType>(_ instance: C) {
-    print("warnReplaceEncoding: encoding for \(C.encodingChannel.rawValue) overrides existing definition")
-}
-
-
-/// Work-in-progress, simply to highlight a line with a deprecation warning
-@available(*, deprecated, message: "work-in-progress")
-fileprivate func wip<T>(_ value: T) -> T { value }
-
-/// Work-in-progress death, simply to highlight a line with a deprecation warning
-@available(*, deprecated, message: "work-in-progress")
-fileprivate func hole<T>(_ params: Any...) -> T { fatalError(wip("derp")) }
