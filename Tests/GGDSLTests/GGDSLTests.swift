@@ -542,7 +542,7 @@ final class GGDSLTests: XCTestCase {
 
     func testProjection() throws {
         try check(viz: Graphiq {
-            VizProjection()
+            GeoProjection()
         }, againstJSON: """
         {
             "projection": { }
@@ -550,7 +550,7 @@ final class GGDSLTests: XCTestCase {
         """)
 
         try check(viz: Graphiq {
-            VizProjection(.albersUsa)
+            GeoProjection(.albersUsa)
                 .precision(0.1)
         }, againstJSON: """
         {

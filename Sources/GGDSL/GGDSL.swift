@@ -18,8 +18,10 @@ public typealias Scale = VizScale
 public typealias Guide = VizGuide
 /// Experimental typealiases for nicer DSL
 public typealias Repeat = VizRepeat
-
-
+/// Experimental typealiases for nicer DSL
+public typealias Viewport = VizViewport
+/// Experimental typealiases for nicer DSL
+public typealias GeoProjection = VizGeoProjection
 
 
 /// A type that can be used to create a field value
@@ -202,7 +204,7 @@ public struct VizTheme : VizSpecElementType, EncapsulatedPropertyRouter {
 
 
 @dynamicMemberLookup
-public struct VizProjection : VizSpecElementType, EncapsulatedPropertyRouter, VizDSLType {
+public struct VizGeoProjection : VizSpecElementType, EncapsulatedPropertyRouter, VizDSLType {
     public var rawValue: GG.Projection
 
     public init(rawValue projection: GG.Projection) {
@@ -218,6 +220,24 @@ public struct VizProjection : VizSpecElementType, EncapsulatedPropertyRouter, Vi
 
     public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
         spec.projection = rawValue
+    }
+}
+
+
+@dynamicMemberLookup
+public struct VizViewport : VizSpecElementType, EncapsulatedPropertyRouter, VizDSLType {
+    public var rawValue: GG.ViewBackground
+
+    public init(rawValue viewport: GG.ViewBackground) {
+        self.rawValue = viewport
+    }
+
+    public init(viewport: GG.ViewBackground = GG.ViewBackground()) {
+        self.rawValue = viewport
+    }
+
+    public func add<M>(to spec: inout VizSpec<M>) where M : Pure {
+        spec.view = rawValue
     }
 }
 
@@ -279,7 +299,7 @@ public struct DataReference : VizSpecElementType, EncapsulatedPropertyRouter, Vi
 
 
 @dynamicMemberLookup
-public struct VizTransform<Def : VizTransformDefType> : VizSpecElementType, VizDSLType, EncapsulatedPropertyRouter {
+public struct VizTransform<Def : VizTransformDefType> : VizSpecElementType, VizTransformType, EncapsulatedPropertyRouter {
     public var rawValue: Def
     private let makeElements: () -> [VizLayerElementType]
 
@@ -287,6 +307,50 @@ public struct VizTransform<Def : VizTransformDefType> : VizSpecElementType, VizD
         spec.transform[defaulting: []].append(rawValue.anyTransform)
         for element in makeElements() {
             element.add(to: &spec)
+        }
+    }
+
+    private func canaryTransformType(transformType: TransformType) {
+        func check<T: VizTransformDefType>(_ transform: T.Type) {
+        }
+
+        switch transformType {
+        case .filter:
+            check(GG.FilterTransform.self)
+        case .sample:
+            check(GG.SampleTransform.self)
+        case .calculate:
+            check(GG.CalculateTransform.self)
+        case .lookup:
+            check(GG.LookupTransform.self)
+        case .aggregate:
+            check(GG.AggregateTransform.self)
+        case .joinaggregate:
+            check(GG.JoinAggregateTransform.self)
+        case .window:
+            check(GG.WindowTransform.self)
+        case .impute:
+            check(GG.ImputeTransform.self)
+        case .flatten:
+            check(GG.FlattenTransform.self)
+        case .fold:
+            check(GG.FoldTransform.self)
+        case .pivot:
+            check(GG.PivotTransform.self)
+        case .regression:
+            check(GG.RegressionTransform.self)
+        case .loess:
+            check(GG.LoessTransform.self)
+        case .density:
+            check(GG.DensityTransform.self)
+        case .quantile:
+            check(GG.QuantileTransform.self)
+        case .bin:
+            check(GG.BinTransform.self)
+        case .timeUnit:
+            check(GG.TimeUnitTransform.self)
+        case .stack:
+            check(GG.StackTransform.self)
         }
     }
 }
@@ -298,7 +362,10 @@ extension GG.SampleTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.SampleTransform {
-    enum SampleLiteral { case sample }
+    enum SampleLiteral {
+        /// The sample transform filters random rows from the data source to reduce its size. As input data objects are added and removed, the sampled values may change in first-in, first-out manner. This transform uses reservoir sampling to maintain a representative sample of the stream.
+        case sample
+    }
     init(_ sampleTransform: SampleLiteral, sample: Double = 999, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(sample: sample)
         self.makeElements = makeElements
@@ -310,7 +377,10 @@ extension GG.AggregateTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.AggregateTransform {
-    enum AggregateLiteral { case aggregate }
+    enum AggregateLiteral {
+        /// Aggregate summarizes a table as one record for each group. To preserve the original table structure and instead add a new column with the aggregate values, use the join aggregate transform.
+        case aggregate
+    }
     init(_ aggregateTransform: AggregateLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init()
         self.makeElements = makeElements
@@ -322,7 +392,10 @@ extension GG.BinTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.BinTransform {
-    enum BinLiteral { case bin }
+    enum BinLiteral {
+        /// Binning discretizes numeric values into a set of bins. A common use case is to create a histogram.
+        case bin
+    }
     init(_ binTransform: BinLiteral, field: FieldNameRepresentable, params: GG.BinParams?, output as: [FieldNameRepresentable], @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(as: .init(`as`.map(\.fieldName)), bin: params.map({ .init($0) }) ?? .init(true), field: field.fieldName)
         self.makeElements = makeElements
@@ -334,10 +407,13 @@ extension GG.CalculateTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.CalculateTransform {
-    enum CalculateLiteral { case calculate }
-    init(_ calculateTransform: CalculateLiteral, output as: FieldNameRepresentable, expression calculate: GG.Expr, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(as: `as`.fieldName, calculate: calculate)
-        self.makeElements = makeElements
+    enum CalculateLiteral {
+        /// The formula transform extends data objects with new fields (columns) according to an expression.
+        case calculate
+    }
+    init(_ calculateTransform: CalculateLiteral, expression calculate: String, output calculateField: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ calculateField: FieldNameRepresentable) -> [VizLayerElementType]) {
+        self.rawValue = .init(as: calculateField.fieldName, calculate: .init(calculate))
+        self.makeElements = { makeElements(calculateField) }
     }
 }
 
@@ -346,7 +422,10 @@ extension GG.DensityTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.DensityTransform {
-    enum DensityLiteral { case density }
+    enum DensityLiteral {
+        /// The density transform performs one-dimensional kernel density estimation over an input data stream and generates a new data stream of samples of the estimated densities.
+        case density
+    }
     init(_ densityTransform: DensityLiteral, field density: FieldNameRepresentable, group groupby: [FieldNameRepresentable]? = nil, bandwidth: Double? = nil, counts: Bool? = nil, cumulative: Bool? = nil, extent: [GG.DensityTransform.ExtentItem]? = nil, maxsteps: Double? = nil, minsteps: Double? = nil, steps: Double? = nil, sampleOutput: FieldNameRepresentable? = nil, densityOutput: FieldNameRepresentable? = nil, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ sampleValueOutput: FieldNameRepresentable, _ densityEstimateOutput: FieldNameRepresentable) -> [VizLayerElementType]) {
         self.rawValue = .init(as: sampleOutput == nil && densityOutput == nil ? nil : [(sampleOutput ?? "value").fieldName, (densityOutput ?? "density").fieldName], bandwidth: bandwidth, counts: counts, cumulative: cumulative, density: density.fieldName, extent: extent, groupby: groupby?.map(\.fieldName), maxsteps: maxsteps, minsteps: minsteps, steps: steps)
         // self.makeElements = { makeElements(self.transformDef.as?.first?.fieldName ?? "value", self.transformDef.as?.last?.fieldName ?? "density") }
@@ -359,11 +438,20 @@ extension GG.FilterTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.FilterTransform {
-    enum FilterLiteral { case filter }
+    enum FilterLiteral {
+        /// The filter transform removes objects from a data stream based on a provided filter expression or filter object.
+        case filter
+    }
+
     init(_ filterTransform: FilterLiteral, filter: GG.PredicateComposition, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(filter: filter)
         self.makeElements = makeElements
     }
+
+    init(_ filterTransform: FilterLiteral, expression: String, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
+        self.init(filterTransform, filter: .init(.init(expression)), makeElements)
+    }
+
 }
 
 extension GG.FlattenTransform : VizTransformDefType {
@@ -371,7 +459,10 @@ extension GG.FlattenTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.FlattenTransform {
-    enum FlattenLiteral { case flatten }
+    enum FlattenLiteral {
+        /// The flatten transform maps array-valued fields to a set of individual data objects, one per array entry. This transform generates a new data stream in which each data object consists of an extracted array value as well as all the original fields of the corresponding input data object.
+        case flatten
+    }
     init(_ flattenTransform: FlattenLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init()
         self.makeElements = makeElements
@@ -383,7 +474,10 @@ extension GG.FoldTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.FoldTransform {
-    enum FoldLiteral { case fold }
+    enum FoldLiteral {
+        /// The fold transform collapses (or “folds”) one or more data fields into two properties: a key property (containing the original data field name) and a value property (containing the data value). The fold transform is useful for mapping matrix or cross-tabulation data into a standardized format.
+        case fold
+    }
     init(_ foldTransform: FoldLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init()
         self.makeElements = makeElements
@@ -395,7 +489,10 @@ extension GG.ImputeTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.ImputeTransform {
-    enum ImputeLiteral { case impute }
+    enum ImputeLiteral {
+        /// The impute transform groups data and determines missing values of the key field within each group. For each missing value in each group, the impute transform will produce a new tuple with the imputed field generated based on a specified imputation method (by using a constant value or by calculating statistics such as mean within each group).
+        case impute
+    }
     init(_ imputeTransform: ImputeLiteral, impute: FieldNameRepresentable, key: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(impute: impute.fieldName, key: key.fieldName)
         self.makeElements = makeElements
@@ -407,7 +504,10 @@ extension GG.JoinAggregateTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.JoinAggregateTransform {
-    enum JoinAggregateLiteral { case joinAggregate }
+    enum JoinAggregateLiteral {
+        /// The joinaggregate transform extends the input data objects with aggregate values in a new field. Aggregation is performed and the results are then joined with the input data. This transform can be helpful for creating derived values that combine both raw data and aggregate calculations, such as percentages of group totals. This transform is a special case of the window transform where the frame is always [null, null]. Compared with the regular aggregate transform, joinaggregate preserves the original table structure and augments records with aggregate values rather than summarizing the data in one record for each group.
+        case joinAggregate
+    }
     init(_ joinAggregateTransform: JoinAggregateLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init()
         self.makeElements = makeElements
@@ -419,7 +519,10 @@ extension GG.LoessTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.LoessTransform {
-    enum LoessLiteral { case loess }
+    enum LoessLiteral {
+        /// The loess transform (for locally-estimated scatterplot smoothing) uses locally-estimated regression to produce a trend line. Loess performs a sequence of local weighted regressions over a sliding window of nearest-neighbor points. For standard parametric regression options, see the regression transform.
+        case loess
+    }
     init(_ loessTransform: LoessLiteral, field: FieldNameRepresentable, on: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(loess: field.fieldName, on: on.fieldName)
         self.makeElements = makeElements
@@ -431,7 +534,10 @@ extension GG.LookupTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.LookupTransform {
-    enum LookupLiteral { case lookup }
+    enum LookupLiteral {
+        /// The lookup transform extends a primary data source by looking up values from another data source. It is similar to a one sided join.
+        case lookup
+    }
     init(_ lookupTransform: LookupLiteral, field: FieldNameRepresentable, data: GG.LookupData, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(from: .init(data), lookup: field.fieldName)
         self.makeElements = makeElements
@@ -448,7 +554,10 @@ extension GG.QuantileTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.QuantileTransform {
-    enum QuantileLiteral { case quantile }
+    enum QuantileLiteral {
+        /// The quantile transform calculates empirical quantile values for an input data stream. If a groupby parameter is provided, quantiles are estimated separately per group. Among other uses, the quantile transform is useful for creating quantile-quantile (Q-Q) plots.
+        case quantile
+    }
     init(_ quantileTransform: QuantileLiteral, field: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(quantile: field.fieldName)
         self.makeElements = makeElements
@@ -460,7 +569,10 @@ extension GG.RegressionTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.RegressionTransform {
-    enum RegressionLiteral { case regression }
+    enum RegressionLiteral {
+        /// The regression transform fits two-dimensional regression models to smooth and predict data. This transform can fit multiple models for input data (one per group) and generates new data objects that represent points for summary trend lines. Alternatively, this transform can be used to generate a set of objects containing regression model parameters, one per group.
+        case regression
+    }
     init(_ regressionTransform: RegressionLiteral, field: GG.FieldName, on: GG.FieldName, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(on: on.fieldName, regression: field.fieldName)
         self.makeElements = makeElements
@@ -472,7 +584,10 @@ extension GG.TimeUnitTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.TimeUnitTransform {
-    enum TimeUnitLiteral { case timeUnit }
+    enum TimeUnitLiteral {
+        /// Time unit is used to discretize times.
+        case timeUnit
+    }
     init(_ timeUnitTransform: TimeUnitLiteral, field: FieldNameRepresentable, timeUnit: GG.TimeUnit, output as: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(as: `as`.fieldName, field: field.fieldName, timeUnit: .init(timeUnit))
         self.makeElements = makeElements
@@ -490,7 +605,10 @@ extension GG.StackTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.StackTransform {
-    enum StackLiteral { case stack }
+    enum StackLiteral {
+        /// The stack property of a position field definition determines type of stacking offset if the field should be stacked.
+        case stack
+    }
     init(_ stackTransform: StackLiteral, field stack: FieldNameRepresentable, startField: FieldNameRepresentable, endField: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ startField: FieldNameRepresentable, _ endField: FieldNameRepresentable) -> [VizLayerElementType]) {
         self.rawValue = .init(as: .init([startField.fieldName, endField.fieldName]), stack: stack.fieldName)
         self.makeElements = { makeElements(startField, endField) }
@@ -502,7 +620,10 @@ extension GG.WindowTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.WindowTransform {
-    enum WindowLiteral { case window }
+    enum WindowLiteral {
+        /// The window transform performs calculations over sorted groups of data objects. These calculations including ranking, lead/lag analysis, and aggregates such as running sums and averages. Calculated values are written back to the input data stream. If you only want to set the same aggregated value in a new field, you can use the simpler join aggregate transform.
+        case window
+    }
     init(_ windowTransform: WindowLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init()
         self.makeElements = makeElements
@@ -514,7 +635,10 @@ extension GG.PivotTransform : VizTransformDefType {
 }
 
 public extension VizTransform where Def == GG.PivotTransform {
-    enum PivotLiteral { case pivot }
+    enum PivotLiteral {
+        /// The pivot transform maps unique values from a field to new aggregated fields (columns) in the output stream. The transform requires both a field to pivot on (providing new field names) and a field of values to aggregate to populate the new cells. In addition, any number of groupby fields can be provided to further subdivide the data into output data objects (rows).
+        case pivot
+    }
     init(_ pivotTransform: PivotLiteral, pivot: FieldNameRepresentable, value: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
         self.rawValue = .init(pivot: pivot.fieldName, value: value.fieldName)
         self.makeElements = makeElements
@@ -533,8 +657,13 @@ public struct Viz<M: Pure> : VizLayerType, EncapsulatedPropertyRouter {
         self.rawValue = rawValue
     }
 
-    public init(spec fromSpec: VizSpec<M> = VizSpec<M>(), @VizSpecElementArrayBuilder _ makeElements: () -> [VizSpecElementType]) {
+    public init(spec fromSpec: VizSpec<M> = VizSpec<M>(), width: Double? = nil, height: Double? = nil, title: String? = nil, description: String? = nil, @VizSpecElementArrayBuilder _ makeElements: () -> [VizSpecElementType]) {
         var spec = fromSpec
+        if let width = width { spec.width = .init(width) }
+        if let height = height { spec.height = .init(height) }
+        if let title = title { spec.title = .init(.init(title)) }
+        if let description = description { spec.description = .init(description) }
+
         for element in makeElements() {
             element.add(to: &spec)
         }
@@ -762,7 +891,13 @@ public extension VizScale {
         return this
     }
 
-    /// Sets the numeric range as the scale's range
+    /// Sets the numeric span as the scale's domain
+    func domain<T: BinaryFloatingPoint>(_ numericRange: ClosedRange<T>) -> Self {
+        let range = GG.ScaleDef.DomainChoice([.init(.init(Double(numericRange.lowerBound))), .init(.init(Double(numericRange.upperBound)))])
+        return assigning(value: .init(range), to: \.domain, with: { $0 })
+    }
+
+    /// Sets the numeric span as the scale's range
     func range<T: BinaryFloatingPoint>(_ numericRange: ClosedRange<T>) -> Self {
         let range = GG.ScaleDef.RangeChoice([.init(.init(numericRange.lowerBound)), .init(.init(numericRange.upperBound))])
         return assigning(value: .init(range), to: \.range, with: { $0 })
@@ -868,6 +1003,11 @@ public protocol VizLayerType : VizDSLType {
 
 }
 
+/// A layer for a transform
+public protocol VizTransformType : VizDSLType {
+
+}
+
 
 //@dynamicMemberLookup
 public struct VizLayer : VizSpecElementType, VizLayerType {
@@ -883,7 +1023,7 @@ public struct VizLayer : VizSpecElementType, VizLayerType {
         spec.arrangement = self.arrangement
         for element in makeElements() {
             // marks and layers create their own child specs; all others (e.g., encodings) are set directly in the parent
-            if element is VizMarkType || element is VizLayerType {
+            if element is VizMarkType || element is VizLayerType || element is VizTransformType {
                 var child = VizSpec<M>()
                 element.add(to: &child)
                 spec.sublayers.append(child)

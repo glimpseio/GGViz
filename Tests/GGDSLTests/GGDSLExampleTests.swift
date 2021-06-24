@@ -9,7 +9,7 @@ typealias GG = GGSchema.GG
 
 final class GGDSLExampleTests: XCTestCase {
     func test_bar() throws {
-        try check(viz: Graphiq {
+        try check(viz: Graphiq(description: "A simple bar chart with embedded data.") {
             DataValues {
                 [
                     ["a": "A", "b": 28],
@@ -34,7 +34,6 @@ final class GGDSLExampleTests: XCTestCase {
                     .type(.quantitative)
             }
         }
-        .description("A simple bar chart with embedded data.")
         , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -153,7 +152,9 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_donut() throws {
-        try check(viz: Graphiq {
+        try check(viz: Graphiq(description: "A simple donut chart with embedded data.") {
+            Viewport().stroke(nil)
+
             DataValues {[
                 ["category": 1, "value": 4],
                 ["category": 2, "value": 6],
@@ -169,8 +170,7 @@ final class GGDSLExampleTests: XCTestCase {
             }
             .innerRadius(50)
         }
-        .view(GG.ViewBackground(stroke: .null))
-        .description("A simple donut chart with embedded data."), againstJSON: """
+        , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "A simple donut chart with embedded data.",
@@ -195,7 +195,9 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_pie() throws {
-        try check(viz: Graphiq {
+        try check(viz: Graphiq(description: "A simple pie chart with embedded data.") {
+            Viewport().stroke(nil)
+
             DataValues {[
                 ["category": 1, "value": 4],
                 ["category": 2, "value": 6],
@@ -210,8 +212,7 @@ final class GGDSLExampleTests: XCTestCase {
                 Encode(.color, field: "category").type(.nominal)
             }
         }
-        .view(GG.ViewBackground(stroke: .null))
-        .description("A simple pie chart with embedded data."), againstJSON: """
+        , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "A simple pie chart with embedded data.",
@@ -236,7 +237,9 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_pie_pyramid() throws {
-        try check(viz: Graphiq {
+        try check(viz: Graphiq(description: "Reproducing http://robslink.com/SAS/democd91/pyramid_pie.htm") {
+            Viewport().stroke(nil)
+
             DataValues {[
                 ["category": "Sky", "value": 75, "order": 3],
                 ["category": "Shady side of a pyramid", "value": 10, "order": 1],
@@ -268,10 +271,10 @@ final class GGDSLExampleTests: XCTestCase {
 
                 Encode(.order, field: "order")
 
-            }.outerRadius(.init(80))
+            }
+            .outerRadius(.init(80))
         }
-        .description("Reproducing http://robslink.com/SAS/democd91/pyramid_pie.htm")
-        .view(GG.ViewBackground(stroke: .init(.null))), againstJSON: """
+        , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "Reproducing http://robslink.com/SAS/democd91/pyramid_pie.htm",
@@ -313,10 +316,11 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_arc_radial() throws {
-        try check(viz: Graphiq {
+        try check(viz: Graphiq(description: "A simple radial chart with embedded data.") {
+            Viewport().stroke(nil)
             DataValues { [12, 23, 47, 6, 52, 19] }
             Layer {
-                Encode(.color, field: "data").type(.nominal).legend(.init(.null))
+                Encode(.color, field: "data").type(.nominal).legend(nil)
                 Encode(.theta, field: "data").type(.quantitative).stack(.init(true))
                 Encode(.radius, field: "data") {
                     Scale().type(.sqrt).zero(true).rangeMin(20)
@@ -333,8 +337,7 @@ final class GGDSLExampleTests: XCTestCase {
                 .radiusOffset(10)
             }
         }
-        .view(GG.ViewBackground(stroke: .null))
-        .description("A simple radial chart with embedded data."), againstJSON: """
+        , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "description": "A simple radial chart with embedded data.",
@@ -360,7 +363,7 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area() throws {
-        try check(viz: Graphiq {
+        try check(viz: Graphiq(width: 300, height: 200) {
             DataReference(path: "data/unemployment-across-industries.json")
             Mark(.area) {
                 Encode(.x, field: "date") {
@@ -374,8 +377,7 @@ final class GGDSLExampleTests: XCTestCase {
 
             }
         }
-        .width(300)
-        .height(200), againstJSON: """
+        , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "width": 300,
@@ -398,7 +400,18 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_area_cumulative_freq() throws {
         try check(viz: Graphiq {
-        }, againstJSON: """
+            DataReference(path: "data/movies.json")
+            Transform(.window) {
+                Mark(.area) {
+                    Encode(.x, field: "IMDB Rating").type(.quantitative)
+                    Encode(.y, field: "Cumulative Count").type(.quantitative)
+                }
+            }
+            .window([GG.WindowFieldDef(as: .init("Cumulative Count"), field: .init("count"), op: .init(.count))])
+            .sort([.init(field: .init("IMDB Rating"))])
+            .frame([.init(nil), .init(0)])
+        }
+        , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "data": {"url": "data/movies.json"},
@@ -423,7 +436,14 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_density() throws {
-        try check(viz: Graphiq {
+        try check(viz: Graphiq(width: 400, height: 100) {
+            DataReference(path: "data/movies.json")
+            Transform(.density, field: "IMDB Rating") { sampleValue, densityEstimate in
+                Mark(.area) {
+                    Encode(.x, field: sampleValue).type(.quantitative).title(.init("IMDB Rating"))
+                    Encode(.y, field: densityEstimate).type(.quantitative)
+                }
+            }.bandwidth(0.3)
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -453,8 +473,17 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_density_facet() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
+        try check(viz: Graphiq(width: 400, height: 80, title: "Distribution of Body Mass of Penguins") {
+            DataReference(path: "data/penguins.json")
+            Transform(.density, field: "Body Mass (g)") { sampleValue, densityEstimate in
+                Mark(.area) {
+                    Encode(.x, field: sampleValue).type(.quantitative).title(.init("Body Mass (g)"))
+                    Encode(.y, field: densityEstimate).type(.quantitative).stack(.init(.zero))
+                    Encode(.row, field: "Species")
+                }
+            }.groupby([.init("Species")]).extent([2500, 6500])
+        }
+        , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": "Distribution of Body Mass of Penguins",
@@ -481,8 +510,17 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_density_stacked() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
+        try check(viz: Graphiq(width: 400, height: 80, title: "Distribution of Body Mass of Penguins") {
+            DataReference(path: "data/penguins.json")
+            Transform(.density, field: "Body Mass (g)") { sampleValue, densityEstimate in
+                Mark(.area) {
+                    Encode(.x, field: sampleValue).type(.quantitative).title(.init("Body Mass (g)"))
+                    Encode(.y, field: densityEstimate).type(.quantitative).stack(.init(.zero))
+                    Encode(.color, field: "Species").type(.nominal)
+                }
+            }.groupby([.init("Species")]).extent([2500, 6500])
+        }
+        , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "title": "Distribution of Body Mass of Penguins",
@@ -560,7 +598,52 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_horizon() throws {
-        try check(viz: Graphiq {
+        try check(viz: Graphiq(width: 300, height: 50, description: "Horizon Graph with 2 layers. (See https://idl.cs.washington.edu/papers/horizon/ for more details on Horizon Graphs.)") {
+            DataValues {
+                [
+                    ["x": 1,  "y": 28], ["x": 2,  "y": 55],
+                    ["x": 3,  "y": 43], ["x": 4,  "y": 91],
+                    ["x": 5,  "y": 81], ["x": 6,  "y": 53],
+                    ["x": 7,  "y": 19], ["x": 8,  "y": 87],
+                    ["x": 9,  "y": 52], ["x": 10, "y": 48],
+                    ["x": 11, "y": 24], ["x": 12, "y": 49],
+                    ["x": 13, "y": 87], ["x": 14, "y": 66],
+                    ["x": 15, "y": 17], ["x": 16, "y": 27],
+                    ["x": 17, "y": 68], ["x": 18, "y": 16],
+                    ["x": 19, "y": 49], ["x": 20, "y": 15]
+                ]
+            }
+
+            Layer {
+                Encode(.x, field: "x") {
+                    Scale().zero(false).nice(false)
+                }.type(.quantitative)
+
+                Encode(.y, field: "y") {
+                    Scale().domain(0...50)
+                    Guide().title(.init("y"))
+                }.type(.quantitative)
+
+                Mark(.area) {
+                }
+                .clip(true)
+                .orient(.vertical)
+                .opacity(0.6)
+
+                Transform(.calculate, expression: "datum.y - 50", output: "ny") { calculateValue in
+                    Mark(.area) {
+                        Encode(.y, field: calculateValue) {
+                            Scale().domain(0...50)
+                        }.type(.quantitative)
+
+                        Encode(.opacity, value: 0.3)
+                    }
+                    .clip(true)
+                    .orient(.vertical)
+                }
+            }
+            VizTheme()
+                .area(.init(interpolate: .init(.monotone)))
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -613,7 +696,16 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_area_overlay() throws {
-        try check(viz: Graphiq {
+        try check(viz: Graphiq(description: "Google's stock price over time.") {
+            DataReference(path: "data/stocks.csv")
+            Transform(.filter, expression: "datum.symbol==='GOOG'") {
+                Mark(.area) {
+                    Encode(.x, field: "date").type(.temporal)
+                    Encode(.y, field: "price").type(.quantitative)
+                }
+                .line(true)
+                .point(true)
+            }
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -2545,14 +2637,14 @@ final class GGDSLExampleTests: XCTestCase {
 //                // background map
 //                VizMark(.geoshape) {
 //                    //VizData(.topojson, feature: "states", url: "data/us-10m.json")
-//                    //VizProjection(.albersUsa)
+//                    //GeoProjection(.albersUsa)
 //                }
 //                .fill(.init(.init(ColorCode("#eee"))))
 //                .stroke(.init(.init(ColorCode("white"))))
 //
 //                // circles over the map
 //                VizMark(.circle) {
-//                    //VizProjection(.albersUsa)
+//                    //GeoProjection(.albersUsa)
 //                    VizEncode(.longitude, field: "longitude").type(.quantitative)
 //                    VizEncode(.latitude, field: "latitude").type(.quantitative)
 //                    VizEncode(.size, value: 5)

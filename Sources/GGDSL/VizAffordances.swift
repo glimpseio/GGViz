@@ -396,6 +396,95 @@ public extension GG.SymbolShape {
     }
 }
 
+
+// MARK: Transforms
+
+public enum TransformType: String, CaseIterable, Hashable {
+
+    // MARK: Subsets
+
+    /// The filter transform removes objects from a data stream based on a provided filter expression or filter object.
+    case filter
+    /// The sample transform filters random rows from the data source to reduce its size. As input data objects are added and removed, the sampled values may change in first-in, first-out manner. This transform uses reservoir sampling to maintain a representative sample of the stream.
+    case sample
+
+    // MARK: Expanded Values
+
+    /// The formula transform extends data objects with new fields (columns) according to an expression.
+    case calculate
+    /// The lookup transform extends a primary data source by looking up values from another data source. It is similar to a one sided join.
+    case lookup
+
+
+    // MARK: Transform
+
+    /// Aggregate summarizes a table as one record for each group. To preserve the original table structure and instead add a new column with the aggregate values, use the join aggregate transform.
+    case aggregate // groupby
+    /// The joinaggregate transform extends the input data objects with aggregate values in a new field. Aggregation is performed and the results are then joined with the input data. This transform can be helpful for creating derived values that combine both raw data and aggregate calculations, such as percentages of group totals. This transform is a special case of the window transform where the frame is always [null, null]. Compared with the regular aggregate transform, joinaggregate preserves the original table structure and augments records with aggregate values rather than summarizing the data in one record for each group.
+    case joinaggregate // groupby
+    /// The window transform performs calculations over sorted groups of data objects. These calculations including ranking, lead/lag analysis, and aggregates such as running sums and averages. Calculated values are written back to the input data stream. If you only want to set the same aggregated value in a new field, you can use the simpler join aggregate transform.
+    case window // groupby
+    /// The impute transform groups data and determines missing values of the key field within each group. For each missing value in each group, the impute transform will produce a new tuple with the imputed field generated based on a specified imputation method (by using a constant value or by calculating statistics such as mean within each group).
+    case impute // groupby
+
+    // MARK: Derive New Stream
+
+    /// The flatten transform maps array-valued fields to a set of individual data objects, one per array entry. This transform generates a new data stream in which each data object consists of an extracted array value as well as all the original fields of the corresponding input data object.
+    case flatten
+    /// The fold transform collapses (or “folds”) one or more data fields into two properties: a key property (containing the original data field name) and a value property (containing the data value). The fold transform is useful for mapping matrix or cross-tabulation data into a standardized format.
+    case fold
+    /// The pivot transform maps unique values from a field to new aggregated fields (columns) in the output stream. The transform requires both a field to pivot on (providing new field names) and a field of values to aggregate to populate the new cells. In addition, any number of groupby fields can be provided to further subdivide the data into output data objects (rows).
+    case pivot // groupby
+
+    /// The regression transform fits two-dimensional regression models to smooth and predict data. This transform can fit multiple models for input data (one per group) and generates new data objects that represent points for summary trend lines. Alternatively, this transform can be used to generate a set of objects containing regression model parameters, one per group.
+    case regression // groupby
+    /// The loess transform (for locally-estimated scatterplot smoothing) uses locally-estimated regression to produce a trend line. Loess performs a sequence of local weighted regressions over a sliding window of nearest-neighbor points. For standard parametric regression options, see the regression transform.
+    case loess // groupby
+
+    /// The density transform performs one-dimensional kernel density estimation over an input data stream and generates a new data stream of samples of the estimated densities.
+    case density // groupby
+    /// The quantile transform calculates empirical quantile values for an input data stream. If a groupby parameter is provided, quantiles are estimated separately per group. Among other uses, the quantile transform is useful for creating quantile-quantile (Q-Q) plots.
+    case quantile // groupby
+
+    // these transforms are also handled more simply by built-in features of the encoding channels
+
+    /// Binning discretizes numeric values into a set of bins. A common use case is to create a histogram.
+    case bin
+    /// Time unit is used to discretize times.
+    case timeUnit
+    /// The stack property of a position field definition determines type of stacking offset if the field should be stacked.
+    case stack // groupby
+}
+
+
+public extension GG.DataTransformation {
+    var transformType: TransformType {
+        /// merely validates that the given transform param has a name that matches our TransformType constant
+        func disc<T>(_ ignore: T, _ value: TransformType) -> TransformType { value }
+
+        switch self {
+        case .aggregateTransformCase(let t): return disc(t.aggregate, .aggregate)
+        case .binTransformCase(let t): return disc(t.bin, .bin)
+        case .calculateTransformCase(let t): return disc(t.calculate, .calculate)
+        case .densityTransformCase(let t): return disc(t.density, .density)
+        case .filterTransformCase(let t): return disc(t.filter, .filter)
+        case .flattenTransformCase(let t): return disc(t.flatten, .flatten)
+        case .foldTransformCase(let t): return disc(t.fold, .fold)
+        case .imputeTransformCase(let t): return disc(t.impute, .impute)
+        case .joinAggregateTransformCase(let t): return disc(t.joinaggregate, .joinaggregate)
+        case .loessTransformCase(let t): return disc(t.loess, .loess)
+        case .lookupTransformCase(let t): return disc(t.lookup, .lookup)
+        case .regressionTransformCase(let t): return disc(t.regression, .regression)
+        case .timeUnitTransformCase(let t): return disc(t.timeUnit, .timeUnit)
+        case .sampleTransformCase(let t): return disc(t.sample, .sample)
+        case .stackTransformCase(let t): return disc(t.stack, .stack)
+        case .windowTransformCase(let t): return disc(t.window, .window)
+        case .pivotTransformCase(let t): return disc(t.pivot, .pivot)
+        case .quantileTransformCase(let t): return disc(t.quantile, .quantile)
+        }
+    }
+}
+
 public extension GG.NonArgAggregateOp {
     /// Additive-based aggregation operations. These can be applied to stack.
     static let summativeOps = Set<Self>(countingAggregateOps + [.sum])
