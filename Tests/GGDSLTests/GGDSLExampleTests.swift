@@ -10,7 +10,7 @@ typealias GG = GGSchema.GG
 final class GGDSLExampleTests: XCTestCase {
     func test_bar() throws {
         try check(viz: Graphiq {
-            InlineData {
+            DataValues {
                 [
                     ["a": "A", "b": 28],
                     ["a": "B", "b": 55],
@@ -154,7 +154,7 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_donut() throws {
         try check(viz: Graphiq {
-            InlineData {[
+            DataValues {[
                 ["category": 1, "value": 4],
                 ["category": 2, "value": 6],
                 ["category": 3, "value": 10],
@@ -196,7 +196,7 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_pie() throws {
         try check(viz: Graphiq {
-            InlineData {[
+            DataValues {[
                 ["category": 1, "value": 4],
                 ["category": 2, "value": 6],
                 ["category": 3, "value": 10],
@@ -237,7 +237,7 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_pie_pyramid() throws {
         try check(viz: Graphiq {
-            InlineData {[
+            DataValues {[
                 ["category": "Sky", "value": 75, "order": 3],
                 ["category": "Shady side of a pyramid", "value": 10, "order": 1],
                 ["category": "Sunny side of a pyramid", "value": 15, "order": 2],
@@ -314,7 +314,7 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_arc_radial() throws {
         try check(viz: Graphiq {
-            InlineData { [12, 23, 47, 6, 52, 19] }
+            DataValues { [12, 23, 47, 6, 52, 19] }
             Layer {
                 Encode(.color, field: "data").type(.nominal).legend(.init(.null))
                 Encode(.theta, field: "data").type(.quantitative).stack(.init(true))
@@ -361,19 +361,19 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_area() throws {
         try check(viz: Graphiq {
+            DataReference(path: "data/unemployment-across-industries.json")
             Mark(.area) {
                 Encode(.x, field: "date") {
                     Guide()
                         .format("%Y")
                 }
-                .timeUnit(.init(.init(.init(.yearmonth))))
+                .timeUnit(.init(.init(.yearmonth)))
                 Encode(.y, field: "count")
                     .aggregate(.init(.sum))
                     .title(.init("count"))
 
             }
         }
-        .data(.init(GG.DataSource(GG.UrlData(url: "data/unemployment-across-industries.json"))))
         .width(300)
         .height(200), againstJSON: """
 {

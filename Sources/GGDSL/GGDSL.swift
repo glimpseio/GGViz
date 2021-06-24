@@ -224,7 +224,7 @@ public struct VizProjection : VizSpecElementType, EncapsulatedPropertyRouter, Vi
 
 /// Literal data values to be included in a visualization
 @dynamicMemberLookup
-public struct InlineData : VizSpecElementType, EncapsulatedPropertyRouter, VizDSLType {
+public struct DataValues : VizSpecElementType, EncapsulatedPropertyRouter, VizDSLType {
     public var rawValue: GG.InlineDataset
 
     public init(rawValue dataSet: GG.InlineDataset) {
@@ -254,7 +254,7 @@ public struct InlineData : VizSpecElementType, EncapsulatedPropertyRouter, VizDS
 
 /// A reference to a give UR:L
 @dynamicMemberLookup
-public struct ReferenceData : VizSpecElementType, EncapsulatedPropertyRouter, VizDSLType {
+public struct DataReference : VizSpecElementType, EncapsulatedPropertyRouter, VizDSLType {
     public var rawValue: GG.UrlData
 
     public init(rawValue urlReference: GG.UrlData) {

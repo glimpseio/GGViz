@@ -49,9 +49,11 @@ final class GGDSLTests: XCTestCase {
         XCTAssertEqual(Scale().range((Double.pi * 0.75)...(Double.pi * 2.75)).rawValue.jsonDebugDescription, """
             {"range":[2.3561944901923448,8.6393797973719302]}
             """)
+        #if os(macOS) // on iOS: "error: type 'Float80' has no member 'pi'"
         XCTAssertEqual(Scale().range((Float80.pi * 0.75)...(Float80.pi * 2.75)).rawValue.jsonDebugDescription, """
             {"range":[2.3561944901923448,8.639379797371932]}
             """)
+        #endif
         #endif
 
         try check(viz: Graphiq {
