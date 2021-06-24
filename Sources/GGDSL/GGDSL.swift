@@ -381,7 +381,7 @@ public extension VizTransform where Def == GG.SampleTransform {
         case sample
     }
     init(_ sampleTransform: SampleLiteral, sample: Double = 999, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(sample: sample)
+        self.rawValue = GG.SampleTransform(sample: sample)
         self.makeElements = makeElements
     }
 }
@@ -396,7 +396,7 @@ public extension VizTransform where Def == GG.AggregateTransform {
         case aggregate
     }
     init(_ aggregateTransform: AggregateLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init()
+        self.rawValue = GG.AggregateTransform() // GG.AggregateTransform(id: <#T##GG.TransformId?#>, aggregate: <#T##[GG.AggregatedFieldDef]#>, groupby: <#T##[GG.FieldName]?#>)
         self.makeElements = makeElements
     }
 }
@@ -410,9 +410,9 @@ public extension VizTransform where Def == GG.BinTransform {
         /// Binning discretizes numeric values into a set of bins. A common use case is to create a histogram.
         case bin
     }
-    init(_ binTransform: BinLiteral, field: FieldNameRepresentable, params: GG.BinParams?, output as: [FieldNameRepresentable], @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(as: .init(`as`.map(\.fieldName)), bin: params.map({ .init($0) }) ?? .init(true), field: field.fieldName)
-        self.makeElements = makeElements
+    init(_ binTransform: BinLiteral, params: GG.BinParams? = nil, field: FieldNameRepresentable, outputStart startField: FieldNameRepresentable, outputEnd endField: FieldNameRepresentable? = nil, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ binStartField: FieldNameRepresentable, _ binEndField: FieldNameRepresentable) -> [VizLayerElementType]) {
+        self.rawValue = GG.BinTransform(as: endField == nil ? .init(startField.fieldName) : .init([startField.fieldName, endField!.fieldName]), bin: params.map({ .init($0) }) ?? .init(true), field: field.fieldName)
+        self.makeElements = { makeElements(startField, endField ?? GG.FieldName(startField.fieldName.rawValue + "_end")) }
     }
 }
 
@@ -426,7 +426,7 @@ public extension VizTransform where Def == GG.CalculateTransform {
         case calculate
     }
     init(_ calculateTransform: CalculateLiteral, expression calculate: String, output calculateField: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ calculateField: FieldNameRepresentable) -> [VizLayerElementType]) {
-        self.rawValue = .init(as: calculateField.fieldName, calculate: .init(calculate))
+        self.rawValue = GG.CalculateTransform(as: calculateField.fieldName, calculate: .init(calculate))
         self.makeElements = { makeElements(calculateField) }
     }
 }
@@ -441,7 +441,7 @@ public extension VizTransform where Def == GG.DensityTransform {
         case density
     }
     init(_ densityTransform: DensityLiteral, field density: FieldNameRepresentable, group groupby: [FieldNameRepresentable]? = nil, bandwidth: Double? = nil, counts: Bool? = nil, cumulative: Bool? = nil, extent: [GG.DensityTransform.ExtentItem]? = nil, maxsteps: Double? = nil, minsteps: Double? = nil, steps: Double? = nil, sampleOutput: FieldNameRepresentable? = nil, densityOutput: FieldNameRepresentable? = nil, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ sampleValueOutput: FieldNameRepresentable, _ densityEstimateOutput: FieldNameRepresentable) -> [VizLayerElementType]) {
-        self.rawValue = .init(as: sampleOutput == nil && densityOutput == nil ? nil : [(sampleOutput ?? "value").fieldName, (densityOutput ?? "density").fieldName], bandwidth: bandwidth, counts: counts, cumulative: cumulative, density: density.fieldName, extent: extent, groupby: groupby?.map(\.fieldName), maxsteps: maxsteps, minsteps: minsteps, steps: steps)
+        self.rawValue = GG.DensityTransform(as: sampleOutput == nil && densityOutput == nil ? nil : [(sampleOutput ?? "value").fieldName, (densityOutput ?? "density").fieldName], bandwidth: bandwidth, counts: counts, cumulative: cumulative, density: density.fieldName, extent: extent, groupby: groupby?.map(\.fieldName), maxsteps: maxsteps, minsteps: minsteps, steps: steps)
         // self.makeElements = { makeElements(self.transformDef.as?.first?.fieldName ?? "value", self.transformDef.as?.last?.fieldName ?? "density") }
         self.makeElements = { makeElements(sampleOutput ?? "value", densityOutput ?? "density") }
     }
@@ -458,7 +458,7 @@ public extension VizTransform where Def == GG.FilterTransform {
     }
 
     init(_ filterTransform: FilterLiteral, filter: GG.PredicateComposition, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(filter: filter)
+        self.rawValue = GG.FilterTransform(filter: filter)
         self.makeElements = makeElements
     }
 
@@ -478,7 +478,7 @@ public extension VizTransform where Def == GG.FlattenTransform {
         case flatten
     }
     init(_ flattenTransform: FlattenLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init()
+        self.rawValue = GG.FlattenTransform() // GG.FlattenTransform(id: <#T##GG.TransformId?#>, as: <#T##[GG.FieldName]?#>, flatten: <#T##[GG.FieldName]#>)
         self.makeElements = makeElements
     }
 }
@@ -493,7 +493,7 @@ public extension VizTransform where Def == GG.FoldTransform {
         case fold
     }
     init(_ foldTransform: FoldLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init()
+        self.rawValue = GG.FoldTransform() // GG.FoldTransform(id: <#T##GG.TransformId?#>, as: <#T##[GG.FieldName]?#>, fold: <#T##[GG.FieldName]#>)
         self.makeElements = makeElements
     }
 }
@@ -508,7 +508,7 @@ public extension VizTransform where Def == GG.ImputeTransform {
         case impute
     }
     init(_ imputeTransform: ImputeLiteral, impute: FieldNameRepresentable, key: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(impute: impute.fieldName, key: key.fieldName)
+        self.rawValue = GG.ImputeTransform(impute: impute.fieldName, key: key.fieldName) // GG.ImputeTransform(id: <#T##GG.TransformId?#>, frame: <#T##[GG.ImputeTransform.FrameItemChoice]?#>, groupby: <#T##[GG.FieldName]?#>, impute: <#T##GG.FieldName#>, key: <#T##GG.FieldName#>, keyvals: <#T##GG.ImputeTransform.KeyvalsChoice?#>, method: <#T##GG.ImputeMethod?#>, value: <#T##GG.ImputeTransform.Value?#>)
         self.makeElements = makeElements
     }
 }
@@ -523,7 +523,7 @@ public extension VizTransform where Def == GG.JoinAggregateTransform {
         case joinAggregate
     }
     init(_ joinAggregateTransform: JoinAggregateLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init()
+        self.rawValue = GG.JoinAggregateTransform() // GG.JoinAggregateTransform(id: <#T##GG.TransformId?#>, groupby: <#T##[GG.FieldName]?#>, joinaggregate: <#T##[GG.JoinAggregateFieldDef]#>)
         self.makeElements = makeElements
     }
 }
@@ -538,7 +538,7 @@ public extension VizTransform where Def == GG.LoessTransform {
         case loess
     }
     init(_ loessTransform: LoessLiteral, field: FieldNameRepresentable, on: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(loess: field.fieldName, on: on.fieldName)
+        self.rawValue = GG.LoessTransform(loess: field.fieldName, on: on.fieldName) // GG.LoessTransform(id: <#T##GG.TransformId?#>, as: <#T##[GG.FieldName]?#>, bandwidth: <#T##Double?#>, groupby: <#T##[GG.FieldName]?#>, loess: <#T##GG.FieldName#>, on: <#T##GG.FieldName#>)
         self.makeElements = makeElements
     }
 }
@@ -553,12 +553,12 @@ public extension VizTransform where Def == GG.LookupTransform {
         case lookup
     }
     init(_ lookupTransform: LookupLiteral, field: FieldNameRepresentable, data: GG.LookupData, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(from: .init(data), lookup: field.fieldName)
+        self.rawValue = GG.LookupTransform(from: .init(data), lookup: field.fieldName) // GG.LookupTransform(id: <#T##GG.TransformId?#>, as: <#T##GG.LookupTransform.AsChoice?#>, default: <#T##Bric?#>, from: <#T##GG.LookupTransform.FromChoice#>, lookup: <#T##GG.FieldName#>)
         self.makeElements = makeElements
     }
 
     init(_ lookupTransform: LookupLiteral, field: FieldNameRepresentable, selection: GG.LookupSelection, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(from: .init(selection), lookup: field.fieldName)
+        self.rawValue = GG.LookupTransform(from: .init(selection), lookup: field.fieldName) // GG.LookupTransform(id: <#T##GG.TransformId?#>, as: <#T##GG.LookupTransform.AsChoice?#>, default: <#T##Bric?#>, from: <#T##GG.LookupTransform.FromChoice#>, lookup: <#T##GG.FieldName#>)
         self.makeElements = makeElements
     }
 }
@@ -573,7 +573,7 @@ public extension VizTransform where Def == GG.QuantileTransform {
         case quantile
     }
     init(_ quantileTransform: QuantileLiteral, field: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(quantile: field.fieldName)
+        self.rawValue = GG.QuantileTransform(quantile: field.fieldName) // GG.QuantileTransform(id: <#T##GG.TransformId?#>, as: <#T##[GG.FieldName]?#>, groupby: <#T##[GG.FieldName]?#>, probs: <#T##[GG.QuantileTransform.ProbsItem]?#>, quantile: <#T##GG.FieldName#>, step: <#T##Double?#>)
         self.makeElements = makeElements
     }
 }
@@ -588,7 +588,7 @@ public extension VizTransform where Def == GG.RegressionTransform {
         case regression
     }
     init(_ regressionTransform: RegressionLiteral, field: GG.FieldName, on: GG.FieldName, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(on: on.fieldName, regression: field.fieldName)
+        self.rawValue = GG.RegressionTransform(on: on.fieldName, regression: field.fieldName) // GG.RegressionTransform(id: <#T##GG.TransformId?#>, as: <#T##[GG.FieldName]?#>, extent: <#T##[GG.RegressionTransform.ExtentItem]?#>, groupby: <#T##[GG.FieldName]?#>, method: <#T##GG.RegressionTransform.LiteralLinearOrLogOrExpOrPowOrQuadOrPoly?#>, on: <#T##GG.FieldName#>, order: <#T##Double?#>, params: <#T##Bool?#>, regression: <#T##GG.FieldName#>)
         self.makeElements = makeElements
     }
 }
@@ -603,12 +603,12 @@ public extension VizTransform where Def == GG.TimeUnitTransform {
         case timeUnit
     }
     init(_ timeUnitTransform: TimeUnitLiteral, field: FieldNameRepresentable, timeUnit: GG.TimeUnit, output as: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(as: `as`.fieldName, field: field.fieldName, timeUnit: .init(timeUnit))
+        self.rawValue = GG.TimeUnitTransform(as: `as`.fieldName, field: field.fieldName, timeUnit: .init(timeUnit)) // GG.TimeUnitTransform(id: <#T##GG.TransformId?#>, as: <#T##GG.FieldName#>, field: <#T##GG.FieldName#>, timeUnit: <#T##GG.TimeUnitTransform.TimeUnitChoice#>)
         self.makeElements = makeElements
     }
 
     init(_ timeUnitTransform: TimeUnitLiteral, field: FieldNameRepresentable, params: GG.TimeUnitParams, output as: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(as: `as`.fieldName, field: field.fieldName, timeUnit: .init(params))
+        self.rawValue = GG.TimeUnitTransform(as: `as`.fieldName, field: field.fieldName, timeUnit: .init(params)) // GG.TimeUnitTransform(id: <#T##GG.TransformId?#>, as: <#T##GG.FieldName#>, field: <#T##GG.FieldName#>, timeUnit: <#T##GG.TimeUnitTransform.TimeUnitChoice#>)
         self.makeElements = makeElements
     }
 
@@ -624,7 +624,7 @@ public extension VizTransform where Def == GG.StackTransform {
         case stack
     }
     init(_ stackTransform: StackLiteral, field stack: FieldNameRepresentable, startField: FieldNameRepresentable, endField: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ startField: FieldNameRepresentable, _ endField: FieldNameRepresentable) -> [VizLayerElementType]) {
-        self.rawValue = .init(as: .init([startField.fieldName, endField.fieldName]), stack: stack.fieldName)
+        self.rawValue = GG.StackTransform(as: .init([startField.fieldName, endField.fieldName]), stack: stack.fieldName) // GG.StackTransform(id: <#T##GG.TransformId?#>, as: <#T##GG.StackTransform.AsChoice#>, groupby: <#T##[GG.FieldName]#>, offset: <#T##GG.StackTransform.LiteralZeroOrCenterOrNormalize?#>, sort: <#T##[GG.SortField]?#>, stack: <#T##GG.FieldName#>)
         self.makeElements = { makeElements(startField, endField) }
     }
 }
@@ -639,7 +639,7 @@ public extension VizTransform where Def == GG.WindowTransform {
         case window
     }
     init(_ windowTransform: WindowLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init()
+        self.rawValue = GG.WindowTransform() // GG.WindowTransform(id: <#T##GG.TransformId?#>, frame: <#T##[GG.WindowTransform.FrameItemChoice]?#>, groupby: <#T##[GG.FieldName]?#>, ignorePeers: <#T##Bool?#>, sort: <#T##[GG.SortField]?#>, window: <#T##[GG.WindowFieldDef]#>)
         self.makeElements = makeElements
     }
 }
@@ -654,7 +654,7 @@ public extension VizTransform where Def == GG.PivotTransform {
         case pivot
     }
     init(_ pivotTransform: PivotLiteral, pivot: FieldNameRepresentable, value: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = .init(pivot: pivot.fieldName, value: value.fieldName)
+        self.rawValue = GG.PivotTransform(pivot: pivot.fieldName, value: value.fieldName) // GG.PivotTransform(id: <#T##GG.TransformId?#>, groupby: <#T##[GG.FieldName]?#>, limit: <#T##Double?#>, op: <#T##GG.AggregateOp?#>, pivot: <#T##GG.FieldName#>, value: <#T##GG.FieldName#>)
         self.makeElements = makeElements
     }
 }

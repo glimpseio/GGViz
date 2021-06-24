@@ -1084,6 +1084,25 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_histogram_log() throws {
         try check(viz: Graphiq {
+            DataValues { [ ["x": 0.01], ["x": 0.1], ["x": 1], ["x": 1], ["x": 1], ["x": 1], ["x": 10], ["x": 10], ["x": 100], ["x": 500],
+                    ["x": 800] ] }
+
+            Transform(.calculate, expression: "log(datum.x)/log(10)", output: "log_x") { log_x in
+                Transform(.bin, field: log_x, outputStart: "bin_log_x") { bin_log_x, _ in
+                    Transform(.calculate, expression: "pow(10, datum.bin_log_x)", output: "x1") { x1 in
+                        Transform(.calculate, expression: "pow(10, datum.bin_log_x_end)", output: "x2") { x2 in
+                            Mark(.bar) {
+                                Encode(.x, field: x1) {
+                                    Guide().tickCount(5)
+                                    Scale().type(.log).base(10)
+                                }
+                                Encode(.x2, field: x2)
+                                Encode(.y).aggregate(.init(.count))
+                            }
+                        }
+                    }
+                }
+            }
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1128,15 +1147,23 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
-
-
-
-    // MARK: Translation-in-Progress
-
-
-
     func test_layer_bar_labels() throws {
         try check(viz: Graphiq {
+            DataValues { [ ["a": "A", "b": 28], ["a": "B", "b": 55], ["a": "C", "b": 43] ] }
+            Layer {
+                Encode(.y, field: "a").type(.nominal)
+                Encode(.x, field: "b") {
+                    Scale().domain(0...60)
+                }.type(.quantitative)
+
+                Mark(.bar)
+                Mark(.text) {
+                    Encode(.text, field: "b").type(.quantitative)
+                }
+                .align(.init(.left))
+                .baseline(.init(.middle))
+                .dx(3)
+            }
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1170,8 +1197,32 @@ final class GGDSLExampleTests: XCTestCase {
     }
 
     func test_layer_bar_labels_grey() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
+        try check(viz: Graphiq(width: 200) {
+            DataReference(path: "data/movies.json")
+            Layer {
+                Encode(.y, field: "Major Genre")
+                    .type(.nominal)
+                    .axis(nil)
+
+                Mark(.bar) {
+                    Encode(.x, field: "IMDB Rating") {
+                        Scale().domain(0...10)
+                    }
+                    .title(.init("Mean IMDB Ratings"))
+                    .aggregate(.init(.mean))
+                }
+                .color(.init(GG.HexColor(rawValue: "#ddd")))
+
+                Mark(.text) {
+                    Encode(.text, field: "Major Genre")
+                    Encode(.detail).aggregate(.init(.count))
+                }
+                .align(.left)
+                .x(5)
+            }
+        }
+        .height(.init(step: 16))
+        , againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
   "width": 200,
@@ -1207,6 +1258,18 @@ final class GGDSLExampleTests: XCTestCase {
 
     func test_layer_histogram_global_mean() throws {
         try check(viz: Graphiq {
+            DataReference(path: "data/movies.json")
+            Layer {
+                Mark(.bar) {
+                    Encode(.x, field: "IMDB Rating").bin(.init(true))
+                    Encode(.y).aggregate(.init(.count))
+                }
+                Mark(.rule) {
+                    Encode(.x, field: "IMDB Rating").aggregate(.init(.mean))
+                    Encode(.color, value: "red")
+                    Encode(.size, value: 5)
+                }
+            }
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1229,9 +1292,22 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
-
     func test_layer_line_mean_point_raw() throws {
         try check(viz: Graphiq {
+            DataReference(path: "data/stocks.csv")
+            Transform(.filter, expression: "datum.symbol==='GOOG'") {
+                Layer {
+                    Mark(.point) {
+                        Encode(.x, field: "date").timeUnit(.init(.init(.year)))
+                        Encode(.y, field: "price").type(.quantitative)
+                    }
+                    .opacity(0.3)
+                    Mark(.line) {
+                        Encode(.x, field: "date").timeUnit(.init(.init(.year)))
+                        Encode(.y, field: "price").aggregate(.init(.mean))
+                    }
+                }
+            }
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -1255,46 +1331,10 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
-    func test_layer_line_rolling_mean_point_raw() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "Plot showing a 30 day rolling average with raw values in the background.",
-  "width": 400,
-  "height": 300,
-  "data": {"url": "data/seattle-weather.csv"},
-  "transform": [{
-    "window": [
-      {
-        "field": "temp_max",
-        "op": "mean",
-        "as": "rolling_mean"
-      }
-    ],
-    "frame": [-15, 15]
-  }],
-  "encoding": {
-    "x": {"field": "date", "type": "temporal", "title": "Date"},
-    "y": {"type": "quantitative", "axis": {"title": "Max Temperature and Rolling Mean"}}
-  },
-  "layer": [
-    {
-      "mark": {"type": "point", "opacity": 0.3},
-      "encoding": {
-        "y": {"field": "temp_max", "title": "Max Temperature"}
-      }
-    },
-    {
-      "mark": {"type": "line", "color": "red", "size": 3},
-      "encoding": {
-        "y": {"field": "rolling_mean", "title": "Rolling Mean of Max Temperature"}
-      }
-    }
-  ]
-}
-""")
-    }
+
+    // MARK: Translation-in-Progress
+
+
 
     func test_layer_point_errorbar_ci() throws {
         try check(viz: Graphiq {
