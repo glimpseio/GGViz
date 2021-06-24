@@ -9,8 +9,96 @@ import GGDSL
 
 extension GGDSLExampleTests {
 
+
+    func test_layer_precipitation_mean() throws {
+        try check(viz: Graphiq {
+            //DataReference(path: "XXX/XXX")
+            //Layer {
+            //    Mark(.XXX) {
+            //        Encode(.XXX, field: "XXX") {
+            //            Guide()
+            //            Scale()
+            //        }
+            //    }
+            //}
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "data/seattle-weather.csv"},
+  "layer": [
+    {
+      "mark": "bar",
+      "encoding": {
+        "x": {
+          "timeUnit": "month",
+          "field": "date",
+          "type": "ordinal"
+
+        },
+        "y": {
+          "aggregate": "mean",
+          "field": "precipitation",
+          "type": "quantitative"
+        }
+      }
+    },
+    {
+      "mark": "rule",
+      "encoding": {
+        "y": {
+          "aggregate": "mean",
+          "field": "precipitation",
+          "type": "quantitative"
+        },
+        "color": {"value": "red"},
+        "size": {"value": 3}
+      }
+    }
+  ]
+}
+""")
+    }
+
+    func test_line_overlay() throws {
+        try check(viz: Graphiq {
+            //DataReference(path: "XXX/XXX")
+            //Layer {
+            //    Mark(.XXX) {
+            //        Encode(.XXX, field: "XXX") {
+            //            Guide()
+            //            Scale()
+            //        }
+            //    }
+            //}
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Stock prices of 5 Tech Companies over Time.",
+  "data": {"url": "data/stocks.csv"},
+  "mark": {
+    "type": "line",
+    "point": true
+  },
+  "encoding": {
+    "x": {"timeUnit": "year", "field": "date"},
+    "y": {"aggregate":"mean", "field": "price", "type": "quantitative"},
+    "color": {"field": "symbol", "type": "nominal"}
+  }
+}
+""")
+    }
+
     func test_area_gradient() throws {
         try check(viz: Graphiq {
+            //DataReference(path: "XXX/XXX")
+            //Layer {
+            //    Mark(.XXX) {
+            //        Encode(.XXX, field: "XXX") {
+            //            Guide()
+            //            Scale()
+            //        }
+            //    }
+            //}
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
