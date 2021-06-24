@@ -34,6 +34,7 @@ jobs:
 
       - run: |
             xcodebuild clean test \
+              -configuration Release \
               -scheme "GGViz-Package" \
               -sdk "iphonesimulator" \
               -destination "platform=iOS Simulator,name=iPod touch (7th generation)" \
@@ -51,6 +52,7 @@ jobs:
         run: sed -i'.bk' 's;\(.*\)// SR-1954$;// SR-1954 \1;g' Package.swift
       - run: |
             xcodebuild clean test \
+              -configuration Release \
               -scheme "GGViz-Package" \
               -sdk "appletvsimulator" \
               -destination "platform=tvOS Simulator,name=Apple TV" \
