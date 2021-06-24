@@ -638,11 +638,44 @@ public extension VizTransform where Def == GG.WindowTransform {
         /// The window transform performs calculations over sorted groups of data objects. These calculations including ranking, lead/lag analysis, and aggregates such as running sums and averages. Calculated values are written back to the input data stream. If you only want to set the same aggregated value in a new field, you can use the simpler join aggregate transform.
         case window
     }
-    init(_ windowTransform: WindowLiteral, @VizLayerElementArrayBuilder _ makeElements: @escaping () -> [VizLayerElementType]) {
-        self.rawValue = GG.WindowTransform() // GG.WindowTransform(id: <#T##GG.TransformId?#>, frame: <#T##[GG.WindowTransform.FrameItemChoice]?#>, groupby: <#T##[GG.FieldName]?#>, ignorePeers: <#T##Bool?#>, sort: <#T##[GG.SortField]?#>, window: <#T##[GG.WindowFieldDef]#>)
-        self.makeElements = makeElements
+    init(_ windowTransform: WindowLiteral, field: FieldNameRepresentable?, op: OneOf<GG.AggregateOp>.Or<GG.WindowOnlyOp>, frame: FrameRange? = nil, param: Double? = nil, groupby: [FieldNameRepresentable]? = nil, ignorePeers: Bool? = nil, sort: [(FieldNameRepresentable, Bool?)]? = nil, output: FieldNameRepresentable, @VizLayerElementArrayBuilder _ makeElements: @escaping (_ windowField: FieldNameRepresentable) -> [VizLayerElementType]) {
+        self.rawValue = GG.WindowTransform(frame: frame?.windowFrame, groupby: groupby?.map(\.fieldName), ignorePeers: ignorePeers, sort: sort?.map({ GG.SortField(field: $0.0.fieldName, order: $0.1 == true ? .init(GG.SortOrder.ascending) : $0.1 == false ? .init(GG.SortOrder.descending) : nil) }), window: [.init(as: output.fieldName, field: field?.fieldName, op: op, param: param)])
+        self.makeElements = { makeElements(output) }
+    }
+
+    /// TODO…
+    //init(_ windowTransform: WindowLiteral, fields: [(FieldNameRepresentable?, WindowOp]) { }
+
+
+    /// A frame with an (optionally-open) lower bound and an (optionally-open) upper bound
+    struct FrameRange {
+        var lowerBound: Int?
+        var upperBound: Int?
+
+        public init(_ range: PartialRangeFrom<Int>) {
+            lowerBound = range.lowerBound
+            upperBound = nil
+        }
+
+        public init(_ range: PartialRangeThrough<Int>) {
+            lowerBound = nil
+            upperBound = range.upperBound
+        }
+
+        public init(_ range: ClosedRange<Int>) {
+            lowerBound = range.lowerBound
+            upperBound = range.upperBound
+        }
+
+        var windowFrame: [GG.WindowTransform.FrameItemChoice] {
+            [
+                lowerBound.map({ .init(.init($0)) }) ?? .null,
+                upperBound.map({ .init(.init($0)) }) ?? .null
+            ]
+        }
     }
 }
+
 
 extension GG.PivotTransform : VizTransformDefType {
     public var anyTransform: GG.DataTransformation { .init(self) }

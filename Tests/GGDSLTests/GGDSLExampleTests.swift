@@ -401,15 +401,12 @@ final class GGDSLExampleTests: XCTestCase {
     func test_area_cumulative_freq() throws {
         try check(viz: Graphiq {
             DataReference(path: "data/movies.json")
-            Transform(.window) {
+            Transform(.window, field: "count", op: .init(.count), frame: .init(...0), sort: [("IMDB Rating", nil)], output: "Cumulative Count") { ccountField in
                 Mark(.area) {
                     Encode(.x, field: "IMDB Rating").type(.quantitative)
-                    Encode(.y, field: "Cumulative Count").type(.quantitative)
+                    Encode(.y, field: ccountField).type(.quantitative)
                 }
             }
-            .window([GG.WindowFieldDef(as: .init("Cumulative Count"), field: .init("count"), op: .init(.count))])
-            .sort([.init(field: .init("IMDB Rating"))])
-            .frame([.init(nil), .init(0)])
         }
         , againstJSON: """
 {
@@ -546,56 +543,100 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
-    func test_area_gradient() throws {
+    func test_line_monotone() throws {
         try check(viz: Graphiq {
+            DataReference(path: "data/stocks.csv")
+            Transform(.filter, expression: "datum.symbol==='GOOG'") {
+                Mark(.line) {
+                    Encode(.x, field: "date").type(.temporal)
+                    Encode(.y, field: "price").type(.quantitative)
+                }
+                .interpolate(.monotone)
+            }
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "Google's stock price over time.",
-  "data": {
-    "url": "data/stocks.csv"
-  },
-  "transform": [
-    {
-      "filter": "datum.symbol==='GOOG'"
-    }
-  ],
+  "data": {"url": "data/stocks.csv"},
+  "transform": [{"filter": "datum.symbol==='GOOG'"}],
   "mark": {
-    "type": "area",
-    "line": {
-      "color": "darkgreen"
-    },
-    "color": {
-      "x1": 1,
-      "y1": 1,
-      "x2": 1,
-      "y2": 0,
-      "gradient": "linear",
-      "stops": [
-        {
-          "offset": 0,
-          "color": "white"
-        },
-        {
-          "offset": 1,
-          "color": "darkgreen"
-        }
-      ]
-    }
+    "type": "line",
+    "interpolate": "monotone"
   },
   "encoding": {
-    "x": {
-      "field": "date",
-      "type": "temporal"
-    },
-    "y": {
-      "field": "price",
-      "type": "quantitative"
-    }
+    "x": {"field": "date", "type": "temporal"},
+    "y": {"field": "price", "type": "quantitative"}
   }
 }
 """)
     }
+
+    func test_layer_line_rolling_mean_point_raw() throws {
+        try check(viz: Graphiq(width: 400, height: 300) {
+            DataReference(path: "data/seattle-weather.csv")
+            Transform(.window, field: "temp_max", op: .init(.mean), frame: .init(-15...15), output: "rolling_mean") { rolling_mean in
+                Layer {
+                    Encode(.x, field: "date")
+                        .type(.temporal)
+                        .title(.init("Date"))
+                    Encode(.y) {
+                        Guide().title(.init("Max Temperature and Rolling Mean"))
+                    }
+                    .type(.quantitative)
+
+                    Mark(.point) {
+                        Encode(.y, field: "temp_max") {
+                        }
+                        .title(.init("Max Temperature"))
+                    }
+                    .opacity(0.3)
+
+                    Mark(.line) {
+                        Encode(.y, field: rolling_mean)
+                            .title(.init("Rolling Mean of Max Temperature"))
+                    }
+                    .color(.init(.init("red")))
+                    .size(3)
+                }
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Plot showing a 30 day rolling average with raw values in the background.",
+  "width": 400,
+  "height": 300,
+  "data": {"url": "data/seattle-weather.csv"},
+  "transform": [{
+    "window": [
+      {
+        "field": "temp_max",
+        "op": "mean",
+        "as": "rolling_mean"
+      }
+    ],
+    "frame": [-15, 15]
+  }],
+  "encoding": {
+    "x": {"field": "date", "type": "temporal", "title": "Date"},
+    "y": {"type": "quantitative", "axis": {"title": "Max Temperature and Rolling Mean"}}
+  },
+  "layer": [
+    {
+      "mark": {"type": "point", "opacity": 0.3},
+      "encoding": {
+        "y": {"field": "temp_max", "title": "Max Temperature"}
+      }
+    },
+    {
+      "mark": {"type": "line", "color": "red", "size": 3},
+      "encoding": {
+        "y": {"field": "rolling_mean", "title": "Rolling Mean of Max Temperature"}
+      }
+    }
+  ]
+}
+""")
+    }
+
 
     func test_area_horizon() throws {
         try check(viz: Graphiq(width: 300, height: 50) {
@@ -1331,6 +1372,52 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
+    func test_line_dashed_part() throws {
+        try check(viz: Graphiq {
+            DataValues {
+                [
+                    ["a": "A", "b": 28, "predicted": false],
+                    ["a": "B", "b": 55, "predicted": false],
+                    ["a": "D", "b": 91, "predicted": false],
+                    ["a": "E", "b": 81, "predicted": false],
+                    ["a": "E", "b": 81, "predicted": true],
+                    ["a": "G", "b": 19, "predicted": true],
+                    ["a": "H", "b": 87, "predicted": true]
+                ]
+            }
+
+            Mark(.line) {
+                Encode(.x, field: "a").type(.ordinal)
+                Encode(.y, field: "b").type(.quantitative)
+                Encode(.strokeDash, field: "predicted").type(.nominal)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Line chart with a dashed part created by drawing multiple connecting lines. Note that the data source contains the data point at (E, 81) twice.",
+  "data": {
+    "values": [
+      {"a": "A", "b": 28, "predicted": false},
+      {"a": "B", "b": 55, "predicted": false},
+      {"a": "D", "b": 91, "predicted": false},
+      {"a": "E", "b": 81, "predicted": false},
+      {"a": "E", "b": 81, "predicted": true},
+      {"a": "G", "b": 19, "predicted": true},
+      {"a": "H", "b": 87, "predicted": true}
+    ]
+  },
+  "mark": "line",
+  "encoding": {
+    "x": {"field": "a", "type": "ordinal"},
+    "y": {"field": "b", "type": "quantitative"},
+    "strokeDash": {"field": "predicted", "type": "nominal"}
+  }
+}
+""")
+    }
+
+
+
 
     // MARK: Translation-in-Progress
 
@@ -1436,52 +1523,6 @@ final class GGDSLExampleTests: XCTestCase {
       }
     }
   ]
-}
-""")
-    }
-
-    func test_line_dashed_part() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "Line chart with a dashed part created by drawing multiple connecting lines. Note that the data source contains the data point at (E, 81) twice.",
-  "data": {
-    "values": [
-      {"a": "A", "b": 28, "predicted": false},
-      {"a": "B", "b": 55, "predicted": false},
-      {"a": "D", "b": 91, "predicted": false},
-      {"a": "E", "b": 81, "predicted": false},
-      {"a": "E", "b": 81, "predicted": true},
-      {"a": "G", "b": 19, "predicted": true},
-      {"a": "H", "b": 87, "predicted": true}
-    ]
-  },
-  "mark": "line",
-  "encoding": {
-    "x": {"field": "a", "type": "ordinal"},
-    "y": {"field": "b", "type": "quantitative"},
-    "strokeDash": {"field": "predicted", "type": "nominal"}
-  }
-}
-""")
-    }
-
-    func test_line_monotone() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "data": {"url": "data/stocks.csv"},
-  "transform": [{"filter": "datum.symbol==='GOOG'"}],
-  "mark": {
-    "type": "line",
-    "interpolate": "monotone"
-  },
-  "encoding": {
-    "x": {"field": "date", "type": "temporal"},
-    "y": {"field": "price", "type": "quantitative"}
-  }
 }
 """)
     }
