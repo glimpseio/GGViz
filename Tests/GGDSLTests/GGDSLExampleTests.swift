@@ -695,6 +695,190 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
+    func test_bar_size_responsive() throws {
+        try check(viz: Graphiq(height: 250) {
+            DataReference(path: "data/cars.json")
+            Mark(.bar) {
+                Encode(.x, field: "Origin")
+                Encode(.y)
+                    .aggregate(.init(.count))
+                    .title(.init(.init("Number of Cars")))
+            }
+        }
+        .width(.init(.container)), againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": "container",
+  "height": 250,
+  "data": {"url": "data/cars.json"},
+  "mark": "bar",
+  "encoding": {
+    "x": {"field": "Origin"},
+    "y": {"aggregate": "count", "title": "Number of Cars"}
+  }
+}
+""")
+    }
+
+    func test_line() throws {
+        try check(viz: Graphiq(description: "Google's stock price over time.") {
+            DataReference(path: "data/stocks.csv")
+            Transform(.filter, expression: "datum.symbol==='GOOG'") {
+                Mark(.line) {
+                    Encode(.x, field: "date")
+                        .type(.temporal)
+                    Encode(.y, field: "price")
+                        .type(.quantitative)
+                }
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Google's stock price over time.",
+  "data": {"url": "data/stocks.csv"},
+  "transform": [{"filter": "datum.symbol==='GOOG'"}],
+  "mark": "line",
+  "encoding": {
+    "x": {"field": "date", "type": "temporal"},
+    "y": {"field": "price", "type": "quantitative"}
+  }
+}
+""")
+    }
+
+    func test_line_color() throws {
+        try check(viz: Graphiq(description: "Stock prices of 5 Tech Companies over Time.") {
+            DataReference(path: "data/stocks.csv")
+            Mark(.line) {
+                Encode(.x, field: "date")
+                    .type(.temporal)
+                Encode(.y, field: "price")
+                    .type(.quantitative)
+                Encode(.color, field: "symbol")
+                    .type(.nominal)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Stock prices of 5 Tech Companies over Time.",
+  "data": {"url": "data/stocks.csv"},
+  "mark": "line",
+  "encoding": {
+    "x": {"field": "date", "type": "temporal"},
+    "y": {"field": "price", "type": "quantitative"},
+    "color": {"field": "symbol", "type": "nominal"}
+  }
+}
+""")
+    }
+
+    func test_line_strokedash() throws {
+        try check(viz: Graphiq(description: "Stock prices of 5 Tech Companies over Time.") {
+            DataReference(path: "data/stocks.csv")
+            Mark(.line) {
+                Encode(.x, field: "date")
+                    .type(.temporal)
+                Encode(.y, field: "price")
+                    .type(.quantitative)
+                Encode(.strokeDash, field: "symbol")
+                    .type(.nominal)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Stock prices of 5 Tech Companies over Time.",
+  "data": {"url": "data/stocks.csv"},
+  "mark": "line",
+  "encoding": {
+    "x": {"field": "date", "type": "temporal"},
+    "y": {"field": "price", "type": "quantitative"},
+    "strokeDash": {"field": "symbol", "type": "nominal"}
+  }
+}
+""")
+    }
+
+    func test_point_bubble() throws {
+        try check(viz: Graphiq(description: "A bubbleplot showing horsepower on x, miles per gallons on y, and binned acceleration on size.") {
+            DataReference(path: "data/cars.json")
+            Mark(.point) {
+                Encode(.x, field: "Horsepower")
+                    .type(.quantitative)
+                Encode(.y, field: "Miles_per_Gallon")
+                    .type(.quantitative)
+                Encode(.size, field: "Acceleration")
+                    .type(.quantitative)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "A bubbleplot showing horsepower on x, miles per gallons on y, and binned acceleration on size.",
+  "data": {"url": "data/cars.json"},
+  "mark": "point",
+  "encoding": {
+    "x": {"field": "Horsepower", "type": "quantitative"},
+    "y": {"field": "Miles_per_Gallon", "type": "quantitative"},
+    "size": {"field": "Acceleration", "type": "quantitative"}
+  }
+}
+""")
+    }
+
+    func test_trellis_scatter() throws {
+        try check(viz: Graphiq() {
+            DataReference(path: "data/movies.json")
+            Mark(.point) {
+                Encode(.x, field: "Worldwide Gross")
+                    .type(.quantitative)
+                Encode(.y, field: "US DVD Sales")
+                    .type(.quantitative)
+                Encode(.facet, field: "MPAA Rating")
+                    .type(.ordinal)
+                    .columns(2)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "data/movies.json"},
+  "mark": "point",
+
+  "encoding": {
+    "facet": {"field": "MPAA Rating", "type": "ordinal", "columns": 2},
+    "x": {"field": "Worldwide Gross", "type": "quantitative"},
+    "y": {"field": "US DVD Sales", "type": "quantitative"}
+  }
+}
+""")
+    }
+
+    func test_trellis_stacked_bar() throws {
+        try check(viz: Graphiq() {
+            DataReference(path: "data/barley.json")
+            Mark(.bar) {
+                Encode(.column, field: "year")
+                Encode(.x, field: "yield")
+                    .type(.quantitative)
+                    .aggregate(.sum)
+                Encode(.y, field: "variety")
+                    .type(.nominal)
+                Encode(.color, field: "site")
+                    .type(.nominal)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "data/barley.json"},
+  "mark": "bar",
+  "encoding": {
+    "column": {"field": "year"},
+    "x": {"field": "yield", "type": "quantitative", "aggregate": "sum"},
+    "y": {"field": "variety", "type": "nominal"},
+    "color": {"field": "site", "type": "nominal"}
+  }
+}
+""")
+    }
+
     func test_area_overlay() throws {
         try check(viz: Graphiq(description: "Google's stock price over time.") {
             DataReference(path: "data/stocks.csv")
@@ -716,6 +900,160 @@ final class GGDSLExampleTests: XCTestCase {
   "encoding": {
     "x": {"field": "date", "type": "temporal"},
     "y": {"field": "price", "type": "quantitative"}
+  }
+}
+""")
+    }
+
+    func test_tick_dot() throws {
+        try check(viz: Graphiq {
+            DataReference(path: "data/seattle-weather.csv")
+            Mark(.tick) {
+                Encode(.x, field: "precipitation").type(.quantitative)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "data/seattle-weather.csv"},
+  "mark": "tick",
+  "encoding": {
+    "x": {"field": "precipitation", "type": "quantitative"}
+  }
+}
+""")
+    }
+
+    func test_circle() throws {
+        try check(viz: Graphiq() {
+            DataReference(path: "data/cars.json")
+            Mark(.circle) {
+                Encode(.x, field: "Horsepower").type(.quantitative)
+                Encode(.y, field: "Miles_per_Gallon").type(.quantitative)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "data/cars.json"},
+  "mark": "circle",
+  "encoding": {
+    "x": {"field": "Horsepower", "type": "quantitative"},
+    "y": {"field": "Miles_per_Gallon", "type": "quantitative"}
+  }
+}
+""")
+    }
+
+    func test_tick_strip() throws {
+        try check(viz: Graphiq(description: "Shows the relationship between horsepower and the number of cylinders using tick marks.") {
+            DataReference(path: "data/cars.json")
+            Mark(.tick) {
+                Encode(.x, field: "Horsepower").type(.quantitative)
+                Encode(.y, field: "Cylinders").type(.ordinal)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "Shows the relationship between horsepower and the number of cylinders using tick marks.",
+  "data": {"url": "data/cars.json"},
+  "mark": "tick",
+  "encoding": {
+    "x": {"field": "Horsepower", "type": "quantitative"},
+    "y": {"field": "Cylinders", "type": "ordinal"}
+  }
+}
+""")
+    }
+
+    func test_point_2d() throws {
+        try check(viz: Graphiq(description: "A scatterplot showing horsepower and miles per gallons for various cars.") {
+            DataReference(path: "data/cars.json")
+            Mark(.point) {
+                Encode(.x, field: "Horsepower").type(.quantitative)
+                Encode(.y, field: "Miles_per_Gallon").type(.quantitative)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "A scatterplot showing horsepower and miles per gallons for various cars.",
+  "data": {"url": "data/cars.json"},
+  "mark": "point",
+  "encoding": {
+    "x": {"field": "Horsepower", "type": "quantitative"},
+    "y": {"field": "Miles_per_Gallon", "type": "quantitative"}
+  }
+}
+""")
+    }
+
+    func test_stacked_bar_count_corner_radius_mark() throws {
+        try check(viz: Graphiq() {
+            DataReference(path: "data/seattle-weather.csv")
+            Mark(.bar) {
+                Encode(.x, field: "date").type(.ordinal).timeUnit(.init(.init(.month)))
+                Encode(.y).aggregate(.init(.count))
+                Encode(.color, field: "weather")
+            }
+            .cornerRadiusTopLeft(3)
+            .cornerRadiusTopRight(3)
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "data/seattle-weather.csv"},
+  "mark": {"type": "bar", "cornerRadiusTopLeft": 3, "cornerRadiusTopRight": 3},
+  "encoding": {
+    "x": {"timeUnit": "month", "field": "date", "type": "ordinal"},
+    "y": {"aggregate": "count"},
+    "color": {"field": "weather"}
+  }
+}
+""")
+    }
+
+    func test_stacked_bar_h() throws {
+        try check(viz: Graphiq() {
+            DataReference(path: "data/barley.json")
+            Mark(.bar) {
+                Encode(.x, field: "yield").aggregate(.init(.sum))
+                Encode(.y, field: "variety")
+                Encode(.color, field: "site")
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": {"url": "data/barley.json"},
+  "mark": "bar",
+  "encoding": {
+    "x": {"aggregate": "sum", "field": "yield"},
+    "y": {"field": "variety"},
+    "color": {"field": "site"}
+  }
+}
+""")
+    }
+
+    func test_bar_argmax() throws {
+        try check(viz: Graphiq(description: "The production budget of the movie that has the highest US Gross in each major genre.") {
+            DataReference(path: "data/movies.json")
+            Mark(.bar) {
+                Encode(.x, field: "Production Budget")
+                    .type(.quantitative)
+                    .aggregate(.init(GG.ArgmaxDef(argmax: .init("US Gross"))))
+                Encode(.y, field: "Major Genre")
+                    .type(.nominal)
+            }
+        }, againstJSON: """
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "description": "The production budget of the movie that has the highest US Gross in each major genre.",
+  "data": {"url": "data/movies.json"},
+  "mark": "bar",
+  "encoding": {
+    "x": {
+      "aggregate": {"argmax": "US Gross"},
+      "field": "Production Budget",
+      "type": "quantitative"
+    },
+    "y": {"field": "Major Genre", "type": "nominal"}
   }
 }
 """)
@@ -763,26 +1101,6 @@ final class GGDSLExampleTests: XCTestCase {
       "field": "people",
       "title": "population"
     }
-  }
-}
-""")
-    }
-
-    func test_bar_argmax() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "The production budget of the movie that has the highest US Gross in each major genre.",
-  "data": {"url": "data/movies.json"},
-  "mark": "bar",
-  "encoding": {
-    "x": {
-      "aggregate": {"argmax": "US Gross"},
-      "field": "Production Budget",
-      "type": "quantitative"
-    },
-    "y": {"field": "Major Genre", "type": "nominal"}
   }
 }
 """)
@@ -1403,23 +1721,6 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
-    func test_bar_size_responsive() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "width": "container",
-  "height": 250,
-  "data": {"url": "data/cars.json"},
-  "mark": "bar",
-  "encoding": {
-    "x": {"field": "Origin"},
-    "y": {"aggregate": "count", "title": "Number of Cars"}
-  }
-}
-""")
-    }
-
     func test_boxplot_2D_vertical() throws {
         try check(viz: Graphiq {
         }, againstJSON: """
@@ -1587,21 +1888,6 @@ final class GGDSLExampleTests: XCTestCase {
     }]
   }],
   "resolve": {"legend": {"color": "independent"}}
-}
-""")
-    }
-
-    func test_circle() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "data": {"url": "data/cars.json"},
-  "mark": "circle",
-  "encoding": {
-    "x": {"field": "Horsepower", "type": "quantitative"},
-    "y": {"field": "Miles_per_Gallon", "type": "quantitative"}
-  }
 }
 """)
     }
@@ -6014,23 +6300,6 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
-    func test_line() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "Google's stock price over time.",
-  "data": {"url": "data/stocks.csv"},
-  "transform": [{"filter": "datum.symbol==='GOOG'"}],
-  "mark": "line",
-  "encoding": {
-    "x": {"field": "date", "type": "temporal"},
-    "y": {"field": "price", "type": "quantitative"}
-  }
-}
-""")
-    }
-
     func test_line_bump() throws {
         try check(viz: Graphiq {
         }, againstJSON: """
@@ -6062,23 +6331,6 @@ final class GGDSLExampleTests: XCTestCase {
     "x": {"field": "build", "type": "quantitative"},
     "y": {"field": "result", "type": "nominal"},
     "order": {"field": "build", "type": "quantitative"}
-  }
-}
-""")
-    }
-
-    func test_line_color() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "Stock prices of 5 Tech Companies over Time.",
-  "data": {"url": "data/stocks.csv"},
-  "mark": "line",
-  "encoding": {
-    "x": {"field": "date", "type": "temporal"},
-    "y": {"field": "price", "type": "quantitative"},
-    "color": {"field": "symbol", "type": "nominal"}
   }
 }
 """)
@@ -6345,23 +6597,6 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
-    func test_line_strokedash() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "Stock prices of 5 Tech Companies over Time.",
-  "data": {"url": "data/stocks.csv"},
-  "mark": "line",
-  "encoding": {
-    "x": {"field": "date", "type": "temporal"},
-    "y": {"field": "price", "type": "quantitative"},
-    "strokeDash": {"field": "symbol", "type": "nominal"}
-  }
-}
-""")
-    }
-
     func test_lookup() throws {
         try check(viz: Graphiq {
         }, againstJSON: """
@@ -6547,22 +6782,6 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
-    func test_point_2d() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "A scatterplot showing horsepower and miles per gallons for various cars.",
-  "data": {"url": "data/cars.json"},
-  "mark": "point",
-  "encoding": {
-    "x": {"field": "Horsepower", "type": "quantitative"},
-    "y": {"field": "Miles_per_Gallon", "type": "quantitative"}
-  }
-}
-""")
-    }
-
     func test_point_angle_windvector() throws {
         try check(viz: Graphiq {
         }, againstJSON: """
@@ -6597,23 +6816,6 @@ final class GGDSLExampleTests: XCTestCase {
   "config": {
     "aria": false,
     "view": {"step": 10, "fill": "black"}
-  }
-}
-""")
-    }
-
-    func test_point_bubble() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "A bubbleplot showing horsepower on x, miles per gallons on y, and binned acceleration on size.",
-  "data": {"url": "data/cars.json"},
-  "mark": "point",
-  "encoding": {
-    "x": {"field": "Horsepower", "type": "quantitative"},
-    "y": {"field": "Miles_per_Gallon", "type": "quantitative"},
-    "size": {"field": "Acceleration", "type": "quantitative"}
   }
 }
 """)
@@ -7514,38 +7716,6 @@ final class GGDSLExampleTests: XCTestCase {
 """)
     }
 
-    func test_stacked_bar_count_corner_radius_mark() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "data": {"url": "data/seattle-weather.csv"},
-  "mark": {"type": "bar", "cornerRadiusTopLeft": 3, "cornerRadiusTopRight": 3},
-  "encoding": {
-    "x": {"timeUnit": "month", "field": "date", "type": "ordinal"},
-    "y": {"aggregate": "count"},
-    "color": {"field": "weather"}
-  }
-}
-""")
-    }
-
-    func test_stacked_bar_h() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "data": {"url": "data/barley.json"},
-  "mark": "bar",
-  "encoding": {
-    "x": {"aggregate": "sum", "field": "yield"},
-    "y": {"field": "variety"},
-    "color": {"field": "site"}
-  }
-}
-""")
-    }
-
     func test_stacked_bar_normalize() throws {
         try check(viz: Graphiq {
         }, againstJSON: """
@@ -7622,36 +7792,6 @@ final class GGDSLExampleTests: XCTestCase {
     "y": {"field": "Miles_per_Gallon", "type": "quantitative"},
     "color": {"field": "Origin", "type": "nominal"},
     "text": {"field": "OriginInitial", "type": "nominal"}
-  }
-}
-""")
-    }
-
-    func test_tick_dot() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "data": {"url": "data/seattle-weather.csv"},
-  "mark": "tick",
-  "encoding": {
-    "x": {"field": "precipitation", "type": "quantitative"}
-  }
-}
-""")
-    }
-
-    func test_tick_strip() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "description": "Shows the relationship between horsepower and the number of cylinders using tick marks.",
-  "data": {"url": "data/cars.json"},
-  "mark": "tick",
-  "encoding": {
-    "x": {"field": "Horsepower", "type": "quantitative"},
-    "y": {"field": "Cylinders", "type": "ordinal"}
   }
 }
 """)
@@ -7914,40 +8054,6 @@ final class GGDSLExampleTests: XCTestCase {
       "sort": "-x"
     },
     "color": {"field": "year", "type": "nominal"}
-  }
-}
-""")
-    }
-
-    func test_trellis_scatter() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "data": {"url": "data/movies.json"},
-  "mark": "point",
-
-  "encoding": {
-    "facet": {"field": "MPAA Rating", "type": "ordinal", "columns": 2},
-    "x": {"field": "Worldwide Gross", "type": "quantitative"},
-    "y": {"field": "US DVD Sales", "type": "quantitative"}
-  }
-}
-""")
-    }
-
-    func test_trellis_stacked_bar() throws {
-        try check(viz: Graphiq {
-        }, againstJSON: """
-{
-  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
-  "data": {"url": "data/barley.json"},
-  "mark": "bar",
-  "encoding": {
-    "column": {"field": "year"},
-    "x": {"field": "yield", "type": "quantitative", "aggregate": "sum"},
-    "y": {"field": "variety", "type": "nominal"},
-    "color": {"field": "site", "type": "nominal"}
   }
 }
 """)
