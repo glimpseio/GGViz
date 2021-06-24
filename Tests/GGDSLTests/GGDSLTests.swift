@@ -607,28 +607,34 @@ final class GGDSLTests: XCTestCase {
         _ = Graphiq {
             VizTheme()
                 .font("serif")
-                .title(.init(fontSize: .init(GG.ExprRef(expr: GG.Expr("width * 0.05")))))
-            
+//                .title(.init(fontSize: .init(GG.ExprRef(expr: GG.Expr("width * 0.05")))))
+
 
             Mark(.arc)
             Mark(.area)
             Mark(.geoshape)
             Mark(.text)
             Mark(.boxplot)
+        }
 
+        _ = Graphiq {
             Mark(.bar) {
                 do {
                     Encode(.x)
 
-                    Encode(.x).aggregate(GG.Aggregate(GG.NonArgAggregateOp.average))
+                    Encode(.x).aggregate(.average)
 
                     Encode(.x, field: "a")
                     Encode(.x, value: .width)
                     Encode(.x, value: 22)
                     Encode(.x, datum: 22)
                     Encode(.x, expression: "1+2")
-                    Encode(.x, repeat: GG.RepeatRef(repeat: .column))
+                    //Encode(.x, repeat: GG.RepeatRef(repeat: .column))
                 }
+            }
+        }
+        _ = Graphiq {
+            Mark(.bar) {
 
                 do {
                     Encode(.y)
@@ -637,7 +643,7 @@ final class GGDSLTests: XCTestCase {
                     Encode(.y, value: 22)
                     Encode(.y, datum: 22)
                     Encode(.y, expression: "1+2")
-                    Encode(.y, repeat: GG.RepeatRef(repeat: .row))
+                    //Encode(.y, repeat: GG.RepeatRef(repeat: .row))
                 }
 
                 do {
@@ -659,7 +665,11 @@ final class GGDSLTests: XCTestCase {
                     Encode(.x2)
                     Encode(.x2, field: "FIELD")
                 }
+            }
+        }
 
+        _ = Graphiq {
+            Mark(.bar) {
                 do {
                     Encode(.y2)
                     Encode(.y2, field: "FIELD")
@@ -667,7 +677,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.latitude)
-                    Encode(.latitude, field: GG.FieldName("FIELD"))
+                    Encode(.latitude, field: "FIELD")
                     Encode(.latitude, datum: nil)
                     Encode(.latitude, datum: "X")
                     Encode(.latitude, datum: 1)
@@ -675,7 +685,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.latitude2)
-                    Encode(.latitude2, field: GG.FieldName("FIELD"))
+                    Encode(.latitude2, field: "FIELD")
                     Encode(.latitude2, datum: nil)
                     Encode(.latitude2, datum: "X")
                     Encode(.latitude2, datum: 1)
@@ -683,15 +693,19 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.longitude)
-                    Encode(.longitude, field: GG.FieldName("FIELD"))
+                    Encode(.longitude, field: "FIELD")
                     Encode(.longitude, datum: nil)
                     Encode(.longitude, datum: "X")
                     Encode(.longitude, datum: 1)
                 }
+            }
+        }
 
+        _ = Graphiq {
+            Mark(.bar) {
                 do {
                     Encode(.longitude2)
-                    Encode(.longitude2, field: GG.FieldName("FIELD"))
+                    Encode(.longitude2, field: "FIELD")
                     Encode(.longitude2, datum: nil)
                     Encode(.longitude2, datum: "X")
                     Encode(.longitude2, datum: 1)
@@ -699,7 +713,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.href)
-                    Encode(.href, field: GG.FieldName("FIELD"))
+                    Encode(.href, field: "FIELD")
                     Encode(.href, value: nil)
                     Encode(.href, value: .null)
                     Encode(.href, value: "https://www.example.org")
@@ -708,16 +722,19 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.url)
-                    Encode(.url, field: GG.FieldName("FIELD"))
+                    Encode(.url, field: "FIELD")
                     Encode(.url, value: nil)
                     Encode(.url, value: .null)
                     Encode(.url, value: "https://www.example.org")
                     Encode(.url, expr: .init(expr: GG.Expr("'https://' + 'whatever.net'")))
                 }
-
+            }
+        }
+        _ = Graphiq {
+            Mark(.bar) {
                 do {
                     Encode(.description)
-                    Encode(.description, field: GG.FieldName("FIELD"))
+                    Encode(.description, field: "FIELD")
                     Encode(.description, value: nil)
                     Encode(.description, value: .null) // same
                     Encode(.description, value: "Description")
@@ -726,13 +743,13 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.strokeDash)
-                    Encode(.strokeDash, field: GG.FieldName("FIELD"))
+                    Encode(.strokeDash, field: "FIELD")
                     Encode(.strokeDash, value: [1, 2, 3])
                 }
 
                 do {
                     Encode(.description)
-                    Encode(.description, field: GG.FieldName("FIELD"))
+                    Encode(.description, field: "FIELD")
                     Encode(.description, value: nil)
                     Encode(.description, value: .null)
                     Encode(.description, value: "Accessible Description")
@@ -740,7 +757,7 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.url)
-                    Encode(.url, field: GG.FieldName("FIELD"))
+                    Encode(.url, field: "FIELD")
                     Encode(.url, value: nil)
                     Encode(.url, value: .null)
                     Encode(.url, value: "https://www.example.org/image.png")
@@ -748,16 +765,19 @@ final class GGDSLTests: XCTestCase {
 
                 do {
                     Encode(.key)
-                    Encode(.key, field: GG.FieldName("FIELD")) // key only permits field encodings
+                    Encode(.key, field: "FIELD") // key only permits field encodings
                 }
 
                 do {
                     Encode(.shape)
-                    Encode(.shape, field: GG.FieldName("FIELD"))
+                    Encode(.shape, field: "FIELD")
                     Encode(.shape, value: nil)
                     Encode(.shape, value: GG.SymbolShape.circle)
                 }
-
+            }
+        }
+        _ = Graphiq {
+            Mark(.bar) {
                 do {
                     Encode(.detail)
                     Encode(.detail, field: "ABC")
@@ -795,7 +815,10 @@ final class GGDSLTests: XCTestCase {
                     Encode(.color, value: "red")
                     //Encode(.color, value: .init(.init(.steelblue)))
                 }
-
+            }
+        }
+        _ = Graphiq {
+            Mark(.bar) {
                 do {
                     Encode(.size)
                     Encode(.size, field: GG.FieldName("dc"))
@@ -803,28 +826,28 @@ final class GGDSLTests: XCTestCase {
                         .title(.init("Colorful"))
                     Encode(.size, value: 33)
                 }
+            }
+        }
 
-                Encode(.x, field: GG.FieldName("a"))
+        _ = Graphiq {
+            Mark(.bar) {
+                Encode(.x, field: "a")
                     .type(.nominal)
                     .aggregate(.sum)
                     .axis(nil)
 
-                Encode(.y)
-                    .field(GG.SourceColumnRef(GG.FieldName("b")))
+                Encode(.y, field: "b")
                     .type(.quantitative)
                     .bandPosition(11)
 
-                Encode(.color, field: GG.FieldName("c"))
+                Encode(.color, field: "c")
                     .legend(nil)
                     .type(.ordinal)
 
                 Encode(.size, datum: 44)
 
             }
-            .cornerRadius(10)
         }
-        .title(.init("Bar Chart"))
-        .description("A simple bar chart with embedded data.")
     }
 
     func testExpressions() throws {

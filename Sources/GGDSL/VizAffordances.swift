@@ -557,6 +557,14 @@ public extension GG.Aggregate {
     static let values = Self(GG.NonArgAggregateOp.values)
     /// Pass-through for `NonArgAggregateOp.distinct`
     static let product = Self(GG.NonArgAggregateOp.product)
+
+    static func argmax(_ field: FieldNameRepresentable) -> Self {
+        Self(GG.ArgmaxDef(argmax: field.fieldName))
+    }
+
+    static func argmin(_ field: FieldNameRepresentable) -> Self {
+        Self(GG.ArgminDef(argmin: field.fieldName))
+    }
 }
 
 public extension GG.UtcSingleTimeUnit {

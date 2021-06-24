@@ -1,13 +1,7 @@
-//
-//  File.swift
-//  
-//
-//  Created by Marc Prud'hommeaux on 6/24/21.
-//
-
+import XCTest
 import GGDSL
 
-extension GGDSLExampleTests {
+final class GGDSLScratchTests : XCTestCase {
 
 
     func test_layer_precipitation_mean() throws {
@@ -61,15 +55,13 @@ extension GGDSLExampleTests {
 
     func test_line_overlay() throws {
         try check(viz: Graphiq {
-            //DataReference(path: "XXX/XXX")
-            //Layer {
-            //    Mark(.XXX) {
-            //        Encode(.XXX, field: "XXX") {
-            //            Guide()
-            //            Scale()
-            //        }
-            //    }
-            //}
+            DataReference(path: "data/stocks.csv")
+            Mark(.line) {
+                Encode(.x, field: "date").timeUnit(.year)
+                Encode(.y, field: "price").type(.quantitative).aggregate(.mean)
+                Encode(.color, field: "symbol").type(.nominal)
+            }
+            .point(true)
         }, againstJSON: """
 {
   "$schema": "https://vega.github.io/schema/vega-lite/v5.json",

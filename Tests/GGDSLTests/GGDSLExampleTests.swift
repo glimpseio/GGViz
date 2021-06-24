@@ -273,9 +273,9 @@ final class GGDSLExampleTests: XCTestCase {
                     Guide()
                         .format("%Y")
                 }
-                .timeUnit(.init(.init(.yearmonth)))
+                .timeUnit(.yearmonth)
                 Encode(.y, field: "count")
-                    .aggregate(.init(.sum))
+                    .aggregate(.sum)
                     .title(.init("count"))
 
             }
@@ -645,7 +645,7 @@ final class GGDSLExampleTests: XCTestCase {
             Mark(.bar) {
                 Encode(.x, field: "Origin")
                 Encode(.y)
-                    .aggregate(.init(.count))
+                    .aggregate(.count)
                     .title(.init(.init("Number of Cars")))
             }
         }
@@ -933,8 +933,8 @@ final class GGDSLExampleTests: XCTestCase {
         try check(viz: Graphiq() {
             DataReference(path: "data/seattle-weather.csv")
             Mark(.bar) {
-                Encode(.x, field: "date").type(.ordinal).timeUnit(.init(.init(.month)))
-                Encode(.y).aggregate(.init(.count))
+                Encode(.x, field: "date").type(.ordinal).timeUnit(.month)
+                Encode(.y).aggregate(.count)
                 Encode(.color, field: "weather")
             }
             .cornerRadiusTopLeft(3)
@@ -957,7 +957,7 @@ final class GGDSLExampleTests: XCTestCase {
         try check(viz: Graphiq() {
             DataReference(path: "data/barley.json")
             Mark(.bar) {
-                Encode(.x, field: "yield").aggregate(.init(.sum))
+                Encode(.x, field: "yield").aggregate(.sum)
                 Encode(.y, field: "variety")
                 Encode(.color, field: "site")
             }
@@ -981,7 +981,7 @@ final class GGDSLExampleTests: XCTestCase {
             Mark(.bar) {
                 Encode(.x, field: "Production Budget")
                     .type(.quantitative)
-                    .aggregate(.init(GG.ArgmaxDef(argmax: .init("US Gross"))))
+                    .aggregate(.argmax("US Gross"))
                 Encode(.y, field: "Major Genre")
                     .type(.nominal)
             }
@@ -1008,7 +1008,7 @@ final class GGDSLExampleTests: XCTestCase {
             DataReference(path: "data/movies.json")
             Mark(.bar) {
                 Encode(.x, field: "IMDB Rating").bin(.init(true))
-                Encode(.y).aggregate(.init(.count))
+                Encode(.y).aggregate(.count)
             }
         }, againstJSON: """
 {
@@ -1041,7 +1041,7 @@ final class GGDSLExampleTests: XCTestCase {
                                     Scale().type(.log).base(10)
                                 }
                                 Encode(.x2, field: x2)
-                                Encode(.y).aggregate(.init(.count))
+                                Encode(.y).aggregate(.count)
                             }
                         }
                     }
@@ -1153,13 +1153,13 @@ final class GGDSLExampleTests: XCTestCase {
                         Scale().domain(0...10)
                     }
                     .title(.init("Mean IMDB Ratings"))
-                    .aggregate(.init(.mean))
+                    .aggregate(.mean)
                 }
                 .color(.init(GG.HexColor(rawValue: "#ddd")))
 
                 Mark(.text) {
                     Encode(.text, field: "Major Genre")
-                    Encode(.detail).aggregate(.init(.count))
+                    Encode(.detail).aggregate(.count)
                 }
                 .align(.left)
                 .x(5)
@@ -1206,10 +1206,10 @@ final class GGDSLExampleTests: XCTestCase {
             Layer {
                 Mark(.bar) {
                     Encode(.x, field: "IMDB Rating").bin(.init(true))
-                    Encode(.y).aggregate(.init(.count))
+                    Encode(.y).aggregate(.count)
                 }
                 Mark(.rule) {
-                    Encode(.x, field: "IMDB Rating").aggregate(.init(.mean))
+                    Encode(.x, field: "IMDB Rating").aggregate(.mean)
                     Encode(.color, value: "red")
                     Encode(.size, value: 5)
                 }
@@ -1242,13 +1242,13 @@ final class GGDSLExampleTests: XCTestCase {
             Transform(.filter, expression: "datum.symbol==='GOOG'") {
                 Layer {
                     Mark(.point) {
-                        Encode(.x, field: "date").timeUnit(.init(.init(.year)))
+                        Encode(.x, field: "date").timeUnit(.year)
                         Encode(.y, field: "price").type(.quantitative)
                     }
                     .opacity(0.3)
                     Mark(.line) {
-                        Encode(.x, field: "date").timeUnit(.init(.init(.year)))
-                        Encode(.y, field: "price").aggregate(.init(.mean))
+                        Encode(.x, field: "date").timeUnit(.year)
+                        Encode(.y, field: "price").aggregate(.mean)
                     }
                 }
             }
@@ -1329,7 +1329,7 @@ final class GGDSLExampleTests: XCTestCase {
                         Scale().zero(false)
                     }
                     .type(.quantitative)
-                    .aggregate(.init(.mean))
+                    .aggregate(.mean)
                     .title(.init("Barley Yield"))
 
                     Encode(.color, value: "black")
@@ -1383,7 +1383,7 @@ final class GGDSLExampleTests: XCTestCase {
                         Scale().zero(false)
                     }
                     .type(.quantitative)
-                    .aggregate(.init(.mean))
+                    .aggregate(.mean)
                     .title(.init("Barley Yield"))
 
                     Encode(.color, value: "black")
@@ -1947,7 +1947,7 @@ final class GGDSLExampleTests: XCTestCase {
         try check(viz: Graphiq {
             DataReference(path: "data/stocks.csv")
             Mark(.line) {
-                Encode(.x, field: "date").timeUnit(.init(.init(.year)))
+                Encode(.x, field: "date").timeUnit(.year)
                 Encode(.y, field: "price").type(.quantitative).aggregate(.mean)
                 Encode(.color, field: "symbol").type(.nominal)
             }
