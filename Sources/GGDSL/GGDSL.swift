@@ -195,9 +195,6 @@ extension EncapsulatedPropertyRouter {
     }
 
 
-
-
-
     /// Assigns the given  value to the keyPath using the specific transform function
     @usableFromInline func assigning<T, U>(value: T, to keyPath: WritableKeyPath<RawValue, U>, with transform: (T) throws -> (U)) rethrows -> Self {
         var this = self
