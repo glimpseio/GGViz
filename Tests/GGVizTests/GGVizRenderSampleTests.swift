@@ -86,7 +86,6 @@ final class GGVizRenderSampleTests: XCTestCase {
                     XCTAssertTrue(svg == refSVG, "SVG mismatch for \(sample): \(svg.count) vs \(refSVG.count); manually resolve by copying \(svgOutput.path) \(referenceSVG.path)")
                 }
             }
-
         }
     }
     
