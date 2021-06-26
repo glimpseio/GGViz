@@ -30,12 +30,26 @@ public protocol FluentContainer {
 
 /// A wrapper around an arbitrary instance that exposes fluent-style
 /// function properties for all of the writable key paths of the raw value.
+@dynamicMemberLookup
 @frozen public struct Fluent<RawValue> : RawIsomorphism, FluentContainer {
     public var rawValue: RawValue
+
+    public init(_ rawValue: RawValue) {
+        self.rawValue = rawValue
+    }
 
     public init(rawValue: RawValue) {
         self.rawValue = rawValue
     }
+}
+
+public extension Pure {
+    // not working; spec.fluent.f(x) doesn't modify the underlying spec; use mutating get?
+//    /// Exposes a `Fluent` interface to the given instance
+//    @inlinable var fluent: Fluent<Self> {
+//        mutating get { Fluent(self) }
+//        set { self = newValue.rawValue }
+//    }
 }
 
 extension FluentContainer {

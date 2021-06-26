@@ -4,13 +4,15 @@ import GGViz
 import Judo
 import MiscKit
 import BricBrac
+import GGSources
+import GGSamples
 
 /// A running count of all the contexts that have been created and not destroyed
 private final class VizEngineDebug : VizEngine {
     static var liveContexts = 0
 
-    override init(ctx: JXContext = JXContext()) throws {
-        try super.init(ctx: ctx)
+    override init(ctx: JXContext = JXContext(), fetcher: DataFetcher? = nil) throws {
+        try super.init(ctx: ctx, fetcher: fetcher)
         Self.liveContexts += 1
     }
 
@@ -212,7 +214,6 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    //@available(macOS 10.12, iOS 10.0, tvOS 10.0, *)
     func testReadData() throws {
         let gve = try VizEngineDebug()
 
@@ -236,6 +237,57 @@ final class GGVizTests: XCTestCase {
 
     }
 
+    func testFetchLoader() throws {
+        let gve = try VizEngineDebug(fetcher: { ctx, url, opts in
+            // opts e.g.: {"context":"dataflow","response":"text"}
+            dbg("fetching", url, "options", opts?.jsonDebugDescription ?? ".none")
+
+            // load the URL, either relative ("data/stocks.csv") or absolute
+            if let uurl = URL(string: url) {
+                dbg("uurl:", uurl, uurl.isFileURL, "scheme:", uurl.scheme)
+
+                // check if it is an official sample
+                let comps = uurl.pathComponents
+                dbg(comps)
+                if uurl.scheme == nil && comps.count == 2 && comps.first == "data", let source = GGSource(rawValue: uurl.lastPathComponent), let resourceURL = source.resourceURL {
+                    return try Data(contentsOf: resourceURL)
+                }
+            }
+
+            return nil
+        })
+
+        var spec = SimpleVizSpec()
+
+        #warning("WIP: load relative data")
+        spec.data = .init(.init(.init(GG.UrlData(url: "data/airports.csv"))))
+        spec.data = .init(.init(.init(GG.InlineData(values: .init([ ["A": 1], ["B": 2], ])))))
+
+        spec.mark = .init(.bar)
+
+        let rendered = try gve.renderViz(spec: spec, returnData: true, returnSVG: true, returnScenegraph: false, canvas: nil)
+
+
+        dbg("rendered:", rendered.properties)
+        let renderedData = rendered[VizEngine.RenderResponseKey.data.rawValue]
+
+        guard renderedData.isObject else {
+            return XCTFail("renderedData \(renderedData) not an object")
+        }
+        dbg("renderedData:", renderedData)
+
+        let source_0 = renderedData["source_0"]
+        dbg("source_0:", source_0)
+        guard source_0.isObject else {
+            return XCTFail("source_0 \(source_0) not an object")
+        }
+
+
+        let rows: Bric = try source_0.toDecodable(ofType: Bric.self)
+        dbg("rows:", rows)
+
+        XCTAssertGreaterThan(rows.count, 0, "data rows were empty: \(rows)")
+    }
 
     func checkRenderResults<M: VizSpecMeta>(_ gve: VizEngine, spec: VizSpec<M>, count: Int, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, svg checkSVG: Bool = false, canvas checkCanvas: Bool = false) throws {
         if compile {
