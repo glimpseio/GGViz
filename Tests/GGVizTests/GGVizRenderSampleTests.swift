@@ -52,6 +52,7 @@ final class GGVizRenderSampleTests: XCTestCase {
                 // check for samples that we know have inconsistent renderings (possibly due to a random, locale, or temporal input); all other samples should be identical to the rendered output
                 switch sample {
                 case .area_horizon,
+                        .layer_falkensee,
                         .rect_heatmap,
                         .selection_translate_scatterplot_drag,
                         .geo_choropleth,
