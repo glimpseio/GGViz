@@ -4,6 +4,8 @@ import GGViz
 import Judo
 import MiscKit
 import BricBrac
+import GGSamples
+import GGSources
 
 /// A running count of all the contexts that have been created and not destroyed
 private final class GGDebugContext : VizEngine {
@@ -102,6 +104,37 @@ final class GGVizTests: XCTestCase {
         try measureBlock {
             try checkRenderResults(ctx, spec: spec, count: count, data: true)
         }
+    }
+
+    func testParseSamples() throws {
+        measure { // measured [Time, seconds] average: 0.135, relative standard deviation: 6.521%, values: [0.158417, 0.131659, 0.137847, 0.128122, 0.125872, 0.136956, 0.131422, 0.132509, 0.141240, 0.130322]
+            let allSamples = GGSample.allCases
+            DispatchQueue.concurrentPerform(iterations: allSamples.count) {
+                let sample = allSamples[$0]
+
+                //dbg("loading sample", sample)
+                guard let url = sample.resourceURL else {
+                    return XCTFail("unable load load URL for sample: \(sample)")
+                }
+
+                // attempt to parse
+                do {
+                    let _ = try SimpleVizSpec.loadJSON(url: url)
+                } catch {
+                    XCTFail("error parsing sample: \(sample): \(error)")
+                }
+            }
+        }
+    }
+
+    func testLoadSources() throws {
+        for source in GGSource.allCases {
+            dbg("loading source", source)
+            guard let url = source.resourceURL else {
+                return XCTFail("unable load load URL for source: \(source)")
+            }
+        }
+
     }
 
     func testMeasureData10() throws {

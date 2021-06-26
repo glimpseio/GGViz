@@ -49,7 +49,11 @@ let package = Package(
             resources: [.process("Resources/")]),
         .testTarget(
             name: "GGVizTests",
-            dependencies: ["GGViz"],
+            dependencies: [
+                "GGViz",
+                .product(name: "GGSamples", package: "GGGrammar"),
+                .product(name: "GGSources", package: "GGGrammar"),
+            ],
             resources: [.copy("TestResources/")]),
         .target( // SR-1954
             name: "GGTool", // SR-1954
