@@ -10,7 +10,7 @@ final class GGVizRenderSampleTests: XCTestCase {
 
     static let sharedEngine = Result { try VizEngine() }
 
-    func render(sample: GGSample, saveToFile: Bool = true) throws {
+    func render(sample: GGSample, verifySVG: Bool = true) throws {
         guard let url = sample.resourceURL else {
             throw XCTSkip("missing resource for: \(sample)")
         }
@@ -20,12 +20,12 @@ final class GGVizRenderSampleTests: XCTestCase {
         let layer = try PDFCanvas(size: CGSize(width: 800, height: 400))
 
         // changing background color helps identify when tests have changes the output
-        layer.backgroundColor = wip(NSColor(hue: CGFloat.random(in: 0...1), saturation: 0.3, brightness: 0.7, alpha: 1.0).cgColor)
+        //layer.backgroundColor = wip(NSColor(hue: CGFloat.random(in: 0...1), saturation: 0.3, brightness: 0.7, alpha: 1.0).cgColor)
 
         let _ = try Self.sharedEngine.get().renderViz(spec: spec, canvas: layer)
         //let png = layer.createPNGData()
         let pdf = layer.finishPDF()
-        if saveToFile {
+        if verifySVG {
             let dir = URL(fileURLWithPath: "GGVizRenderSampleTests", relativeTo: URL(fileURLWithPath: NSTemporaryDirectory()))
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true, attributes: nil)
 
@@ -39,10 +39,53 @@ final class GGVizRenderSampleTests: XCTestCase {
             let rendered = try Self.sharedEngine.get().renderViz(spec: spec, returnSVG: true)
 
             // also save the SVG next to the PDF so we can compare the rendered results
+            let svgOutput = outputBase.appendingPathExtension("svg")
             if let svg = rendered[VizEngine.RenderResponseKey.svg.rawValue].stringValue {
-                let svgOutput = outputBase.appendingPathExtension("svg")
                 try svg.write(to: svgOutput, atomically: false, encoding: .utf8)
+
+                guard let referenceSVG = Bundle.module.url(forResource: svgOutput.lastPathComponent, withExtension: nil, subdirectory: "TestResources/SVG/") else {
+                    throw XCTSkip("no reference svg for \(sample)")
+                }
+
+                let refSVG = (try? String(contentsOf: referenceSVG)) ?? ""
+
+                // check for samples that we know have inconsistent renderings (possibly due to a random, locale, or temporal input); all other samples should be identical to the rendered output
+                switch sample {
+                case .area_horizon,
+                        .rect_heatmap,
+                        .selection_translate_scatterplot_drag,
+                        .geo_choropleth,
+                        .joinaggregate_residual_graph,
+                        .interactive_splom,
+                        .interactive_area_brush,
+                        .interactive_layered_crossfilter,
+                        .geo_repeat,
+                        .selection_heatmap,
+                        .rect_heatmap_weather,
+                        .interactive_brush,
+                        .geo_trellis,
+                        .brush_table,
+                        .isotype_grid,
+                        .joinaggregate_mean_difference_by_year,
+                        .concat_marginal_histograms,
+                        .interactive_bin_extent,
+                        .layer_bar_fruit,
+                        .interactive_overview_detail,
+                        .interactive_seattle_weather,
+                        .interactive_concat_layer,
+                        .rect_lasagna,
+                        .rect_binned_heatmap,
+                        .circle_bubble_health_income,
+                        .layer_text_heatmap,
+                        .selection_layer_bar_month,
+                        .bar_count_minimap,
+                        .trail_comet:
+                    break
+                default:
+                    XCTAssertTrue(svg == refSVG, "SVG mismatch for \(sample): \(svg.count) vs \(refSVG.count); manually resolve by copying \(svgOutput.path) \(referenceSVG.path)")
+                }
             }
+
         }
     }
     
