@@ -6,7 +6,7 @@ import MiscKit
 import BricBrac
 
 /// A running count of all the contexts that have been created and not destroyed
-private final class GGDebugContext : VizEngine {
+private final class VizEngineDebug : VizEngine {
     static var liveContexts = 0
 
     override init(ctx: JXContext = JXContext()) throws {
@@ -43,7 +43,7 @@ final class GGVizTests: XCTestCase {
     }
 
     override class func tearDown() {
-        XCTAssertEqual(0, GGDebugContext.liveContexts)
+        XCTAssertEqual(0, VizEngineDebug.liveContexts)
     }
 
     func testengineScript() {
@@ -80,26 +80,26 @@ final class GGVizTests: XCTestCase {
     func testCompileGrammar() throws {
         let count = 0
         let spec = simpleSampleSpec(count: count)
-        let ctx = try GGDebugContext()
+        let gve = try VizEngineDebug()
         try prf("compile") {
-            try checkRenderResults(ctx, spec: spec, count: count, compile: true)
+            try checkRenderResults(gve, spec: spec, count: count, compile: true)
         }
     }
 
     func testMeasureCompile() throws {
         let count = 0
         let spec = simpleSampleSpec(count: count)
-        let ctx = try GGDebugContext()
+        let gve = try VizEngineDebug()
         try measureBlock {
-            try checkRenderResults(ctx, spec: spec, count: count, compile: true)
+            try checkRenderResults(gve, spec: spec, count: count, compile: true)
         }
     }
 
     func measureData(count: Int) throws {
         let spec = simpleSampleSpec(count: count)
-        let ctx = try GGDebugContext()
+        let gve = try VizEngineDebug()
         try measureBlock {
-            try checkRenderResults(ctx, spec: spec, count: count, data: true)
+            try checkRenderResults(gve, spec: spec, count: count, data: true)
         }
     }
 
@@ -121,9 +121,9 @@ final class GGVizTests: XCTestCase {
 
     func measureScenegraph(count: Int) throws {
         let spec = simpleSampleSpec(count: count)
-        let ctx = try GGDebugContext()
+        let gve = try VizEngineDebug()
         try measureBlock {
-            try checkRenderResults(ctx, spec: spec, count: count, sg: true)
+            try checkRenderResults(gve, spec: spec, count: count, sg: true)
         }
     }
 
@@ -149,9 +149,9 @@ final class GGVizTests: XCTestCase {
 
     func measureSVG(count: Int) throws {
         let spec = simpleSampleSpec(count: count)
-        let ctx = try GGDebugContext()
+        let gve = try VizEngineDebug()
         try measureBlock {
-            try checkRenderResults(ctx, spec: spec, count: count, svg: true)
+            try checkRenderResults(gve, spec: spec, count: count, svg: true)
         }
     }
 
@@ -177,9 +177,9 @@ final class GGVizTests: XCTestCase {
 
     func measureCanvas(count: Int) throws {
         let spec = simpleSampleSpec(count: count)
-        let ctx = try GGDebugContext()
+        let gve = try VizEngineDebug()
         try measureBlock {
-            try checkRenderResults(ctx, spec: spec, count: count, canvas: true)
+            try checkRenderResults(gve, spec: spec, count: count, canvas: true)
         }
     }
 
@@ -206,11 +206,36 @@ final class GGVizTests: XCTestCase {
     func testMeasureAllOperations() throws {
         let count = 3
         let spec = simpleSampleSpec(count: count)
-        let ctx = try GGDebugContext()
+        let gve = try VizEngineDebug()
         try measureBlock {
-            try checkRenderResults(ctx, spec: spec, count: count, data: true, sg: true, svg: true, canvas: true)
+            try checkRenderResults(gve, spec: spec, count: count, data: true, sg: true, svg: true, canvas: true)
         }
     }
+
+    //@available(macOS 10.12, iOS 10.0, tvOS 10.0, *)
+    func testReadData() throws {
+        let gve = try VizEngineDebug()
+
+        do {
+            let parsed = try gve.readData("A,B,C\n1,2,3", type: .csv)
+            dbg("parsed", parsed, parsed.isArray, parsed.count)
+            XCTAssertEqual(true, parsed.isArray)
+            XCTAssertEqual(1, parsed.count)
+            let bric = try parsed.toDecodable(ofType: Bric.self)
+            XCTAssertEqual([["A": 1, "B": 2, "C": 3]], bric)
+        }
+
+        do {
+            let parsed = try gve.readData("[{ \"A\": 1, \"B\": 2, \"C\": 3 }]", type: .json)
+            dbg("parsed", parsed, parsed.isArray, parsed.count)
+            XCTAssertEqual(true, parsed.isArray)
+            XCTAssertEqual(1, parsed.count)
+            let bric = try parsed.toDecodable(ofType: Bric.self)
+            XCTAssertEqual([["A": 1, "B": 2, "C": 3]], bric)
+        }
+
+    }
+
 
     func checkRenderResults<M: VizSpecMeta>(_ gve: VizEngine, spec: VizSpec<M>, count: Int, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, svg checkSVG: Bool = false, canvas checkCanvas: Bool = false) throws {
         if compile {

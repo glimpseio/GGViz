@@ -16,7 +16,11 @@ open class VizEngine {
     let vgg: JXValue
 
     let vgg_compile: JXValue
+    let vg_read: JXValue
     let vg_parse: JXValue
+    let vg_loader: JXValue
+    let vg_loader_load: JXValue
+
     let vg_View: JXValue
 
     let ggviz_render: JXValue
@@ -34,9 +38,13 @@ open class VizEngine {
 //        console.log("ggviz.vl", Object.keys(glimpseviz));
 //        """)
 
-        func check(_ value: JXValue) throws -> JXValue {
+        /// Verifies that the given instance is a function or object
+        func check(isFunction: Bool = false, _ value: JXValue) throws -> JXValue {
             if !value.isObject {
                 throw err("Value was not an object")
+            }
+            if isFunction && !value.isFunction {
+                throw err("Value was not a function")
             }
             return value
         }
@@ -48,18 +56,35 @@ open class VizEngine {
         let version = gv["version"]
         dbg("initializing ggviz version", version.stringValue)
 
+        let promise = try check(ctx["Promise"])
+        let promise_all = try check(isFunction: true, promise["all"])
+        let promise_allSettled = try check(isFunction: true, promise["allSettled"])
+        let promise_any = try check(isFunction: true, promise["any"])
+        let promise_race = try check(isFunction: true, promise["race"])
+        let promise_reject = try check(isFunction: true, promise["reject"])
+        let promise_resolve = try check(isFunction: true, promise["resolve"])
+
+        // instance methods
+        // let promise_catch = try check(isFunction: true, promise["catch"])
+        // let promise_then = try check(isFunction: true, promise["then"])
+        // let promise_finally = try check(isFunction: true, promise["finally"])
+
         self.glance = try check(gv["glance"])
         self.vg = try check(gv["vg"])
         self.vge = try check(gv["vge"])
         self.vgg = try check(gv["vgg"])
 
-        self.vg_parse = try check(vg["parse"])
+        self.vg_read = try check(isFunction: true, vg["read"])
+        self.vg_parse = try check(isFunction: true, vg["parse"])
+
+        self.vg_loader = try check(isFunction: true, vg["loader"])
+        self.vg_loader_load = try check(isFunction: true, vg_loader.call()["load"])
 
         self.vgg_compile = try check(vgg["compile"])
 
         self.vg_View = try check(vg["View"])
 
-        self.ggviz_render = try check(glance["render"])
+        self.ggviz_render = try check(isFunction: true, glance["render"])
 
         // use a custom compile step that captures the logged output and returns it as a `CompileOutput`
         self.ggviz_compile = try check(ctx.eval("""
@@ -108,6 +133,46 @@ public extension VizEngine {
         case .some(false):
             return Bundle.moduleResource(named: "ggviz", withExtension: "js", in: .module)
         }
+    }
+
+    /// The type of data that is being read
+    enum ReadDataType : String, CaseIterable, Hashable { case json, csv, tsv, topojson }
+
+    /// Reads the data source in the given format
+    func readData(_ source: String, type: ReadDataType) throws -> JXValue {
+        if !vg_read.isFunction { throw err("vg_loader_load was not a function") }
+        try ctx.throwException()
+        // https://www.npmjs.com/package/vega-loader#read
+        let schema: Bric = [
+            "type": .str(type.rawValue),
+            "parse": "auto",
+            //"property": "",
+        ]
+
+        let result = vg_read.call(withArguments: [ctx.string(source), try ctx.encode(schema)])
+
+        // doesn't work because vega's parsing doesn't handle ArrayBuffer (only node's Buffer)
+        //let result = vg_read.call(withArguments: [ctx.data(source), try ctx.encode(schema)])
+        //let result = try ctx.withArrayBuffer(source: source) { arrayBuffer in
+        //    vg_read.call(withArguments: [arrayBuffer, try ctx.encode(schema)])
+        //}
+        
+        try ctx.throwException()
+        return result
+    }
+
+    /// Compiles a spec and returns the compiled result
+    func loadData(_ source: Data) throws -> String? {
+        #warning("not yet working")
+        if !vg_loader_load.isFunction { throw err("vg_loader_load was not a function") }
+        try ctx.throwException()
+        ctx.installTimer(immediate: true) { duration, item in
+            return JXContext.dispatchScheduler(qos: .default)(duration, item)
+        }
+        let result = vg_loader_load.call(withArguments: [ctx.data(source)])
+        try ctx.throwException()
+
+        return result.stringValue
     }
 
     /// Compiles a spec and returns the compiled result
@@ -256,7 +321,7 @@ public extension VizEngine {
 
 extension JXContext {
     /// Installs the GGViz module into `ggviz`.
-    @discardableResult public func installGGViz(min: Bool? = true) throws -> JXValType {
+    @discardableResult public func installGGViz(min: Bool? = false) throws -> JXValType {
         let propertyName = "ggviz"
         let _ = self.globalObject(property: "global") // ggviz needs "global" (probably for console)
         let exports = self.globalObject(property: "exports")
