@@ -16,31 +16,35 @@ final class GGVizRenderSampleTests: XCTestCase {
         }
 
         let spec = try SimpleVizSpec.loadJSON(url: url)
-        let layer = try LayerCanvas(size: CGSize(width: 500, height: 500))
-        layer.backgroundColor = NSColor(hue: CGFloat.random(in: 0...1), saturation: 0.3, brightness: 0.7, alpha: 1.0).cgColor
+        //let layer = try LayerCanvas(size: CGSize(width: 800, height: 400))
+        let layer = try PDFCanvas(size: CGSize(width: 800, height: 400))
 
-        let rendered = try Self.sharedEngine.get().renderViz(spec: spec, returnSVG: saveToFile, canvas: layer)
-        let png = layer.createPNGData()
+        // changing background color helps identify when tests have changes the output
+        layer.backgroundColor = wip(NSColor(hue: CGFloat.random(in: 0...1), saturation: 0.3, brightness: 0.7, alpha: 1.0).cgColor)
+
+        let _ = try Self.sharedEngine.get().renderViz(spec: spec, canvas: layer)
+        //let png = layer.createPNGData()
+        let pdf = layer.finishPDF()
         if saveToFile {
             let dir = URL(fileURLWithPath: "GGVizRenderSampleTests", relativeTo: URL(fileURLWithPath: NSTemporaryDirectory()))
             try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true, attributes: nil)
 
-
             let outputBase = dir.appendingPathComponent(sample.rawValue)
 
-            let pngOutput = outputBase.appendingPathExtension("png")
+            let pdfOutput = outputBase.appendingPathExtension("pdf")
 
-            dbg("rendered sample \(sample) with PNG size:", png?.count, "to:", pngOutput.path)
-            try png?.write(to: pngOutput)
+            dbg("rendered sample \(sample) with pdf size:", pdf.count, "to:", pdfOutput.path)
+            try pdf.write(to: pdfOutput)
 
-            // also save the SVG next to the PNG so we can compare the rendered results
+            let rendered = try Self.sharedEngine.get().renderViz(spec: spec, returnSVG: true)
+
+            // also save the SVG next to the PDF so we can compare the rendered results
             if let svg = rendered[VizEngine.RenderResponseKey.svg.rawValue].stringValue {
                 let svgOutput = outputBase.appendingPathExtension("svg")
                 try svg.write(to: svgOutput, atomically: false, encoding: .utf8)
             }
         }
     }
-
     
     func test_bar() throws {
         try render(sample: .bar)
