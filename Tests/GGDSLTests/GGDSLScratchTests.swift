@@ -3,11 +3,6 @@ import GGDSL
 
 final class GGDSLScratchTests : XCTestCase {
 
-
-    func testXXX() throws {
-        Encode(.y, field: "count").stack(.init(.center))
-    }
-
     func test_repeat_histogram() throws {
         try check(viz: Graphiq {
             //DataReference(path: "data/cars.json")

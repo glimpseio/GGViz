@@ -4,8 +4,6 @@ import GGViz
 import Judo
 import MiscKit
 import BricBrac
-import GGSamples
-import GGSources
 
 /// A running count of all the contexts that have been created and not destroyed
 private final class GGDebugContext : VizEngine {
@@ -23,7 +21,6 @@ private final class GGDebugContext : VizEngine {
 
 final class GGVizTests: XCTestCase {
     let speedUp = false
-
 
     func measureBlock(file: StaticString = #filePath, line: UInt = #line, _ f: () throws -> ()) rethrows {
         if speedUp {
@@ -106,37 +103,6 @@ final class GGVizTests: XCTestCase {
         }
     }
 
-    func testParseSamples() throws {
-        measure { // measured [Time, seconds] average: 0.135, relative standard deviation: 6.521%, values: [0.158417, 0.131659, 0.137847, 0.128122, 0.125872, 0.136956, 0.131422, 0.132509, 0.141240, 0.130322]
-            let allSamples = GGSample.allCases
-            DispatchQueue.concurrentPerform(iterations: allSamples.count) {
-                let sample = allSamples[$0]
-
-                //dbg("loading sample", sample)
-                guard let url = sample.resourceURL else {
-                    return XCTFail("unable load load URL for sample: \(sample)")
-                }
-
-                // attempt to parse
-                do {
-                    let _ = try SimpleVizSpec.loadJSON(url: url)
-                } catch {
-                    XCTFail("error parsing sample: \(sample): \(error)")
-                }
-            }
-        }
-    }
-
-    func testLoadSources() throws {
-        for source in GGSource.allCases {
-            dbg("loading source", source)
-            guard let url = source.resourceURL else {
-                return XCTFail("unable load load URL for source: \(source)")
-            }
-        }
-
-    }
-
     func testMeasureData10() throws {
         try measureData(count: 10)
     }
@@ -149,9 +115,9 @@ final class GGVizTests: XCTestCase {
         try measureData(count: 1000)
     }
 
-    func testMeasureData10000() throws {
-        try measureData(count: 10000)
-    }
+//    func testMeasureData10000() throws {
+//        try measureData(count: 10000)
+//    }
 
     func measureScenegraph(count: Int) throws {
         let spec = simpleSampleSpec(count: count)
@@ -173,9 +139,9 @@ final class GGVizTests: XCTestCase {
         try measureScenegraph(count: 1000)
     }
 
-    func testMeasureSceneGraph10000() throws {
-        try measureScenegraph(count: 10000)
-    }
+//    func testMeasureSceneGraph10000() throws {
+//        try measureScenegraph(count: 10000)
+//    }
 
 //    func testMeasureSceneGraph100000() throws {
 //        try measureScenegraph(count: 100000)
@@ -201,9 +167,9 @@ final class GGVizTests: XCTestCase {
         try measureSVG(count: 1000)
     }
 
-    func testMeasureSVG10000() throws {
-        try measureSVG(count: 10000)
-    }
+//    func testMeasureSVG10000() throws {
+//        try measureSVG(count: 10000)
+//    }
 
 //    func testMeasureSVG100000() throws {
 //        try measureSVG(count: 100000)
@@ -229,10 +195,9 @@ final class GGVizTests: XCTestCase {
         try measureCanvas(count: 1000)
     }
 
-    func testMeasureCanvas10000() throws {
-        try measureCanvas(count: 10000)
-    }
-
+//    func testMeasureCanvas10000() throws {
+//        try measureCanvas(count: 10000)
+//    }
 
 //    func testMeasureCanvas100000() throws {
 //        try measureCanvas(count: 100000)
@@ -243,21 +208,11 @@ final class GGVizTests: XCTestCase {
         let spec = simpleSampleSpec(count: count)
         let ctx = try GGDebugContext()
         try measureBlock {
-            try checkRenderResults(ctx, spec: spec, count: count, data: true, sg: true, svg: true)
+            try checkRenderResults(ctx, spec: spec, count: count, data: true, sg: true, svg: true, canvas: true)
         }
     }
 
-    /// A simple AbstractCanvasAPI subclass that tracks all the text measuring requests it gets
-    final class MeasuringCanvasAPI : AbstractCanvasAPI {
-        var measures: [String] = []
-        override func measureText(value: String) -> TextMetrics? {
-            dbg("measure:", value)
-            measures.append(value)
-            return super.measureText(value: value)
-        }
-    }
-
-    func checkRenderResults<M: VizSpecMeta>(_ gve: VizEngine, spec: VizSpec<M>, count: Int, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, canvas checkCanvas: Bool = false, svg checkSVG: Bool = false) throws {
+    func checkRenderResults<M: VizSpecMeta>(_ gve: VizEngine, spec: VizSpec<M>, count: Int, compile: Bool = false, data checkData: Bool = false, sg checkSceneGraph: Bool = false, svg checkSVG: Bool = false, canvas checkCanvas: Bool = false) throws {
         if compile {
             let compiled = try gve.compileGrammar(spec: spec, normalize: true)
 
@@ -269,8 +224,20 @@ final class GGVizTests: XCTestCase {
             XCTAssertEqual([], compiled.info.defaulted.compactMap({ $0 }))
         }
 
-        let canvasAPI = MeasuringCanvasAPI()
-        let rendered = try gve.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnCanvas: checkCanvas, returnScenegraph: checkSceneGraph, canvas: canvasAPI)
+        #if canImport(CoreGraphics)
+        // use a layer canvas to render to an image
+        let canvasAPI = checkCanvas == true ? try LayerCanvas(size: CGSize(width: 500, height: 500)) : nil // avg: 0.052
+        #else // non-CoreGraphics systems just use the fake canvas
+        let canvasAPI = checkCanvas == true ? AbstractCanvasAPI() : nil // avg: 0.035
+        #endif
+
+        let rendered = try gve.renderViz(spec: spec, returnData: checkData, returnSVG: checkSVG, returnScenegraph: checkSceneGraph, canvas: canvasAPI)
+
+        #if canImport(CoreGraphics)
+        if checkCanvas {
+            dbg("PNG data size", canvasAPI?.createPNGData()?.count)
+        }
+        #endif
 
         let data = rendered[VizEngine.RenderResponseKey.data.rawValue]
         if !checkData {
@@ -282,15 +249,11 @@ final class GGVizTests: XCTestCase {
             XCTAssertEqual([0.1, 0.2, 0.3].prefix(data_0.count), data_0.map(\.["B"]).prefix(3))
         }
 
-        if !checkCanvas {
-            //XCTAssert(data.isUndefined, "canvas should not have been set")
-        } else {
-            // let canvas = try XCTUnwrap(canvas) // our canvas var should be legit
-
+        if let canvasAPI = canvasAPI {
             // check that the canvas was configured for use
-            XCTAssertEqual("bold 13px sans-serif", canvasAPI.font)
+            //XCTAssertEqual("bold 13px sans-serif", canvasAPI.font)
             XCTAssertEqual(1, canvasAPI.lineWidth)
-            XCTAssertEqual("#888", canvasAPI.strokeStyle)
+            //XCTAssertEqual("#888", canvasAPI.strokeStyle)
             XCTAssertEqual("#000", canvasAPI.fillStyle)
         }
 
@@ -312,7 +275,6 @@ final class GGVizTests: XCTestCase {
             let sceneItems = sceneMarks.compactMap(\.sceneItems).joined()
             if count == 3 {
                 XCTAssertEqual(67, sceneItems.count)
-
 
                 XCTAssertEqual([900.0, 270.0, 270.0, 270.0].prefix(4), sceneItems.compactMap(\.width).prefix(4))
                 XCTAssertEqual([600.0, 200.0, 400.00000000000006, 600.0].prefix(4), sceneItems.compactMap(\.height).prefix(4))
@@ -383,3 +345,5 @@ final class GGVizTests: XCTestCase {
 
     }
 }
+
+

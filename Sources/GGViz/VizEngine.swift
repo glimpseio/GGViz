@@ -135,7 +135,7 @@ public extension VizEngine {
     ///   - externalCanvas: the canvas implementation to draw into
     ///
     /// - Returns: the response dictionary, which will contain keys based on the parameters.
-    func renderViz<M: VizSpecMeta>(spec: VizSpec<M>, data: [String: [Bric]]? = nil, returnData: Bool? = nil, returnSVG: Bool? = nil, returnCanvas: Bool? = nil, returnScenegraph: Bool? = nil, canvas externalCanvas: CanvasAPI? = nil) throws -> JXValue {
+    func renderViz<M: VizSpecMeta>(spec: VizSpec<M>, data: [String: [Bric]]? = nil, returnData: Bool? = nil, returnSVG: Bool? = nil, returnScenegraph: Bool? = nil, canvas externalCanvas: CanvasAPI? = nil) throws -> JXValue {
         var opts: [RenderRequestKey: JXValue] = [:]
         opts[.spec] = try ctx.encode(spec)
 
@@ -146,6 +146,7 @@ public extension VizEngine {
         if let externalCanvas = externalCanvas {
             // Judo.Canvas is a live canvas that interacts with the CanvasAPI
             opts[.externalCanvas] = try Canvas(env: ctx, delegate: externalCanvas)
+            opts[.returnCanvas] = ctx.boolean(true)
         }
 
         if let returnData = returnData {
@@ -160,9 +161,6 @@ public extension VizEngine {
             opts[.returnScenegraph] = ctx.boolean(returnScenegraph)
         }
 
-        if let returnCanvas = returnCanvas {
-            opts[.returnCanvas] = ctx.boolean(returnCanvas)
-        }
 
         return try performRender(opts)
     }
@@ -258,7 +256,7 @@ public extension VizEngine {
 
 extension JXContext {
     /// Installs the GGViz module into `ggviz`.
-    @discardableResult public func installGGViz(min: Bool? = false) throws -> JXValType {
+    @discardableResult public func installGGViz(min: Bool? = true) throws -> JXValType {
         let propertyName = "ggviz"
         let _ = self.globalObject(property: "global") // ggviz needs "global" (probably for console)
         let exports = self.globalObject(property: "exports")

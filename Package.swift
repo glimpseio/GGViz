@@ -33,7 +33,10 @@ let package = Package(
             resources: [.process("Resources/")]),
         .testTarget(
             name: "GGDSLTests",
-            dependencies: ["GGDSL"],
+            dependencies: [
+                .product(name: "GGSamples", package: "GGGrammar"),
+                "GGDSL",
+            ],
             resources: [.copy("TestResources/")]),
         .target(
             name: "GGBundle",
