@@ -38,7 +38,6 @@ final class GGVizRenderSampleTests: XCTestCase {
                 let svgOutput = outputBase.appendingPathExtension("svg")
                 try svg.write(to: svgOutput, atomically: false, encoding: .utf8)
             }
-
         }
     }
 
