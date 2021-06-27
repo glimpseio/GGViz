@@ -28,7 +28,6 @@ open class VizEngine {
     let ggviz_render: JXValue
     let ggviz_compile: JXValue
 
-    @available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
     public init(ctx: JXContext = JXContext(), fetcher: JXContext.DataFetchHandler? = nil) throws {
         self.ctx = ctx
 
