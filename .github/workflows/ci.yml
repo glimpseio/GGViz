@@ -34,6 +34,7 @@ jobs:
 
       - run: |
             xcodebuild clean test \
+              -disablePackageRepositoryCache \
               -configuration Release \
               -scheme "GGViz-Package" \
               -sdk "iphonesimulator" \
@@ -52,6 +53,7 @@ jobs:
         run: sed -i'.bk' 's;\(.*\)// SR-1954$;// SR-1954 \1;g' Package.swift
       - run: |
             xcodebuild clean test \
+              -disablePackageRepositoryCache \
               -configuration Release \
               -scheme "GGViz-Package" \
               -sdk "appletvsimulator" \
