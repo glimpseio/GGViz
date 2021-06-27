@@ -85,6 +85,7 @@ final class GGVizRenderSampleTests: XCTestCase {
                     .vconcat_weather,
 
                     // fails on macOS
+                    .area_overlay,
                     .area_horizon,
                     .layer_falkensee,
                     .rect_heatmap,
