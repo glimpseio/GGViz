@@ -8,18 +8,20 @@ import GGSources
 import GGSamples
 
 extension VizEngine {
-    /// Creates a `JXContext.DataFetcher` relative to a given `basePath` for loading URL resources in this engine
-    static func fetcher(relativeTo basePath: URL?) -> JXContext.DataFetcher {
+    /// Creates a `JXContext.DataFetcher` relative to a given `basePath` for loading URL resources in this engine. If the `basePath` is not nil, file loading will be permitted beneath the given base.
+    static func fetchHandler(relativeTo basePath: URL?) -> JXContext.DataFetcher {
         { ctx, path, opts in
             // opts e.g.: {"context":"dataflow","response":"text"}
-            dbg("fetching", path, "options", opts?.jsonDebugDescription ?? ".none")
+            //dbg("fetching", path, "options", opts?.jsonDebugDescription ?? ".none")
 
             // load the URL, either relative ("data/stocks.csv") or absolute
+
             guard let url = URL(string: path) else {
+                dbg("invalid URL:", path)
                 return (nil, nil)
             }
 
-            dbg("url:", url, url.isFileURL, "scheme:", url.scheme)
+            // dbg("url:", url, url.isFileURL, "scheme:", url.scheme)
             if url.scheme != nil { // try to load the URL using the built-in mechanisms
                 let (data, response, _) = URLSession.shared.syncRequest(with: URLRequest(url: url))
                 return (response, data)
@@ -27,18 +29,18 @@ extension VizEngine {
 
             let fileURL = URL(fileURLWithPath: path, relativeTo: basePath)
 
-            if FileManager.default.isReadableFile(atPath: fileURL.path) {
+            if basePath != nil && FileManager.default.isReadableFile(atPath: fileURL.path) {
                 return (nil, try Data(contentsOf: fileURL, options: .mappedIfSafe))
             }
 
-            // fallback to check if it is one of the official samples
+            // even if we disallow direct file access, we still permit the sample "data/" URLs to be loaded from the samples bundle; this permits the sample spec to load and render with their respective data files
             let comps = url.pathComponents
             if url.scheme == nil && comps.count == 2 && comps.first == "data", let source = GGSource(rawValue: url.lastPathComponent), let resourceURL = source.resourceURL {
                 return (nil, try Data(contentsOf: resourceURL, options: .mappedIfSafe))
             }
 
+            dbg("no URL found for path:", path)
             return (nil, nil)
-
         }
     }
 }
@@ -302,7 +304,7 @@ final class GGVizTests: XCTestCase {
     }
 
     func loaderFetch(inline: Bool) throws {
-        let gve = try VizEngineDebug(fetcher: VizEngine.fetcher(relativeTo: nil))
+        let gve = try VizEngineDebug(fetcher: VizEngine.fetchHandler(relativeTo: nil))
 
         let sourceRows: [Bric] = [
             ["group": "1", "person": "Alan"],

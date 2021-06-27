@@ -8,7 +8,7 @@ import XCTest
 /// Attempts to render all of the viz samples
 final class GGVizRenderSampleTests: XCTestCase {
 
-    static let sharedEngine = Result { try VizEngine(fetcher: VizEngine.fetcher(relativeTo: nil)) }
+    static let sharedEngine = Result { try VizEngine(fetcher: VizEngine.fetchHandler(relativeTo: nil)) }
 
     func render(sample: GGSample, verifySVG: Bool = true) throws {
         guard let url = sample.resourceURL else {
