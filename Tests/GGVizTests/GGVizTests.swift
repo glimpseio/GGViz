@@ -485,5 +485,3 @@ final class GGVizTests: XCTestCase {
 
     }
 }
-
-
