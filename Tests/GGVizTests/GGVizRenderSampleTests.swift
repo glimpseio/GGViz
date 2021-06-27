@@ -50,6 +50,8 @@ final class GGVizRenderSampleTests: XCTestCase {
 
                 let refSVG = (try? String(contentsOf: referenceSVG)) ?? ""
 
+                let matches = svg == refSVG
+
                 // check for samples that we know have inconsistent renderings (possibly due to random sampling, locale-specific configuration, or temporal input); all other samples should be identical to the rendered output
                 switch sample {
                 case
@@ -121,9 +123,10 @@ final class GGVizRenderSampleTests: XCTestCase {
                     .circle_natural_disasters,
                     .stacked_bar_count_corner_radius_mark,
                     .trail_comet:
+                    dbg("skipping test", sample.rawValue, " (matches: \(matches))")
                     break
                 default:
-                    XCTAssertTrue(svg == refSVG, "SVG mismatch for \(sample): \(svg.count) vs \(refSVG.count); manually resolve with: \n  cp -v \(svgOutput.path) \(referenceSVG.path)")
+                    XCTAssertTrue(matches, "SVG mismatch for \(sample): \(svg.count) vs \(refSVG.count); manually resolve with: \n  cp -v \(svgOutput.path) \(referenceSVG.path)")
                 }
             }
         }
