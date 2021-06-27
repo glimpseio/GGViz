@@ -1,6 +1,7 @@
 
 import protocol Judo.CanvasAPI
 
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
 extension VizEngine {
     /// Render to a scenegraph tree. Can be performed on a background queue.
     public func renderToScenegraph<M: Codable & Hashable>(spec: VizSpec<M>, data: [String: [Bric]]? = nil, canvas: CanvasAPI? = nil) throws -> Scenegraph {

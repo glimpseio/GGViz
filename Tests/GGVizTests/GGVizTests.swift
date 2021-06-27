@@ -10,10 +10,10 @@ import GGSamples
 import FoundationNetworking // needed for networking on Linux
 #endif
 
-@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
 extension VizEngine {
-    /// Creates a `JXContext.DataFetcher` relative to a given `basePath` for loading URL resources in this engine. If the `basePath` is not nil, file loading will be permitted beneath the given base.
-    static func fetchHandler(relativeTo basePath: URL?) -> JXContext.DataFetcher {
+    /// Creates a `JXContext.DataFetchHandler` relative to a given `basePath` for loading URL resources in this engine. If the `basePath` is not nil, file loading will be permitted beneath the given base.
+    static func fetchHandler(relativeTo basePath: URL?) -> JXContext.DataFetchHandler {
         { ctx, path, opts in
             // opts e.g.: {"context":"dataflow","response":"text"}
             //dbg("fetching", path, "options", opts?.jsonDebugDescription ?? ".none")
@@ -76,8 +76,8 @@ extension URLSession {
 private final class VizEngineDebug : VizEngine {
     static var liveContexts = 0
 
-    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    override init(ctx: JXContext = JXContext(), fetcher: JXContext.DataFetcher? = nil) throws {
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
+    override init(ctx: JXContext = JXContext(), fetcher: JXContext.DataFetchHandler? = nil) throws {
         try super.init(ctx: ctx, fetcher: fetcher)
         Self.liveContexts += 1
     }
@@ -87,7 +87,7 @@ private final class VizEngineDebug : VizEngine {
     }
 }
 
-@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
 final class GGVizTests: XCTestCase {
     let speedUp = false
 

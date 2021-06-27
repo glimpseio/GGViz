@@ -6,6 +6,7 @@ import XCTest
 
 #if canImport(CoreGraphics)
 /// Attempts to render all of the viz samples
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
 final class GGVizRenderSampleTests: XCTestCase {
 
     static let sharedEngine = Result { try VizEngine(fetcher: VizEngine.fetchHandler(relativeTo: nil)) }

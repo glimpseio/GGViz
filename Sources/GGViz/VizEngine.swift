@@ -5,6 +5,7 @@ import Judo
 /// Uses `JXKit` and `GGSchema`
 ///
 /// Uses: `JXContext.installGGViz`
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
 open class VizEngine {
     /// The underlying context for the engine
     open var ctx: JXContext
@@ -27,8 +28,8 @@ open class VizEngine {
     let ggviz_render: JXValue
     let ggviz_compile: JXValue
 
-    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
-    public init(ctx: JXContext = JXContext(), fetcher: JXContext.DataFetcher? = nil) throws {
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
+    public init(ctx: JXContext = JXContext(), fetcher: JXContext.DataFetchHandler? = nil) throws {
         self.ctx = ctx
 
         try ctx.installConsole()
@@ -121,6 +122,7 @@ open class VizEngine {
 }
 
 
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
 public extension VizEngine {
 
     /// Returns the resource for the script with the given mode.
@@ -323,6 +325,7 @@ public extension VizEngine {
 
 extension JXContext {
     /// Installs the GGViz module into `ggviz`.
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
     @discardableResult public func installGGViz(min: Bool? = false) throws -> JXValType {
         let propertyName = "ggviz"
         let _ = self.globalObject(property: "global") // ggviz needs "global" (probably for console)
