@@ -9,12 +9,6 @@ open class VizEngine {
     /// The underlying context for the engine
     open var ctx: JXContext
 
-    /// The function to use to fetch data synchronously
-    public typealias DataFetcher = ((JXContext, String, Bric?) throws -> Data?)
-
-    /// The the resolution provider
-    open var fetcher: DataFetcher?
-
     let gv: JXValue
 
     let glance: JXValue
@@ -33,41 +27,18 @@ open class VizEngine {
     let ggviz_render: JXValue
     let ggviz_compile: JXValue
 
-    public init(ctx: JXContext = JXContext(), fetcher: DataFetcher? = nil) throws {
+    @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
+    public init(ctx: JXContext = JXContext(), fetcher: JXContext.DataFetcher? = nil) throws {
         self.ctx = ctx
-        self.fetcher = fetcher
-
-        // install the data fetcher if it was specified
-        if let fetcher = fetcher {
-            // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-            ctx["fetch"] = JXValue(newFunctionIn: ctx) { ctx, this, args in
-                // first arg is string, second arg is array of options
-                guard let url = args.first?.stringValue else {
-                    return JXValue(newErrorFromMessage: "first argument to fetch must be set", in: ctx)
-                }
-                let opts: Bric?
-                if let options = args.dropFirst().first, options.isObject {
-                    // e.g., method, mode, cache, credentials, headers, reditect, referrerPolicy, body
-                    opts = try options.toDecodable(ofType: Bric.self)
-                } else {
-                    opts = nil
-                }
-                if let fetched = try fetcher(ctx, url, opts) {
-                    return ctx.data(fetched)
-                } else {
-                    return ctx.undefined()
-                }
-            }
-        }
 
         try ctx.installConsole()
+
+        // install the data fetcher if a delegate was supplied
+        if let fetcher = fetcher {
+            ctx.installFetch(fetcher)
+        }
+
         try ctx.installGGViz()
-
-
-//        try ctx.eval(script: """
-//        console.log("ggviz", glimpseviz);
-//        console.log("ggviz.vl", Object.keys(glimpseviz));
-//        """)
 
         /// Verifies that the given instance is a function or object
         func check(isFunction: Bool = false, _ value: JXValue) throws -> JXValue {

@@ -8,7 +8,7 @@ import XCTest
 /// Attempts to render all of the viz samples
 final class GGVizRenderSampleTests: XCTestCase {
 
-    static let sharedEngine = Result { try VizEngine() }
+    static let sharedEngine = Result { try VizEngine(fetcher: VizEngine.fetcher(relativeTo: nil)) }
 
     func render(sample: GGSample, verifySVG: Bool = true) throws {
         guard let url = sample.resourceURL else {
@@ -49,41 +49,47 @@ final class GGVizRenderSampleTests: XCTestCase {
 
                 let refSVG = (try? String(contentsOf: referenceSVG)) ?? ""
 
-                // check for samples that we know have inconsistent renderings (possibly due to a random, locale, or temporal input); all other samples should be identical to the rendered output
+                // check for samples that we know have inconsistent renderings (possibly due to random sampling, locale-specific configuration, or temporal input); all other samples should be identical to the rendered output
                 switch sample {
-                case .area_horizon,
-                        .layer_falkensee,
-                        .rect_heatmap,
-                        .selection_translate_scatterplot_drag,
-                        .geo_choropleth,
-                        .joinaggregate_residual_graph,
-                        .interactive_splom,
-                        .interactive_area_brush,
-                        .interactive_layered_crossfilter,
-                        .geo_repeat,
-                        .selection_heatmap,
-                        .rect_heatmap_weather,
-                        .interactive_brush,
-                        .geo_trellis,
-                        .brush_table,
-                        .isotype_grid,
-                        .joinaggregate_mean_difference_by_year,
-                        .concat_marginal_histograms,
-                        .interactive_bin_extent,
-                        .layer_bar_fruit,
-                        .interactive_overview_detail,
-                        .interactive_seattle_weather,
-                        .interactive_concat_layer,
-                        .rect_lasagna,
-                        .rect_binned_heatmap,
-                        .circle_bubble_health_income,
-                        .layer_text_heatmap,
-                        .selection_layer_bar_month,
-                        .bar_count_minimap,
-                        .trail_comet:
+                case
+                    .area_horizon,
+                    .layer_falkensee,
+                    .rect_heatmap,
+                    .selection_translate_scatterplot_drag,
+                    .geo_choropleth,
+                    .joinaggregate_residual_graph,
+                    .interactive_splom,
+                    .interactive_area_brush,
+                    .interactive_layered_crossfilter,
+                    .geo_repeat,
+                    .selection_heatmap,
+                    .rect_heatmap_weather,
+                    .interactive_brush,
+                    .geo_trellis,
+                    .brush_table,
+                    .isotype_grid,
+                    .joinaggregate_mean_difference_by_year,
+                    .concat_marginal_histograms,
+                    .interactive_bin_extent,
+                    .layer_bar_fruit,
+                    .interactive_overview_detail,
+                    .interactive_seattle_weather,
+                    .interactive_concat_layer,
+                    .rect_lasagna,
+                    .rect_binned_heatmap,
+                    .circle_bubble_health_income,
+                    .layer_text_heatmap,
+                    .selection_layer_bar_month,
+                    .bar_count_minimap,
+                    .trail_comet,
+                    .layer_point_errorbar_ci,
+                    .layer_line_errorband_ci,
+                    .area_gradient,
+                    .circle_natural_disasters,
+                    .stacked_bar_count_corner_radius_mark:
                     break
                 default:
-                    XCTAssertTrue(svg == refSVG, "SVG mismatch for \(sample): \(svg.count) vs \(refSVG.count); manually resolve by copying \(svgOutput.path) \(referenceSVG.path)")
+                    XCTAssertTrue(svg == refSVG, "SVG mismatch for \(sample): \(svg.count) vs \(refSVG.count); manually resolve with: \n  cp -v \(svgOutput.path) \(referenceSVG.path)")
                 }
             }
         }
