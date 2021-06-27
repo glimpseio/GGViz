@@ -10,6 +10,7 @@ import GGSamples
 import FoundationNetworking // needed for networking on Linux
 #endif
 
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
 extension VizEngine {
     /// Creates a `JXContext.DataFetcher` relative to a given `basePath` for loading URL resources in this engine. If the `basePath` is not nil, file loading will be permitted beneath the given base.
     static func fetchHandler(relativeTo basePath: URL?) -> JXContext.DataFetcher {
@@ -86,6 +87,7 @@ private final class VizEngineDebug : VizEngine {
     }
 }
 
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
 final class GGVizTests: XCTestCase {
     let speedUp = false
 
