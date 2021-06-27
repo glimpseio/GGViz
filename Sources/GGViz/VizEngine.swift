@@ -59,19 +59,6 @@ open class VizEngine {
         let version = gv["version"]
         dbg("initializing ggviz version", version.stringValue)
 
-        let promise = try check(ctx["Promise"])
-        let promise_all = try check(isFunction: true, promise["all"])
-        let promise_allSettled = try check(isFunction: true, promise["allSettled"])
-        let promise_any = try check(isFunction: true, promise["any"])
-        let promise_race = try check(isFunction: true, promise["race"])
-        let promise_reject = try check(isFunction: true, promise["reject"])
-        let promise_resolve = try check(isFunction: true, promise["resolve"])
-
-        // instance methods
-        // let promise_catch = try check(isFunction: true, promise["catch"])
-        // let promise_then = try check(isFunction: true, promise["then"])
-        // let promise_finally = try check(isFunction: true, promise["finally"])
-
         self.glance = try check(gv["glance"])
         self.vg = try check(gv["vg"])
         self.vge = try check(gv["vge"])

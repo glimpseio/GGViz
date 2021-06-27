@@ -73,10 +73,10 @@ extension URLSession {
 }
 
 /// A running count of all the contexts that have been created and not destroyed
+@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
 private final class VizEngineDebug : VizEngine {
     static var liveContexts = 0
 
-    @available(macOS 10.15, iOS 13.0, tvOS 13.0, *)
     override init(ctx: JXContext = JXContext(), fetcher: JXContext.DataFetchHandler? = nil) throws {
         try super.init(ctx: ctx, fetcher: fetcher)
         Self.liveContexts += 1
