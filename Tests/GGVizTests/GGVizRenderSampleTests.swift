@@ -123,7 +123,7 @@ final class GGVizRenderSampleTests: XCTestCase {
                     .circle_natural_disasters,
                     .stacked_bar_count_corner_radius_mark,
                     .trail_comet:
-                    dbg("skipping test", sample.rawValue, " (matches: \(matches))")
+                    dbg(level: matches ? 2 : 0, "skipping test", sample.rawValue, " (matches: \(matches))")
                     break
                 default:
                     XCTAssertTrue(matches, "SVG mismatch for \(sample): \(svg.count) vs \(refSVG.count); manually resolve with: \n  cp -v \(svgOutput.path) \(referenceSVG.path)")
