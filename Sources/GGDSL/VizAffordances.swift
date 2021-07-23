@@ -666,21 +666,29 @@ public extension GG.UtcMultiTimeUnit {
 #if canImport(TabularData)
 import TabularData
 
+@available(macOS 12.0, iOS 15.0, *)
 extension AnyColumnProtocol {
     /// Returns a `Field` form of this column
     public var fieldName: FieldName { .init(FieldName(name)) }
 }
 
+@available(macOS 12.0, iOS 15.0, *)
 extension ColumnProtocol {
     /// Returns a `Field` form of this column
     public var fieldName: FieldName { .init(FieldName(name)) }
 }
 
+@available(macOS 12.0, iOS 15.0, *)
 extension TabularData.AnyColumn : FieldNameRepresentable { }
+@available(macOS 12.0, iOS 15.0, *)
 extension TabularData.AnyColumnSlice : FieldNameRepresentable { }
+@available(macOS 12.0, iOS 15.0, *)
 extension TabularData.Column : FieldNameRepresentable { }
+@available(macOS 12.0, iOS 15.0, *)
 extension TabularData.ColumnSlice : FieldNameRepresentable { }
+@available(macOS 12.0, iOS 15.0, *)
 extension TabularData.DiscontiguousColumnSlice : FieldNameRepresentable { }
+@available(macOS 12.0, iOS 15.0, *)
 extension TabularData.FilledColumn : FieldNameRepresentable { }
 
 #endif
